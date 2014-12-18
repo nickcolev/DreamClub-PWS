@@ -19,24 +19,33 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.*;	// Preferences
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
+//import android.widget.ToggleButton;
+// Preferences
+import android.content.SharedPreferences;
+import android.preference.EditTextPreference;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
+
 
 public class StartActivity extends Activity {
 
-    private ToggleButton mToggleButton;
-    private EditText port;
-    private static TextView mLog;
+	private static final String TAG = "PWS";
     private static ScrollView mScroll;
-    private String documentRoot;
+    private static TextView mLog;
     private String lastMessage = "";
 	private ServerService mBoundService;
+	private SharedPreferences prefs;
 
     final Handler mHandler = new Handler() {
 		@Override
@@ -48,57 +57,64 @@ public class StartActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+		super.onCreate(savedInstanceState);
+Log.d("***CP10***", "onCreate()");
+		setContentView(R.layout.main);
+		// Settings
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		// Initialize members with default values for a new instance
+		if (savedInstanceState == null) {	// Initialize
+			mLog = (TextView) findViewById(R.id.log);
+			mScroll = (ScrollView) findViewById(R.id.ScrollView01);
+		}
 
-        mToggleButton = (ToggleButton) findViewById(R.id.toggle);
-        port = (EditText) findViewById(R.id.port);
-        mLog = (TextView) findViewById(R.id.log);
-        mScroll = (ScrollView) findViewById(R.id.ScrollView01);
-        documentRoot = getDocRoot();
-
-        if(null != documentRoot) {
-	        try {
-		        if (!(new File(documentRoot)).exists()) {
-		        	(new File(documentRoot)).mkdir();
-		        	Log.i("***", "Created " + documentRoot);
-		         	BufferedWriter bout = new BufferedWriter(new FileWriter(documentRoot + "/index.html"));
-		         	bout.write(
-		         		"<html><head><title>Android Webserver</title>"+
-		         		"</head>"+
-		         		"<body>Willkommen auf dem Android Webserver."+
-		         		"<br><br>Die HTML-Dateien liegen in " + documentRoot + ", der Sourcecode dieser App auf "+
-		         		"<a href=\"https://github.com/bodeme/androidwebserver\">Github</a>"+
-		         		"</body></html>"
-		         	);
-		         	bout.flush();
-		         	bout.close();
-		        	Log.i("*** Webserver", "Created index.html");
-		        }
-	        } catch (Exception e) {
-	        	Log.v("ERROR",e.getMessage());
-	        }
-	        log("\nPlease mail suggestions to fef9560@b0d3.de\nDocument-Root: " + documentRoot);
-        } else {
-            log("Error: Document-Root could not be found.");
-        }
-        
-        mToggleButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View arg0) {
-				if(mToggleButton.isChecked()) {
-					startServer(mHandler, documentRoot, new Integer(port.getText().toString()));
-				} else {
-					stopServer();
-				}
-			}
-		});
-
-        doBindService();
-        // TODO Start server on Activity start
+		String documentRoot = setupDocRoot();
+        if (documentRoot != null) doBindService();
     }
 
+	private String setDocRoot() {
+		String path = getDocRoot();
+		File f = new File(path);
+		if (f.exists()) return path;
+		try {
+			f.mkdir();
+			Log.i(TAG, "Created folder " + path);
+		} catch (Exception e) {
+			Log.e(TAG, e.getMessage());
+			return null;
+		}
+		return path;
+	}
+
+	private void setDocIndex(String path) {
+		File f = new File(path+"/index.html");
+		if (f.exists()) return;
+		try {
+			// FIXME Can we put the index.html in 'res'?
+			BufferedWriter bout = new BufferedWriter(new FileWriter(f));
+			bout.write(
+				"<html><head><title>"+TAG+"</title>"+
+				"</head>"+
+				"<body>\n<h1>It works!</h1>\n"+
+				"<p>The web server software is running but no content has been added in <tt>"+path+"</tt>, yet.</p>\n"+
+				"</body></html>"
+			);
+			bout.flush();
+			bout.close();
+			Log.i(TAG, "Created index.html");
+		} catch (Exception e) {
+			Log.e(TAG, e.getMessage());
+		}
+	}
+
+	private String setupDocRoot() {
+		String path = setDocRoot();
+		if (path != null) setDocIndex(path);
+		return path;
+	}
+
     public static void log( String s ) {
-    	mLog.append(s + "\n");
+    	mLog.append("\n" + s);
     	mScroll.fullScroll(ScrollView.FOCUS_DOWN);
     }
     
@@ -118,19 +134,26 @@ public class StartActivity extends Activity {
 		}
     }
     
-    private ServiceConnection mConnection = new ServiceConnection() {
+	private ServiceConnection mConnection = new ServiceConnection() {
+
 	    public void onServiceConnected(ComponentName className, IBinder service) {
-	        mBoundService = ((ServerService.LocalBinder)service).getService();
-	        Toast.makeText(StartActivity.this, "Service connected", Toast.LENGTH_SHORT).show();
-	        mBoundService.updateNotifiction(lastMessage);
-	        
-	        mToggleButton.setChecked(mBoundService.isRunning());
+			mBoundService = ((ServerService.LocalBinder)service).getService();
+			Toast.makeText(StartActivity.this, "Service connected", Toast.LENGTH_SHORT).show();
+			mBoundService.updateNotifiction(lastMessage);
+			if(!mBoundService.isRunning()) {
+				try {
+					int port = Integer.parseInt(prefs.getString("port", ""));
+					mBoundService.startServer(mHandler, getDocRoot(), port);
+				} catch (Exception e) {
+					Log.e(TAG, e.getMessage());
+				}
+			}
 	    }
 
-	    public void onServiceDisconnected(ComponentName className) {
-	        mBoundService = null;
-	        Toast.makeText(StartActivity.this, "Service disconnected", Toast.LENGTH_SHORT).show();
-	    }
+		public void onServiceDisconnected(ComponentName className) {
+			mBoundService = null;
+			Toast.makeText(StartActivity.this, "Service disconnected", Toast.LENGTH_SHORT).show();
+		}
 	};
 
 	private void doUnbindService() {
@@ -140,23 +163,69 @@ public class StartActivity extends Activity {
 	}
 	
 	private void doBindService() {
+		// http://developer.android.com/guide/components/services.html
 	    bindService(new Intent(StartActivity.this, ServerService.class), mConnection, Context.BIND_AUTO_CREATE);
 	}
-
 
 	@Override
 	protected void onDestroy() {
 	    super.onDestroy();
+Log.d("***CP19***", "onDestroy()");
 	    doUnbindService();
+	    File f = new File(getDocRoot()+"/index.html");
+	    // DEBUG try { f.delete(); } catch (Exception e) { }
 	}
-	
 
 	@Override
-	protected void onResume() {
-		super.onResume();
+	public void onBackPressed() {
+		moveTaskToBack(true);
 	}
-	
-	private String getDocRoot() {		// Warning: no trailing '/'
+
+	// Menu
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+		switch (item.getItemId()) {
+			case R.id.settings:
+				try {
+					startActivity(new Intent(".Settings"));
+				} catch (Exception e) {
+					Log.e(TAG, e.getMessage());
+				}
+				return true;
+			case R.id.exit:
+				stopServer();
+				this.finish();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
+	}
+
+	public static String getDefaultDocRoot() {
 		return Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
+	}
+
+	private String getDocRoot() {		// Warning: no trailing '/'
+		String s = prefs.getString("doc_root", "").replaceAll("/$", "");	// Remove trailing slash
+		return ((s.startsWith("/") ? "" : "/") + s);					// Add leading slash if ommited
+/*
+		// TODO Check if exists
+		String path;
+		if (prefs.getString("doc_root", "").equals(""))
+			path = getDefaultDocRoot();
+		else {
+			String s = prefs.getString("doc_root", "").replaceAll("/$", "");	// Remove trailing slash
+			path = (s.startsWith("/") ? "" : "/") + s;					// Add leading slash if ommited
+		}
+		return path;
+*/
 	}
 }

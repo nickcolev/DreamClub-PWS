@@ -40,7 +40,6 @@ public class Server extends Thread {
 			try {
 				send("Waiting for connections");
 				Socket client = listener.accept();
-			    
 				send("New connection from " + client.getInetAddress().toString());
 				new ServerHandler(documentRoot, context, client).start();
 				clientList.add(client);

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Simple Webserver for Android</string>
     <string name="app_name">httpd</string>
+    <string name="settings">Settings</string>
+    <string name="exit">Exit</string>
+    <string name="port">Port</string>
 </resources>

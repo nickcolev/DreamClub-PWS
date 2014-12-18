@@ -1,4 +1,0 @@
-BUGS:
-- some.htm?a=b fails (question mark)
-- "A B C.htm" fails (space in the name)
-

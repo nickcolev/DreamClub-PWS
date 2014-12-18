@@ -13,6 +13,7 @@ import android.util.Log;
 
 class ServerHandler extends Thread {
 
+  private static final String TAG = "PWS.Handler";
   private BufferedReader in;
   private PrintWriter out;
   private Socket toClient;
@@ -136,6 +137,7 @@ class ServerHandler extends Thread {
 			}
 			out.flush();
 		} else {
+			Server.send(dokument+" not found");
 			response(404, request.uri + " not found");
 		}
 
