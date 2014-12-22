@@ -15,6 +15,8 @@ import android.os.Message;
 import android.util.Log;
 
 public class Server extends Thread {
+
+	private static final String TAG = "PWS.Server";
 	private ServerSocket listener = null;
 	private boolean running = true;
 	private String documentRoot;

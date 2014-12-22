@@ -175,12 +175,12 @@ Log.d("***CP19***", "onDestroy()");
 	    File f = new File(getDocRoot()+"/index.html");
 	    // DEBUG try { f.delete(); } catch (Exception e) { }
 	}
-
+/*
 	@Override
 	public void onBackPressed() {
 		moveTaskToBack(true);
 	}
-
+*/
 	// Menu
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
