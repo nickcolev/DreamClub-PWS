@@ -19,7 +19,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.preference.*;	// Preferences
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,7 +29,6 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-//import android.widget.ToggleButton;
 // Preferences
 import android.content.SharedPreferences;
 import android.preference.EditTextPreference;
@@ -41,6 +39,7 @@ import android.preference.PreferenceManager;
 public class StartActivity extends Activity {
 
 	private static final String TAG = "PWS";
+	private static int Port = 8080;
     private static ScrollView mScroll;
     private static TextView mLog;
     private String lastMessage = "";
@@ -63,6 +62,15 @@ public class StartActivity extends Activity {
 		intent = new Intent(this, ServerService.class);
 		// Settings
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		// FIXME Separate Config() method
+		String s = prefs.getString("port", "");
+		if (!s.equals("")) {
+			try {
+				Port = Integer.parseInt(s);
+			} catch (Exception e) {
+				Port = 8080;	// Default
+			}
+		}
 		// Initialize members with default values for a new instance
 		if (savedInstanceState == null) {	// Initialize
 			mLog = (TextView) findViewById(R.id.log);
@@ -72,7 +80,6 @@ public class StartActivity extends Activity {
 		String documentRoot = setupDocRoot();
         if (documentRoot != null) {
 			doBindService();
-			startService(intent);
 		}
     }
 
@@ -118,7 +125,7 @@ public class StartActivity extends Activity {
 	}
 
     public static void log( String s ) {
-    	mLog.append("\n" + s);
+    	mLog.append(s + "\n");
     	mScroll.fullScroll(ScrollView.FOCUS_DOWN);
     }
     
@@ -146,8 +153,8 @@ public class StartActivity extends Activity {
 			mBoundService.updateNotifiction(lastMessage);
 			if(!mBoundService.isRunning()) {
 				try {
-					int port = Integer.parseInt(prefs.getString("port", ""));
-					mBoundService.startServer(mHandler, getDocRoot(), port);
+					mBoundService.startServer(mHandler, getDocRoot(), Port);
+					startService(intent);	// ?!
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());
 				}
@@ -167,17 +174,16 @@ public class StartActivity extends Activity {
 	}
 	
 	private void doBindService() {
-		// http://developer.android.com/guide/components/services.html
 	    bindService(new Intent(StartActivity.this, ServerService.class), mConnection, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
 	protected void onDestroy() {
-	    super.onDestroy();
-Log.d("***CP19***", "onDestroy()");
+		Log.d(TAG, "Shutting down...");
 	    doUnbindService();
-	    File f = new File(getDocRoot()+"/index.html");
-	    // DEBUG try { f.delete(); } catch (Exception e) { }
+	    stopService(intent);
+		Log.d(TAG, "httpd stopped");
+	    super.onDestroy();
 	}
 
 	@Override
@@ -213,13 +219,16 @@ Log.d("***CP19***", "onDestroy()");
 		}
 	}
 
-	public static String getDefaultDocRoot() {
-		return Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
-	}
-
 	private String getDocRoot() {		// Warning: no trailing '/'
-		return "/sdcard/hrdocs";	// FIXME
-		//String s = prefs.getString("doc_root", "").replaceAll("/$", "");	// Remove trailing slash
-		//return ((s.startsWith("/") ? "" : "/") + s);					// Add leading slash if ommited
+		String s = prefs.getString("doc_root", "");
+		if (s.equals("")) {	// Default
+Log.d("***CP14***", "Default");
+			s = Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
+		} else {
+Log.d("***CP14***", "From prefs");
+			s = s.replaceAll("/$", "");		// Remove trailing slash
+		}
+Log.d("***CP15***", s);
+		return ((s.startsWith("/") ? "" : "/") + s);					// Add leading slash if ommited
 	}
 }

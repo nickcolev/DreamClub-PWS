@@ -31,7 +31,7 @@ public class ServerService extends Service {
     @Override
     public void onCreate() {
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        showNotification();
+		showNotification();
     }
     
     private void showNotification() {
@@ -51,14 +51,14 @@ public class ServerService extends Service {
 			server.start();
 	        Intent i = new Intent(this, StartActivity.class);
 	        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);
-	        String note = "httpd running on " + ipAddress + ":" + port;
-	        updateNotifiction(note);
-	        // Alt display to the client log	        
+	        String note = "running on " + ipAddress + ":" + port;
+	        // Display to the client log	        
 	    	Message msg = new Message();
 	    	Bundle b = new Bundle();
-	    	b.putString("msg", note+"\n"+documentRoot);
+	    	b.putString("msg", note);
 	    	msg.setData(b);
 	    	handler.sendMessage(msg);
+	    	updateNotifiction(note);
     	} catch (Exception e) {
     		isRunning = false;
     		Log.e(TAG, e.getMessage());
