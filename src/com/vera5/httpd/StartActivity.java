@@ -46,6 +46,7 @@ public class StartActivity extends Activity {
     private String lastMessage = "";
 	private ServerService mBoundService;
 	private SharedPreferences prefs;
+	private Intent intent;
 
     final Handler mHandler = new Handler() {
 		@Override
@@ -58,8 +59,8 @@ public class StartActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-Log.d("***CP10***", "onCreate()");
 		setContentView(R.layout.main);
+		intent = new Intent(this, ServerService.class);
 		// Settings
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		// Initialize members with default values for a new instance
@@ -69,7 +70,10 @@ Log.d("***CP10***", "onCreate()");
 		}
 
 		String documentRoot = setupDocRoot();
-        if (documentRoot != null) doBindService();
+        if (documentRoot != null) {
+			doBindService();
+			startService(intent);
+		}
     }
 
 	private String setDocRoot() {
@@ -175,12 +179,12 @@ Log.d("***CP19***", "onDestroy()");
 	    File f = new File(getDocRoot()+"/index.html");
 	    // DEBUG try { f.delete(); } catch (Exception e) { }
 	}
-/*
+
 	@Override
 	public void onBackPressed() {
 		moveTaskToBack(true);
 	}
-*/
+
 	// Menu
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -214,18 +218,8 @@ Log.d("***CP19***", "onDestroy()");
 	}
 
 	private String getDocRoot() {		// Warning: no trailing '/'
-		String s = prefs.getString("doc_root", "").replaceAll("/$", "");	// Remove trailing slash
-		return ((s.startsWith("/") ? "" : "/") + s);					// Add leading slash if ommited
-/*
-		// TODO Check if exists
-		String path;
-		if (prefs.getString("doc_root", "").equals(""))
-			path = getDefaultDocRoot();
-		else {
-			String s = prefs.getString("doc_root", "").replaceAll("/$", "");	// Remove trailing slash
-			path = (s.startsWith("/") ? "" : "/") + s;					// Add leading slash if ommited
-		}
-		return path;
-*/
+		return "/sdcard/hrdocs";	// FIXME
+		//String s = prefs.getString("doc_root", "").replaceAll("/$", "");	// Remove trailing slash
+		//return ((s.startsWith("/") ? "" : "/") + s);					// Add leading slash if ommited
 	}
 }
