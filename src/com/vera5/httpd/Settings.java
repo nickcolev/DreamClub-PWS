@@ -45,7 +45,7 @@ public class Settings extends PreferenceActivity {
 			String value = p.getString(key, "").replaceAll("/$", "");
 			EditTextPreference pref = (EditTextPreference) findPreference(key);
 			if (key.equals("doc_root") && value.equals(""))
-				value = StartActivity.getDefaultDocRoot();
+				value = StartActivity.defaultDocRoot();
 			pref.setSummary(value);
 		} catch (Exception e) {
 			Log.e("httpd.setSummary()", e.getMessage());

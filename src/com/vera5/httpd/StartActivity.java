@@ -219,16 +219,17 @@ public class StartActivity extends Activity {
 		}
 	}
 
-	private String getDocRoot() {		// Warning: no trailing '/'
+	public static String defaultDocRoot() {
+		return Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
+	}
+
+	private String getDocRoot() {
 		String s = prefs.getString("doc_root", "");
-		if (s.equals("")) {	// Default
-Log.d("***CP14***", "Default");
-			s = Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
+		if (s.equals("")) {					// Default
+			s = defaultDocRoot();
 		} else {
-Log.d("***CP14***", "From prefs");
 			s = s.replaceAll("/$", "");		// Remove trailing slash
 		}
-Log.d("***CP15***", s);
 		return ((s.startsWith("/") ? "" : "/") + s);					// Add leading slash if ommited
 	}
 }
