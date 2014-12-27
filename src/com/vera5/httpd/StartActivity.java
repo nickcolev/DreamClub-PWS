@@ -150,11 +150,11 @@ public class StartActivity extends Activity {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 			mBoundService = ((ServerService.LocalBinder)service).getService();
 			Toast.makeText(StartActivity.this, "Service connected", Toast.LENGTH_SHORT).show();
-			mBoundService.updateNotifiction(lastMessage);
+			mBoundService.updateNotifiction("Connected");
 			if(!mBoundService.isRunning()) {
 				try {
 					mBoundService.startServer(mHandler, getDocRoot(), Port);
-					startService(intent);	// ?!
+					//startService(intent);	// ?!
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());
 				}

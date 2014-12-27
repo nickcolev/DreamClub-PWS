@@ -31,12 +31,10 @@ public class ServerService extends Service {
     @Override
     public void onCreate() {
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		showNotification();
-    }
-    
-    private void showNotification() {
-    	updateNotifiction("");
-		startForeground(NOTIFICATION_ID, notification);
+		notification = new Notification(R.drawable.ic_launcher, "Starting...", System.currentTimeMillis());
+		notification.flags = Notification.FLAG_ONGOING_EVENT;
+		//updateNotifiction("CP83");
+		//startForeground (NOTIFICATION_ID, notification);
     }
     
     public void startServer(Handler handler, String documentRoot, int port) {
@@ -51,14 +49,7 @@ public class ServerService extends Service {
 			server.start();
 	        Intent i = new Intent(this, StartActivity.class);
 	        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);
-	        String note = "running on " + ipAddress + ":" + port;
-	        // Display to the client log	        
-	    	Message msg = new Message();
-	    	Bundle b = new Bundle();
-	    	b.putString("msg", note);
-	    	msg.setData(b);
-	    	handler.sendMessage(msg);
-	    	updateNotifiction(note);
+	    	updateNotifiction("running on " + ipAddress + ":" + port);
     	} catch (Exception e) {
     		isRunning = false;
     		Log.e(TAG, e.getMessage());
@@ -77,7 +68,6 @@ public class ServerService extends Service {
     	if(null != server) {
 			server.stopServer();
 			server.interrupt();
-			updateNotifiction("Server stopped");
 			isRunning = false;
     	}
     }
@@ -85,15 +75,8 @@ public class ServerService extends Service {
     public void updateNotifiction(String message) {
         CharSequence text = message;
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, StartActivity.class), 0);
-        // FIXME Optimization possible below
-        if (notification == null) {
-	        notification = new Notification(R.drawable.ic_launcher, text, System.currentTimeMillis());
-	        notification.setLatestEventInfo(this, getString(R.string.app_name), text, contentIntent);
-	        mNM.notify(NOTIFICATION_ID, notification);
-        } else {
-        	notification.setLatestEventInfo(this, getString(R.string.app_name), text, contentIntent);
-        	mNM.notify(NOTIFICATION_ID, notification);
-        }
+		notification.setLatestEventInfo(this, getString(R.string.app_name), text, contentIntent);
+		mNM.notify(NOTIFICATION_ID, notification);
     }
     
     @Override
