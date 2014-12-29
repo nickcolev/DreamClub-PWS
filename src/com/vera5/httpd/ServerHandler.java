@@ -26,42 +26,67 @@ class ServerHandler extends Thread {
 
 	public void run() {
 
-	String s, a[];
-	int i = 0;
-	Request request = new Request();
+		Request request = new Request();
+		request.get(toClient);
+		response(request);
+	}
+
+  private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
+
+	String dokument = documentRoot + getDokument(request.uri);
+	dokument = "/sdcard/htdocs" + request.uri;	// FIXME
+Log.d("***CP33***", request.uri+" => "+dokument);
+
+	// Folder? -- add 'index.html'
+	try {
+		File f = new File(dokument);
+		if (f.exists()) {
+			if (f.isDirectory())
+				dokument += (dokument.endsWith("/") ? "" : "/")	+ "index.html";
+		}
+	} catch (Exception e) {}
+
+    Log.d("Webserver", "Serving " + dokument);
+    Log.d("***", handler);
 
 	try {
-		in = new BufferedReader(new InputStreamReader(toClient.getInputStream()), 8192);
-
-		// Receive data
-		while (true) {
-			s = in.readLine().trim();
-        	if (s.equals("")) break;
-			a = s.split(" ");
-			// The first line is the request method, resourse, and version (like 'GET /index.html HTTP/1.0')
-			if (i == 0) {	// The first line
-				request.method = a[0];
-				request.uri = a[1].replace("/~", "/usr/");
-				request.version = a[2];
-			} else if (a[0].equals("Accept-Encoding:")) {
-				request.AcceptEncoding = a[1];
-			} else if (a[0].equals("Content-Type:")) {
-				request.ContentType = a[1];
-			} else if (a[0].equals("If-Modified-Since:")) {
-				request.IfModifiedSince = a[1];
-			} else if (a[0].equals("If-None-Match:")) {
-				request.IfNoneMatch = a[1];
+		File f = new File(dokument);
+		if (f.exists()) {
+			// Caching
+			if (null != request.IfNoneMatch) {
+				if (request.IfNoneMatch.equals(ETag(f))) {
+					plainResponse(304, "Not Modified");
+					closeConnection();
+					return;
+				}
 			}
-			i++;
+			FileInputStream in = new FileInputStream(dokument);
+			OutputStream out = toClient.getOutputStream();
+			String header = getHeader (200, guessContentType(dokument), f);
+			out.write(header.getBytes());
+			if(!request.method.equals("HEAD")) {
+				byte[] buf = new byte[8192];
+				int count = 0;
+				while((count = in.read(buf)) != -1) {
+					out.write(buf, 0, count);
+				}
+			}
+			out.flush();
+		} else {
+			Log.e(TAG, dokument+" not found");
+			plainResponse(404, request.uri + " not found");
 		}
-	} catch (Exception e) {
-    	Server.remove(toClient);
-    	try {
-    		toClient.close();
-		}
-    	catch (Exception ex){}
-    }
-    process(request);
+	} catch (Exception e) {}
+  }
+
+  private void plainResponse (int code, String msg) {
+
+	try {
+		out = new PrintWriter (toClient.getOutputStream(), true);
+		out.print (getHeader(code, "text/plain", msg));
+		out.print (msg);
+		out.flush ();
+	} catch (Exception e) {}
   }
 
   private void closeConnection () {
@@ -94,63 +119,6 @@ class ServerHandler extends Thread {
 	// FIXME My env doesn't recognize SVG
 	if(dokument.endsWith(".svg")) type = "text/xml";
 	return type;
-  }
-
-  private void process(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
-
-	String dokument = documentRoot + getDokument(request.uri);
-	dokument = "/sdcard/htdocs" + request.uri;	// FIXME
-Log.d("***CP33***", request.uri+" => "+dokument);
-
-	// Folder? -- add 'index.html'
-	try {
-		File f = new File(dokument);
-		if (f.exists()) {
-			if (f.isDirectory())
-				dokument += (dokument.endsWith("/") ? "" : "/")	+ "index.html";
-		}
-	} catch (Exception e) {}
-
-    Log.d("Webserver", "Serving " + dokument);
-
-	try {
-		File f = new File(dokument);
-		if (f.exists()) {
-			// Caching
-			if (null != request.IfNoneMatch) {
-				if (request.IfNoneMatch.equals(ETag(f))) {
-					response(304, "Not Modified");
-					closeConnection();
-					return;
-				}
-			}
-			FileInputStream in = new FileInputStream(dokument);
-			OutputStream out = toClient.getOutputStream();
-			String header = getHeader (200, guessContentType(dokument), f);
-			out.write(header.getBytes());
-			if(!request.method.equals("HEAD")) {
-				byte[] buf = new byte[8192];
-				int count = 0;
-				while((count = in.read(buf)) != -1) {
-					out.write(buf, 0, count);
-				}
-			}
-			out.flush();
-		} else {
-			Log.e(TAG, dokument+" not found");
-			response(404, request.uri + " not found");
-		}
-	} catch (Exception e) {}
-  }
-
-  private void response (int code, String msg) {
-
-	try {
-		out = new PrintWriter (toClient.getOutputStream(), true);
-		out.print (getHeader(code, "text/plain", msg));
-		out.print (msg);
-		out.flush ();
-	} catch (Exception e) {}
   }
 
   private String getHeaderBase (int code, String type) {

@@ -110,7 +110,7 @@ Log.d(TAG, "***finally***");
 		mNM.notify(NOTIFICATION_ID, notification);
 	}
 
-	public void log(String s) {
+	private void log(String s) {
 		Message msg = new Message();
 		Bundle b = new Bundle();
 		b.putString("msg", s);
