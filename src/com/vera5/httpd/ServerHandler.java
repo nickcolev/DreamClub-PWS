@@ -99,6 +99,8 @@ class ServerHandler extends Thread {
   private void process(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
 
 	String dokument = documentRoot + getDokument(request.uri);
+	dokument = "/sdcard/htdocs" + request.uri;	// FIXME
+Log.d("***CP33***", request.uri+" => "+dokument);
 
 	// Folder? -- add 'index.html'
 	try {
@@ -135,11 +137,9 @@ class ServerHandler extends Thread {
 			}
 			out.flush();
 		} else {
-			Server.send(dokument+" not found");
+			Log.e(TAG, dokument+" not found");
 			response(404, request.uri + " not found");
 		}
-
-		closeConnection();
 	} catch (Exception e) {}
   }
 

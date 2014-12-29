@@ -131,7 +131,7 @@ public class StartActivity extends Activity {
 	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 			mBoundService = ((ServerService.LocalBinder)service).getService();
-			Toast.makeText(StartActivity.this, "Service connected", Toast.LENGTH_SHORT).show();
+			Tooltip("Service connected");
 			if(!mBoundService.isRunning()) {
 				try {
 					mBoundService.init(mHandler);	// FIXME Better name?
@@ -143,7 +143,7 @@ public class StartActivity extends Activity {
 	    }
 		public void onServiceDisconnected(ComponentName className) {
 			mBoundService = null;
-			Toast.makeText(StartActivity.this, "Service disconnected", Toast.LENGTH_SHORT).show();
+			Tooltip("Service disconnected");
 		}
 	};
 
