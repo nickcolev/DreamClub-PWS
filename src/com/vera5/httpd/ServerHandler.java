@@ -20,13 +20,11 @@ class ServerHandler extends Thread {
   private String documentRoot;
   private Context context;
   
-  public ServerHandler(String d, Context c, Socket s) {
-    toClient = s;
-    documentRoot = d;
-    context = c;
-  }
+	public ServerHandler(Socket s) {
+		this.toClient = s;
+	}
 
-  public void run() {
+	public void run() {
 
 	String s, a[];
 	int i = 0;
@@ -156,7 +154,6 @@ class ServerHandler extends Thread {
   }
 
   private String getHeaderBase (int code, String type) {
-
 	return	"HTTP/1.1 " + code
 		+ "\nContent-Type: " + type
 		+ "\nServer: AndroidWebserver/" + Server.version
@@ -164,7 +161,6 @@ class ServerHandler extends Thread {
    }
 
   private String getHeader (int code, String type, File f) {
-
 	SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
 	return	getHeaderBase (code, type)
 		+ "\nContent-Length: " + f.length()
@@ -175,7 +171,6 @@ class ServerHandler extends Thread {
 
   // Overloaded
   private String getHeader (int code, String type, String msg) {
-
 	return	getHeaderBase (code, type)
 		+ "\nContent-Length: " + msg.length()
 		+ "\n\n";

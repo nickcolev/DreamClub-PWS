@@ -8,6 +8,12 @@
 
 <h1>APWS<br/><fn>Android Personal Web Server (based on <a href="https://twitter.com/bodeme">bodeme</a> <a href="https://github.com/bodeme/androidwebserver">androidwebserver</a>)</fn></h1>
 
+<h3 class="ul">Overview</h3>
+<ul>
+ <li><tt>StartActivity</tt><br/>Starts and bind to the service. If service not already started &mdash; start it.</li>
+ <li><tt>ServerService</tt><br/>Handle the binding requests, notifications, and <tt>onStartCommand</tt>.</li>
+</ul>
+
 <h3 class="ul">To do</h3>
 <ul>
  <li>Write log to file</li>
@@ -19,8 +25,7 @@
 
 <h3 class="ul">Bugs</h3>
 <ul>
- <li>On <tt>adb install -r bin/aws-debug.apk</tt>, in the <tt>logcat</tt> message <tt>w/ResourceType( 53): Resources don't contain package for resource number 0x7f0700e5</tt> <small>(message appears 12 times with different resources; such resources can't be found in <tt>res/com/vera5/httpd/R.java</tt>)</small>. Despite, the settings seems to work.</li>
- <li>[Back] goes to prev. screen, and the prev. log can be seen. The log view seems to be recreated on [Home] and next [Restore]. Something's wrong.</li>
+ <li><del>[Back] goes to prev. screen, and the prev. log can be seen. The log view seems to be recreated on [Home] and next [Restore]. Something's wrong.</del></li>
  <li><del><tt>some.htm?a=b</tt> fails <small>(question mark)</small></del></li>
  <li><del><tt><q>A B C.htm</q></tt> fails <small>(space in the name)</small></del></li>
 </ul>

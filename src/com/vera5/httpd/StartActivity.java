@@ -1,4 +1,3 @@
-// TODO settings could be in activity preferences -- see http://stackoverflow.com/questions/3570690/whats-the-best-way-to-do-application-settings-in-android
 package com.vera5.httpd;
 
 import java.io.BufferedWriter;
@@ -42,7 +41,6 @@ public class StartActivity extends Activity {
 	private static int Port = 8080;
     private static ScrollView mScroll;
     private static TextView mLog;
-    private String lastMessage = "";
 	private ServerService mBoundService;
 	private SharedPreferences prefs;
 	private Intent intent;
@@ -71,15 +69,12 @@ public class StartActivity extends Activity {
 				Port = 8080;	// Default
 			}
 		}
-		// Initialize members with default values for a new instance
-		if (savedInstanceState == null) {	// Initialize
-			mLog = (TextView) findViewById(R.id.log);
-			mScroll = (ScrollView) findViewById(R.id.ScrollView01);
-		}
+		mLog = (TextView) findViewById(R.id.log);
+		mScroll = (ScrollView) findViewById(R.id.ScrollView01);
 
 		String documentRoot = setupDocRoot();
         if (documentRoot != null) {
-			doBindService();
+			bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 		}
     }
 
@@ -128,63 +123,29 @@ public class StartActivity extends Activity {
     	mLog.append(s + "\n");
     	mScroll.fullScroll(ScrollView.FOCUS_DOWN);
     }
-    
-    private void startServer(Handler handler, String documentRoot, int port) {
-    	if (mBoundService == null) {
-	        Toast.makeText(StartActivity.this, "Service not connected", Toast.LENGTH_SHORT).show();
-		} else {
-			mBoundService.startServer(handler, documentRoot, port);
-		}
-    }
-    
-    private void stopServer() { 
-    	if (mBoundService == null) {
-	        Toast.makeText(StartActivity.this, "Service not connected", Toast.LENGTH_SHORT).show();
-		} else {
-			mBoundService.stopServer();
-		}
-    }
-    
-	private ServiceConnection mConnection = new ServiceConnection() {
 
+	private void Tooltip(String s) {
+		Toast.makeText(StartActivity.this, s, Toast.LENGTH_SHORT).show();
+	}
+
+	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 			mBoundService = ((ServerService.LocalBinder)service).getService();
 			Toast.makeText(StartActivity.this, "Service connected", Toast.LENGTH_SHORT).show();
-			mBoundService.updateNotifiction("Connected");
 			if(!mBoundService.isRunning()) {
 				try {
-					mBoundService.startServer(mHandler, getDocRoot(), Port);
-					//startService(intent);	// ?!
+					mBoundService.init(mHandler);	// FIXME Better name?
+					startService(intent);
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());
 				}
 			}
 	    }
-
 		public void onServiceDisconnected(ComponentName className) {
 			mBoundService = null;
 			Toast.makeText(StartActivity.this, "Service disconnected", Toast.LENGTH_SHORT).show();
 		}
 	};
-
-	private void doUnbindService() {
-    	if (mBoundService != null) {
-	        unbindService(mConnection);
-	    }
-	}
-	
-	private void doBindService() {
-	    bindService(new Intent(StartActivity.this, ServerService.class), mConnection, Context.BIND_AUTO_CREATE);
-	}
-
-	@Override
-	protected void onDestroy() {
-		Log.d(TAG, "Shutting down...");
-	    doUnbindService();
-	    stopService(intent);
-		Log.d(TAG, "httpd stopped");
-	    super.onDestroy();
-	}
 
 	@Override
 	public void onBackPressed() {
@@ -211,7 +172,8 @@ public class StartActivity extends Activity {
 				}
 				return true;
 			case R.id.exit:
-				stopServer();
+				if (mBoundService != null) unbindService(mConnection);
+				stopService(intent);
 				this.finish();
 				return true;
 			default:

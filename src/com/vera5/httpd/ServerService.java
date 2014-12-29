@@ -17,28 +17,96 @@ import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
+
+import java.io.IOException;
+import java.net.Socket;
+import java.net.ServerSocket;
+
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class ServerService extends Service {
 
 	private static final String TAG = "PWS.Service";
+	private static final int SERVERPORT = 8088;
     private int NOTIFICATION_ID = 4711;
     private NotificationManager mNM;
+	private SharedPreferences prefs;
     private String message;
     private Notification notification;
     private Server server;
-    private boolean isRunning = false;
-    
+	private boolean isRunning = false;
+    private Thread serviceThread = null;
+	private ServerSocket serverSocket;
+	private Intent intent;
+	public Handler handler;
+
+
     @Override
     public void onCreate() {
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notification = new Notification(R.drawable.ic_launcher, "Starting...", System.currentTimeMillis());
-		notification.flags = Notification.FLAG_ONGOING_EVENT;
-		//updateNotifiction("CP83");
-		//startForeground (NOTIFICATION_ID, notification);
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		showNotification();
     }
-    
+
+	private void showNotification() {
+		updateNotifiction("");
+		startForeground(NOTIFICATION_ID, notification);
+	}
+
+	public void init(Handler handler) {
+		this.handler = handler;
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		this.intent = intent;
+		final int currentId = startId;
+		Runnable r = new Runnable() {
+			public void run() {
+				Socket client = null;
+				try {
+					serverSocket = new ServerSocket(SERVERPORT);
+				} catch (IOException e) {
+					updateNotifiction(e.getMessage());
+				}
+				try {
+					String s = "Waiting for connections on " + SERVERPORT;
+					updateNotifiction(s);
+					log(s);
+					while (!Thread.currentThread().isInterrupted()) {
+						client = serverSocket.accept();
+						Log.i(TAG, "request  from " + client.getInetAddress().toString());
+						//ServerHandler h = new ServerHandler(client);
+						//new Thread(h).start();
+					}
+					serverSocket.close();
+					stopSelf();
+Log.d(TAG, "*********");
+					updateNotifiction("Service stopped");
+				} catch (Exception ie) {
+					Log.d(TAG, "Thread shutting down...");
+				} finally {
+Log.d(TAG, "***finally***");
+					serviceThread = null;
+				}
+			}
+		};
+
+		serviceThread = new Thread(r);
+		serviceThread.start();
+		return Service.START_STICKY;
+	}
+
+	// FIXME DELME
     public void startServer(Handler handler, String documentRoot, int port) {
+		this.handler = handler;
     	try {
+String s = prefs.getString("port", "");
+Toast.makeText(this, "Port: "+s, Toast.LENGTH_SHORT).show();
+
 			isRunning = true;
     		WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
     		WifiInfo wifiInfo = wifiManager.getConnectionInfo(); 		
@@ -72,13 +140,21 @@ public class ServerService extends Service {
     	}
     }
     
-    public void updateNotifiction(String message) {
-        CharSequence text = message;
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, StartActivity.class), 0);
+	public void updateNotifiction(String message) {
+		CharSequence text = message;
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, StartActivity.class), 0);
 		notification.setLatestEventInfo(this, getString(R.string.app_name), text, contentIntent);
 		mNM.notify(NOTIFICATION_ID, notification);
-    }
-    
+	}
+
+	public void log(String s) {
+		Message msg = new Message();
+		Bundle b = new Bundle();
+		b.putString("msg", s);
+		msg.setData(b);
+		handler.sendMessage(msg);
+	}
+
     @Override
 	public IBinder onBind(Intent intent) {
 		return mBinder;
