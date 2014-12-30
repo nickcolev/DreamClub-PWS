@@ -118,7 +118,7 @@ class ServerHandler extends Thread {
   private String getHeaderBase (int code, String type) {
 	return	"HTTP/1.1 " + code
 		+ "\nContent-Type: " + type
-		+ "\nServer: AndroidWebserver/" + Server.version
+		+ "\nServer: AndroidWebserver/1.0" // FIXME + Server.version
 		+ "\nConnection: close";
    }
 

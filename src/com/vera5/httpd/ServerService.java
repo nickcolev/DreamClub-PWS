@@ -33,7 +33,7 @@ public class ServerService extends Service {
     private NotificationManager mNM;
     ///private String message;
     private Notification notification;
-    private Server server;
+    ///private Server server;
 	private boolean isRunning = false;
     private Thread serviceThread = null;
 	private ServerSocket serverSocket;
