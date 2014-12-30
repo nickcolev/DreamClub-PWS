@@ -40,7 +40,7 @@ public class ServerService extends Service {
     private Thread serviceThread = null;
 	private ServerSocket serverSocket;
 	private Intent intent;
-	public Handler handler;
+	private Handler handler;
 
 
     @Override
