@@ -29,7 +29,7 @@ import android.preference.PreferenceManager;
 public class ServerService extends Service {
 
 	private static final String TAG = "PWS.Service";
-	private static final int SERVERPORT = 8088;
+	private static final int SERVERPORT = 8080;
     private int NOTIFICATION_ID = 4711;
     private NotificationManager mNM;
 	private SharedPreferences prefs;
@@ -73,13 +73,13 @@ public class ServerService extends Service {
 					updateNotifiction(e.getMessage());
 				}
 				try {
-					String s = "Waiting for connections on " + SERVERPORT;
+					String s = getIP() + ":" + SERVERPORT;
 					updateNotifiction(s);
-					log(s);
+					log("Waiting for connections on " + s);
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
 						log("request  from " + client.getInetAddress().toString());
-						ServerHandler h = new ServerHandler(client);
+						ServerHandler h = new ServerHandler(client, handler);
 						new Thread(h).start();
 					}
 				} catch (Exception ie) {
@@ -96,13 +96,6 @@ Log.d(TAG, "***finally***");
 		return Service.START_STICKY;
 	}
 
-    public static String intToIp(int i) {
-        return ((i       ) & 0xFF) + "." +
-               ((i >>  8 ) & 0xFF) + "." +
-               ((i >> 16 ) & 0xFF) + "." +
-               ( i >> 24   & 0xFF);
-    }
-    
 	public void updateNotifiction(String message) {
 		CharSequence text = message;
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, StartActivity.class), 0);
@@ -116,6 +109,20 @@ Log.d(TAG, "***finally***");
 		b.putString("msg", s);
 		msg.setData(b);
 		handler.sendMessage(msg);
+	}
+
+	private String getIP() {
+		WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+		String IP = intToIp(wifiInfo.getIpAddress());
+		return (IP.equals("0.0.0.0") ? "localhost" : IP);
+	}
+
+	public static String intToIp(int i) {
+		return	((i       ) & 0xFF) + "." +
+				((i >>  8 ) & 0xFF) + "." +
+				((i >> 16 ) & 0xFF) + "." +
+				( i >> 24   & 0xFF);
 	}
 
     @Override

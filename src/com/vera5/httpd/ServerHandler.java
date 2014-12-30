@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.Log;
 
 class ServerHandler extends Thread {
@@ -19,9 +20,11 @@ class ServerHandler extends Thread {
   private Socket toClient;
   private String documentRoot;
   private Context context;
-  
-	public ServerHandler(Socket s) {
+	public Handler handler;
+
+	public ServerHandler(Socket s, Handler handler) {
 		this.toClient = s;
+		this.handler = handler;
 	}
 
 	public void run() {
@@ -47,7 +50,7 @@ Log.d("***CP33***", request.uri+" => "+dokument);
 	} catch (Exception e) {}
 
     Log.d("Webserver", "Serving " + dokument);
-    Log.d("***", handler);
+    ///Log.d("***", handler);
 
 	try {
 		File f = new File(dokument);
