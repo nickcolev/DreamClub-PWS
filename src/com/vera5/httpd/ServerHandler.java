@@ -9,7 +9,9 @@ import java.text.SimpleDateFormat;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 class ServerHandler extends Thread {
@@ -20,11 +22,13 @@ class ServerHandler extends Thread {
   private Socket toClient;
   private String documentRoot;
   private Context context;
-	public Handler handler;
+  private Handler handler;
+  private Config cfg;
 
-	public ServerHandler(Socket s, Handler handler) {
+	public ServerHandler(Socket s, Handler handler, Config cfg) {
 		this.toClient = s;
 		this.handler = handler;
+		this.cfg = cfg;
 	}
 
 	public void run() {
@@ -36,9 +40,7 @@ class ServerHandler extends Thread {
 
   private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
 
-	String dokument = documentRoot + getDokument(request.uri);
-	dokument = "/sdcard/htdocs" + request.uri;	// FIXME
-Log.d("***CP33***", request.uri+" => "+dokument);
+	String dokument = getDokument(request.uri);
 
 	// Folder? -- add 'index.html'
 	try {
@@ -49,8 +51,7 @@ Log.d("***CP33***", request.uri+" => "+dokument);
 		}
 	} catch (Exception e) {}
 
-    Log.d("Webserver", "Serving " + dokument);
-    ///Log.d("***", handler);
+    Log.d(TAG, "Serving " + dokument);
 
 	try {
 		File f = new File(dokument);
@@ -75,8 +76,9 @@ Log.d("***CP33***", request.uri+" => "+dokument);
 				}
 			}
 			out.flush();
+			log(dokument);
 		} else {
-			Log.e(TAG, dokument+" not found");
+			log(dokument+" not found");
 			plainResponse(404, request.uri + " not found");
 		}
 	} catch (Exception e) {}
@@ -111,7 +113,7 @@ Log.d("***CP33***", request.uri+" => "+dokument);
 		s = fname.replaceFirst ("\\?(.*)","");
 		s = URLDecoder.decode (s);
 	} catch (Exception e) { s = fname; }
-	return s;
+	return cfg.DocumentRoot + s;
   }
 
   private String guessContentType (String dokument) {
@@ -146,4 +148,14 @@ Log.d("***CP33***", request.uri+" => "+dokument);
 		+ "\nContent-Length: " + msg.length()
 		+ "\n\n";
   }
+
+	// FIXME Same in the service
+	private void log(String s) {
+		Message msg = new Message();
+		Bundle b = new Bundle();
+		b.putString("msg", s);
+		msg.setData(b);
+		handler.sendMessage(msg);
+	}
+
 }

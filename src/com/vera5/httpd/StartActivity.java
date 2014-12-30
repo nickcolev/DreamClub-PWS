@@ -44,6 +44,7 @@ public class StartActivity extends Activity {
 	private ServerService mBoundService;
 	private SharedPreferences prefs;
 	private Intent intent;
+	private Config cfg;
 
     final Handler mHandler = new Handler() {
 		@Override
@@ -57,25 +58,23 @@ public class StartActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		mLog = (TextView) findViewById(R.id.log);
+		mScroll = (ScrollView) findViewById(R.id.ScrollView01);
 		intent = new Intent(this, ServerService.class);
 		// Settings
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		// FIXME Separate Config() method
-		String s = prefs.getString("port", "");
-		if (!s.equals("")) {
-			try {
-				Port = Integer.parseInt(s);
-			} catch (Exception e) {
-				Port = 8080;	// Default
-			}
+		// Configuration
+		cfg = new Config();
+		try {
+			cfg.port = cfg.get(prefs.getString("port", ""), 8080);
+			cfg.DocumentRoot = cfg.get(prefs.getString("doc_root", ""), defaultDocRoot());
+			// more here
+		} catch (Exception e) {
+			Log.e(TAG, e.getMessage());
 		}
-		mLog = (TextView) findViewById(R.id.log);
-		mScroll = (ScrollView) findViewById(R.id.ScrollView01);
-
-		String documentRoot = setupDocRoot();
-        if (documentRoot != null) {
-			bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-		}
+		///if (cfg.DocumentRoot.endsWith("/")) cfg.DocumentRoot = cfg.DocumentRoot.substr(0, ...
+		//setupDocRoot();
+		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
 	private String setDocRoot() {
@@ -134,7 +133,7 @@ public class StartActivity extends Activity {
 			Tooltip("Service connected");
 			if(!mBoundService.isRunning()) {
 				try {
-					mBoundService.init(mHandler);	// FIXME Better name?
+					mBoundService.init(mHandler, cfg);	// FIXME Better name?
 					startService(intent);
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());

@@ -29,11 +29,9 @@ import android.preference.PreferenceManager;
 public class ServerService extends Service {
 
 	private static final String TAG = "PWS.Service";
-	private static final int SERVERPORT = 8080;
     private int NOTIFICATION_ID = 4711;
     private NotificationManager mNM;
-	private SharedPreferences prefs;
-    private String message;
+    ///private String message;
     private Notification notification;
     private Server server;
 	private boolean isRunning = false;
@@ -41,13 +39,13 @@ public class ServerService extends Service {
 	private ServerSocket serverSocket;
 	private Intent intent;
 	private Handler handler;
+	private Config cfg;
 
 
     @Override
     public void onCreate() {
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notification = new Notification(R.drawable.ic_launcher, "Starting...", System.currentTimeMillis());
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		showNotification();
     }
 
@@ -56,8 +54,9 @@ public class ServerService extends Service {
 		startForeground(NOTIFICATION_ID, notification);
 	}
 
-	public void init(Handler handler) {
+	public void init(Handler handler, Config cfg) {
 		this.handler = handler;
+		this.cfg = cfg;
 	}
 
 	@Override
@@ -68,18 +67,18 @@ public class ServerService extends Service {
 			public void run() {
 				Socket client = null;
 				try {
-					serverSocket = new ServerSocket(SERVERPORT);
+					serverSocket = new ServerSocket(cfg.port);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
 				}
 				try {
-					String s = getIP() + ":" + SERVERPORT;
+					String s = getIP() + ":" + cfg.port;
 					updateNotifiction(s);
 					log("Waiting for connections on " + s);
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
 						log("request  from " + client.getInetAddress().toString());
-						ServerHandler h = new ServerHandler(client, handler);
+						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();
 					}
 				} catch (Exception ie) {
