@@ -3,7 +3,8 @@ package com.vera5.httpd;
 public class Config {
 
 	public int port;
-	public String DocumentRoot;
+	public String root;
+	public String index;
 	public String footer;
 
 	public String get(String value, String dflt) throws Exception {

@@ -13,7 +13,6 @@ public class Request {
 	public String AcceptEncoding;
 	public String IfModifiedSince;
 	public String IfNoneMatch;
-	public boolean Connection;
 
 	public void get(Socket client) {
 		String s, a[];

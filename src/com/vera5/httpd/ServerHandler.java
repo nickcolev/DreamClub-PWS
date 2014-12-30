@@ -20,8 +20,6 @@ class ServerHandler extends Thread {
   private BufferedReader in;
   private PrintWriter out;
   private Socket toClient;
-  private String documentRoot;
-  private Context context;
   private Handler handler;
   private Config cfg;
 
@@ -60,7 +58,6 @@ class ServerHandler extends Thread {
 			if (null != request.IfNoneMatch) {
 				if (request.IfNoneMatch.equals(ETag(f))) {
 					plainResponse(304, "Not Modified");
-					closeConnection();
 					return;
 				}
 			}
@@ -84,22 +81,14 @@ class ServerHandler extends Thread {
 	} catch (Exception e) {}
   }
 
-  private void plainResponse (int code, String msg) {
-
-	try {
-		out = new PrintWriter (toClient.getOutputStream(), true);
-		out.print (getHeader(code, "text/plain", msg));
-		out.print (msg);
-		out.flush ();
-	} catch (Exception e) {}
-  }
-
-  private void closeConnection () {
-  	try {
-		Server.remove(toClient);
-		toClient.close();
-	} catch (Exception e) {}
-  }
+	private void plainResponse (int code, String msg) {
+		try {
+			out = new PrintWriter (toClient.getOutputStream(), true);
+			out.print (getHeader(code, "text/plain", msg));
+			out.print (msg);
+			out.flush ();
+		} catch (Exception e) {}
+	}
 
   private String ETag (File f) {
 
@@ -113,7 +102,7 @@ class ServerHandler extends Thread {
 		s = fname.replaceFirst ("\\?(.*)","");
 		s = URLDecoder.decode (s);
 	} catch (Exception e) { s = fname; }
-	return cfg.DocumentRoot + s;
+	return cfg.root + s;
   }
 
   private String guessContentType (String dokument) {

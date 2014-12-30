@@ -38,7 +38,6 @@ import android.preference.PreferenceManager;
 public class StartActivity extends Activity {
 
 	private static final String TAG = "PWS";
-	private static int Port = 8080;
     private static ScrollView mScroll;
     private static TextView mLog;
 	private ServerService mBoundService;
@@ -67,12 +66,14 @@ public class StartActivity extends Activity {
 		cfg = new Config();
 		try {
 			cfg.port = cfg.get(prefs.getString("port", ""), 8080);
-			cfg.DocumentRoot = cfg.get(prefs.getString("doc_root", ""), defaultDocRoot());
+			cfg.root = cfg.get(prefs.getString("root", ""), defaultDocRoot());
+			cfg.index = cfg.get(prefs.getString("index", ""), "");
+			cfg.footer = cfg.get(prefs.getString("footer", ""), "");
 			// more here
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
-		///if (cfg.DocumentRoot.endsWith("/")) cfg.DocumentRoot = cfg.DocumentRoot.substr(0, ...
+		///if (cfg.root.endsWith("/")) cfg.root = cfg.root.substr(0, ...
 		//setupDocRoot();
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
