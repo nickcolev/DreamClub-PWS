@@ -45,8 +45,6 @@ public class ServerService extends Service {
     @Override
     public void onCreate() {
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		notification = new Notification(R.drawable.ic_launcher, "Starting...", System.currentTimeMillis());
-		showNotification();
     }
 
 	private void showNotification() {
@@ -57,12 +55,15 @@ public class ServerService extends Service {
 	public void init(Handler handler, Config cfg) {
 		this.handler = handler;
 		this.cfg = cfg;
+		notification = new Notification(R.drawable.ic_launcher, "Starting...", System.currentTimeMillis());
+		showNotification();
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		this.intent = intent;
 		final int currentId = startId;
+//cfg.port = 8080; cfg.root = "/sdcard/htdocs";
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
@@ -83,6 +84,7 @@ public class ServerService extends Service {
 					}
 				} catch (Exception ie) {
 					Log.d(TAG, "Thread shutting down...");
+					Tooltip("Shutting down");
 				} finally {
 Log.d(TAG, "***finally***");
 					serviceThread = null;
@@ -93,6 +95,10 @@ Log.d(TAG, "***finally***");
 		serviceThread = new Thread(r);
 		serviceThread.start();
 		return Service.START_STICKY;
+	}
+
+	private void Tooltip(String s) {
+		Toast.makeText(ServerService.this, s, Toast.LENGTH_SHORT).show();
 	}
 
 	public void updateNotifiction(String message) {
@@ -133,6 +139,8 @@ Log.d(TAG, "***finally***");
 
     public class LocalBinder extends Binder {
     	ServerService getService() {
+								Tooltip("Binding");
+
             return ServerService.this;
         }
     }

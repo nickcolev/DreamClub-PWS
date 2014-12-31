@@ -54,6 +54,7 @@ class ServerHandler extends Thread {
 	try {
 		File f = new File(dokument);
 		if (f.exists()) {
+			// FIXME If no index.html -- send back dynamically generated indexd
 			// Caching
 			if (null != request.IfNoneMatch) {
 				if (request.IfNoneMatch.equals(ETag(f))) {

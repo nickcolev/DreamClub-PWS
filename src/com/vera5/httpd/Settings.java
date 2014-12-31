@@ -28,9 +28,6 @@ public class Settings extends PreferenceActivity {
 	protected void onStart() {
 		super.onStart();
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-		setSummary(p, "port");
-		setSummary(p, "doc_root");
-		// More settings initialization
 		p.registerOnSharedPreferenceChangeListener(listener);
 	}
 

@@ -62,13 +62,13 @@ public class StartActivity extends Activity {
 		intent = new Intent(this, ServerService.class);
 		// Settings
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		// Configuration
 		cfg = new Config();
 		try {
-			cfg.port = cfg.get(prefs.getString("port", ""), 8080);
-			cfg.root = cfg.get(prefs.getString("root", ""), defaultDocRoot());
-			cfg.index = cfg.get(prefs.getString("index", ""), "");
-			cfg.footer = cfg.get(prefs.getString("footer", ""), "");
+			String s = prefs.getString("port", "8080");
+			cfg.port = Integer.parseInt(s);
+			cfg.root = prefs.getString("doc_root", defaultDocRoot());
 			// more here
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
@@ -77,6 +77,16 @@ public class StartActivity extends Activity {
 		//setupDocRoot();
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
+
+	@Override
+	public void onDestroy() {
+		if (mBoundService != null) {
+			stopService(intent);
+			unbindService(mConnection);
+			mConnection = null;
+		}
+		super.onDestroy();
+	}
 
 	private String setDocRoot() {
 		String path = getDocRoot();
@@ -172,8 +182,6 @@ public class StartActivity extends Activity {
 				}
 				return true;
 			case R.id.exit:
-				if (mBoundService != null) unbindService(mConnection);
-				stopService(intent);
 				this.finish();
 				return true;
 			default:

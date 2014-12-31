@@ -10,6 +10,5 @@
 		<EditTextPreference
 			android:key="doc_root"
 			android:defaultValue="/sdcard/htdocs"
-			android:summary="/sdcard/htdocs"
 			android:title="Document Root" />
 </PreferenceScreen>
