@@ -34,6 +34,8 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 
+import android.content.res.Resources;
+
 
 public class StartActivity extends Activity {
 
@@ -70,11 +72,11 @@ public class StartActivity extends Activity {
 			cfg.port = Integer.parseInt(s);
 			cfg.root = prefs.getString("doc_root", defaultDocRoot());
 			// more here
+			cfg.defaultIndex = getText(R.string.index);
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
-		///if (cfg.root.endsWith("/")) cfg.root = cfg.root.substr(0, ...
-		//setupDocRoot();
+		///FIXME if (cfg.root.endsWith("/")) cfg.root = cfg.root.substr(0, ...
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -86,47 +88,6 @@ public class StartActivity extends Activity {
 			mConnection = null;
 		}
 		super.onDestroy();
-	}
-
-	private String setDocRoot() {
-		String path = getDocRoot();
-		File f = new File(path);
-		if (f.exists()) return path;
-		try {
-			f.mkdir();
-			Log.i(TAG, "Created folder " + path);
-		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
-			return null;
-		}
-		return path;
-	}
-
-	private void setDocIndex(String path) {
-		File f = new File(path+"/index.html");
-		if (f.exists()) return;
-		try {
-			// FIXME Can we put the index.html in 'res'?
-			BufferedWriter bout = new BufferedWriter(new FileWriter(f));
-			bout.write(
-				"<html><head><title>"+TAG+"</title>"+
-				"</head>"+
-				"<body>\n<h1>It works!</h1>\n"+
-				"<p>The web server software is running but no content has been added in <tt>"+path+"</tt>, yet.</p>\n"+
-				"</body></html>"
-			);
-			bout.flush();
-			bout.close();
-			Log.i(TAG, "Created index.html");
-		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
-		}
-	}
-
-	private String setupDocRoot() {
-		String path = setDocRoot();
-		if (path != null) setDocIndex(path);
-		return path;
 	}
 
     public static void log( String s ) {
@@ -141,7 +102,7 @@ public class StartActivity extends Activity {
 	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 			mBoundService = ((ServerService.LocalBinder)service).getService();
-			Tooltip("Service connected");
+			///Tooltip("Service connected");
 			if(!mBoundService.isRunning()) {
 				try {
 					mBoundService.init(mHandler, cfg);	// FIXME Better name?

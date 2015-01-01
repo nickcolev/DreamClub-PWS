@@ -31,9 +31,7 @@ public class ServerService extends Service {
 	private static final String TAG = "PWS.Service";
     private int NOTIFICATION_ID = 4711;
     private NotificationManager mNM;
-    ///private String message;
     private Notification notification;
-    ///private Server server;
 	private boolean isRunning = false;
     private Thread serviceThread = null;
 	private ServerSocket serverSocket;
@@ -44,7 +42,7 @@ public class ServerService extends Service {
 
     @Override
     public void onCreate() {
-        mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
     }
 
 	private void showNotification() {
@@ -139,8 +137,6 @@ Log.d(TAG, "***finally***");
 
     public class LocalBinder extends Binder {
     	ServerService getService() {
-								Tooltip("Binding");
-
             return ServerService.this;
         }
     }

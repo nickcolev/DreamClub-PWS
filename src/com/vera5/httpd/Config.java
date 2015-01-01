@@ -5,4 +5,5 @@ public class Config {
 	public String root;
 	public String index;
 	public String footer;
+	public CharSequence defaultIndex;
 }

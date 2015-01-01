@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -54,7 +55,7 @@ class ServerHandler extends Thread {
 	try {
 		File f = new File(dokument);
 		if (f.exists()) {
-			// FIXME If no index.html -- send back dynamically generated indexd
+			// FIXME If no index.html -- send back dynamically generated index
 			// Caching
 			if (null != request.IfNoneMatch) {
 				if (request.IfNoneMatch.equals(ETag(f))) {
@@ -77,18 +78,28 @@ class ServerHandler extends Thread {
 			log(dokument);
 		} else {
 			log(dokument+" not found");
-			plainResponse(404, request.uri + " not found");
+			if (dokument.equals(cfg.root+"/index.html") ||
+				dokument.equals(cfg.root+"/")) {	// index.html not setup yet
+				plainResponse(200, "text/html", cfg.defaultIndex);
+			} else
+				plainResponse(404, request.uri + " not found");
 		}
 	} catch (Exception e) {}
   }
 
-	private void plainResponse (int code, String msg) {
+	private void plainResponse (int code, String type, CharSequence msg) {
 		try {
+			// FIXME Use OutputStream as above?!
 			out = new PrintWriter (toClient.getOutputStream(), true);
-			out.print (getHeader(code, "text/plain", msg));
+			out.print (getHeader(code, type, msg));
 			out.print (msg);
 			out.flush ();
 		} catch (Exception e) {}
+	}
+
+	// Overload
+	private void plainResponse (int code, String msg) {
+		plainResponse(code, "text/plain", msg);
 	}
 
   private String ETag (File f) {
@@ -100,7 +111,7 @@ class ServerHandler extends Thread {
   private String getDokument (String fname) {
 	String s = "";
 	try {
-		s = fname.replaceFirst ("\\?(.*)","");
+		s = fname.replaceFirst ("\\?(.*)","");	// FIXME '#' as well
 		s = URLDecoder.decode (s);
 	} catch (Exception e) { s = fname; }
 	return cfg.root + s;
@@ -116,26 +127,25 @@ class ServerHandler extends Thread {
 	return type;
   }
 
-  private String getHeaderBase (int code, String type) {
+  private String getHeaderBase (int code, String type, long len) {
 	return	"HTTP/1.1 " + code
 		+ "\nContent-Type: " + type
+		+ "\nContent-Length: " + len
 		+ "\nServer: AndroidWebserver/1.0" // FIXME + Server.version
 		+ "\nConnection: close";
    }
 
   private String getHeader (int code, String type, File f) {
 	SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
-	return	getHeaderBase (code, type)
-		+ "\nContent-Length: " + f.length()
+	return	getHeaderBase (code, type, f.length())
 		+ "\nETag: " + ETag(f)
 		+ "\nLast-Modified: " + sdf.format(f.lastModified())
 		+ "\n\n";
   }
 
   // Overloaded
-  private String getHeader (int code, String type, String msg) {
-	return	getHeaderBase (code, type)
-		+ "\nContent-Length: " + msg.length()
+  private String getHeader (int code, String type, CharSequence msg) {
+	return	getHeaderBase (code, type, msg.length())
 		+ "\n\n";
   }
 
