@@ -55,7 +55,6 @@ class ServerHandler extends Thread {
 	try {
 		File f = new File(dokument);
 		if (f.exists()) {
-			// FIXME If no index.html -- send back dynamically generated index
 			// Caching
 			if (null != request.IfNoneMatch) {
 				if (request.IfNoneMatch.equals(ETag(f))) {
@@ -122,7 +121,7 @@ class ServerHandler extends Thread {
 	FileNameMap map = URLConnection.getFileNameMap();
 	String type = map.getContentTypeFor(dokument);
 	if (null == type) type = "application/octet-stream";
-	// FIXME My env doesn't recognize SVG
+	// My env doesn't recognize SVG
 	if(dokument.endsWith(".svg")) type = "text/xml";
 	return type;
   }

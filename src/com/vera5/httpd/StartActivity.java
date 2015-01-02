@@ -28,7 +28,6 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-// Preferences
 import android.content.SharedPreferences;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -102,10 +101,9 @@ public class StartActivity extends Activity {
 	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 			mBoundService = ((ServerService.LocalBinder)service).getService();
-			///Tooltip("Service connected");
 			if(!mBoundService.isRunning()) {
 				try {
-					mBoundService.init(mHandler, cfg);	// FIXME Better name?
+					mBoundService.init(mHandler, cfg);
 					startService(intent);
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());
