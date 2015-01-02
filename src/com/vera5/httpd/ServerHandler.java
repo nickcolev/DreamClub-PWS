@@ -5,7 +5,6 @@ import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -37,54 +36,54 @@ class ServerHandler extends Thread {
 		response(request);
 	}
 
-  private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
+	private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
 
-	String dokument = getDokument(request.uri);
+		String dokument = getDokument(request.uri);
 
-	// Folder? -- add 'index.html'
-	try {
-		File f = new File(dokument);
-		if (f.exists()) {
-			if (f.isDirectory())
-				dokument += (dokument.endsWith("/") ? "" : "/")	+ "index.html";
-		}
-	} catch (Exception e) {}
-
-    Log.d(TAG, "Serving " + dokument);
-
-	try {
-		File f = new File(dokument);
-		if (f.exists()) {
-			// Caching
-			if (null != request.IfNoneMatch) {
-				if (request.IfNoneMatch.equals(ETag(f))) {
-					plainResponse(304, "Not Modified");
-					return;
-				}
+		// Folder? -- add 'index.html'
+		try {
+			File f = new File(dokument);
+			if (f.exists()) {
+				if (f.isDirectory())
+					dokument += (dokument.endsWith("/") ? "" : "/")	+ "index.html";
 			}
-			FileInputStream in = new FileInputStream(dokument);
-			OutputStream out = toClient.getOutputStream();
-			String header = getHeader (200, guessContentType(dokument), f);
-			out.write(header.getBytes());
-			if(!request.method.equals("HEAD")) {
-				byte[] buf = new byte[8192];
-				int count = 0;
-				while((count = in.read(buf)) != -1) {
-					out.write(buf, 0, count);
+		} catch (Exception e) {}
+
+		Log.d(TAG, "Serving " + dokument);
+
+		try {
+			File f = new File(dokument);
+			if (f.exists()) {
+				// Caching
+				if (null != request.IfNoneMatch) {
+					if (request.IfNoneMatch.equals(ETag(f))) {
+						plainResponse(304, "Not Modified");
+						return;
+					}
 				}
+				FileInputStream in = new FileInputStream(dokument);
+				OutputStream out = toClient.getOutputStream();
+				String header = getHeader (200, guessContentType(dokument), f);
+				out.write(header.getBytes());
+				if(!request.method.equals("HEAD")) {
+					byte[] buf = new byte[8192];
+					int count = 0;
+					while((count = in.read(buf)) != -1) {
+						out.write(buf, 0, count);
+					}
+				}
+				out.flush();
+				log(dokument);
+			} else {
+				log(dokument+" not found");
+				if (dokument.equals(cfg.root+"/index.html") ||
+					dokument.equals(cfg.root+"/")) {	// index.html not setup yet
+					plainResponse(200, "text/html", cfg.defaultIndex);
+				} else
+					plainResponse(404, request.uri + " not found");
 			}
-			out.flush();
-			log(dokument);
-		} else {
-			log(dokument+" not found");
-			if (dokument.equals(cfg.root+"/index.html") ||
-				dokument.equals(cfg.root+"/")) {	// index.html not setup yet
-				plainResponse(200, "text/html", cfg.defaultIndex);
-			} else
-				plainResponse(404, request.uri + " not found");
-		}
-	} catch (Exception e) {}
-  }
+		} catch (Exception e) {}
+	}
 
 	private void plainResponse (int code, String type, CharSequence msg) {
 		try {
@@ -101,52 +100,49 @@ class ServerHandler extends Thread {
 		plainResponse(code, "text/plain", msg);
 	}
 
-  private String ETag (File f) {
+	private String ETag (File f) {
+		// usually MD5, but RFC2616 doesn't say it -- we just use file size and last modified
+		return "" + f.length() + f.lastModified();
+	}
 
-	// usually MD5, but RFC2616 doesn't say it -- we just use file size and last modified
-	return "" + f.length() + f.lastModified();
-  }
+	private String getDokument (String fname) {
+		String s;
+		try {
+			s = fname.replaceFirst ("\\?(.*)","");	// FIXME '#' as well
+			s = URLDecoder.decode (s);
+		} catch (Exception e) { s = fname; }
+		return cfg.root + s;
+	}
 
-  private String getDokument (String fname) {
-	String s = "";
-	try {
-		s = fname.replaceFirst ("\\?(.*)","");	// FIXME '#' as well
-		s = URLDecoder.decode (s);
-	} catch (Exception e) { s = fname; }
-	return cfg.root + s;
-  }
+	private String guessContentType (String dokument) {
+		FileNameMap map = URLConnection.getFileNameMap();
+		String type = map.getContentTypeFor(dokument);
+		if (null == type) type = "application/octet-stream";
+		// My env doesn't recognize SVG
+		if(dokument.endsWith(".svg")) type = "text/xml";
+		return type;
+	}
 
-  private String guessContentType (String dokument) {
+	private String getHeaderBase (int code, String type, long len) {
+		return	"HTTP/1.1 " + code
+			+ "\nContent-Type: " + type
+			+ "\nContent-Length: " + len
+			+ "\nServer: AndroidWebserver/1.0" // FIXME + Server.version
+			+ "\nConnection: close";
+	}
 
-	FileNameMap map = URLConnection.getFileNameMap();
-	String type = map.getContentTypeFor(dokument);
-	if (null == type) type = "application/octet-stream";
-	// My env doesn't recognize SVG
-	if(dokument.endsWith(".svg")) type = "text/xml";
-	return type;
-  }
+	private String getHeader (int code, String type, File f) {
+		SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
+		return	getHeaderBase (code, type, f.length())
+			+ "\nETag: " + ETag(f)
+			+ "\nLast-Modified: " + sdf.format(f.lastModified())
+			+ "\n\n";
+	}
 
-  private String getHeaderBase (int code, String type, long len) {
-	return	"HTTP/1.1 " + code
-		+ "\nContent-Type: " + type
-		+ "\nContent-Length: " + len
-		+ "\nServer: AndroidWebserver/1.0" // FIXME + Server.version
-		+ "\nConnection: close";
-   }
-
-  private String getHeader (int code, String type, File f) {
-	SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
-	return	getHeaderBase (code, type, f.length())
-		+ "\nETag: " + ETag(f)
-		+ "\nLast-Modified: " + sdf.format(f.lastModified())
-		+ "\n\n";
-  }
-
-  // Overloaded
-  private String getHeader (int code, String type, CharSequence msg) {
-	return	getHeaderBase (code, type, msg.length())
-		+ "\n\n";
-  }
+	// Overloaded
+	private String getHeader (int code, String type, CharSequence msg) {
+		return	getHeaderBase (code, type, msg.length()) + "\n\n";
+	}
 
 	// FIXME Same in the service
 	private void log(String s) {
