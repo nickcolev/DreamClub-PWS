@@ -59,11 +59,24 @@ public class ServerService extends Service {
 	}
 
 	@Override
+	public boolean onUnbind(Intent intent) {
+		try {
+			this.serverSocket.close();
+			stopSelf();
+			isRunning = false;
+		} catch (IOException e) {
+			Log.e(TAG, e.getMessage());
+		}
+        return true;	// allow rebind
+}
+
+	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		this.intent = intent;
 		final int currentId = startId;
 		Runnable r = new Runnable() {
 			public void run() {
+				Log.i(TAG, "Starting...");
 				Socket client = null;
 				InetAddress localhost;
 				try {
@@ -71,6 +84,7 @@ public class ServerService extends Service {
 					serverSocket = new ServerSocket(cfg.port, 0, localhost);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
+					log(e.getMessage());
 					return;
 				}
 				try {
@@ -84,11 +98,8 @@ public class ServerService extends Service {
 						new Thread(h).start();
 					}
 				} catch (Exception ie) {
-					Log.d(TAG, "Thread shutting down...");
-				} finally {
-Log.d(TAG, "***finally***");
+					Log.i(TAG, "Shutting down...");
 					serviceThread = null;
-					isRunning = false;
 				}
 			}
 		};

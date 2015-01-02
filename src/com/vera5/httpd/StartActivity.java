@@ -64,6 +64,7 @@ public class StartActivity extends Activity {
 		// Settings
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+//Log.d("***CP11***", prefs.getString("index", null));
 		// Configuration
 		cfg = new Config();
 		try {
@@ -83,7 +84,7 @@ public class StartActivity extends Activity {
 	@Override
 	public void onDestroy() {
 		if (mBoundService != null) {
-			stopService(intent);
+			//stopService(intent);
 			unbindService(mConnection);
 			mConnection = null;
 		}

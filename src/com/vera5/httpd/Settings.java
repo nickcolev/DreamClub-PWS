@@ -1,6 +1,7 @@
 package com.vera5.httpd;
 
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -38,15 +39,13 @@ public class Settings extends PreferenceActivity {
 	}
 
 	private void setSummary(SharedPreferences p, String key) {
+		String value = p.getString(key, "");
 		try {
-			String value = p.getString(key, "").replaceAll("/$", "");
 			EditTextPreference pref = (EditTextPreference) findPreference(key);
-			if (key.equals("root") && value.equals(""))
-				value = StartActivity.defaultDocRoot();
 			pref.setSummary(value);
 		} catch (Exception e) {
 			Log.e("httpd.setSummary()", e.getMessage());
-		}
+		}	
 	}
 
 }
