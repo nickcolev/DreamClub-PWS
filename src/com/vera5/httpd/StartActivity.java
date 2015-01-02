@@ -70,8 +70,10 @@ public class StartActivity extends Activity {
 			String s = prefs.getString("port", "8080");
 			cfg.port = Integer.parseInt(s);
 			cfg.root = prefs.getString("root", defaultDocRoot());
-			// more here
-			cfg.defaultIndex = getText(R.string.index);
+			cfg.index = prefs.getString("index", "index.html");	// FIXME Can't we get it from 'strings'?
+			cfg.header = prefs.getString("header", "");
+			cfg.footer = prefs.getString("footer", "");
+			cfg.defaultIndex = getText(R.string.defaultIndex);
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}

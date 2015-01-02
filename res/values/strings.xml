@@ -4,7 +4,7 @@
     <string name="settings">Settings</string>
     <string name="exit">Exit</string>
     <string name="port">Port</string>
-    <string name="index"><![CDATA[
+    <string name="defaultIndex"><![CDATA[
     <html><head><title>PWS</title></head><body>
     <h1>It works!</h1><p>The web server software is running, but no content has been added in <tt>/sdcard/htdocs</tt> yet.</p>
     </body></html>]]></string>
