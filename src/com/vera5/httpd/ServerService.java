@@ -80,17 +80,18 @@ public class ServerService extends Service {
 			public void run() {
 				Log.i(TAG, "Starting...");
 				Socket client = null;
-				InetAddress localhost;
+				String ip = getIP();
 				try {
-					localhost = InetAddress.getLocalHost();
+					InetAddress localhost = InetAddress.getByName(ip);;
 					serverSocket = new ServerSocket(cfg.port, 0, localhost);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
 					log(e.getMessage());
+					stopSelf();
 					return;
 				}
 				try {
-					String s = localhost.getHostAddress() + ":" + cfg.port;
+					String s = ip + ":" + cfg.port;
 					updateNotifiction(s);
 					log("Waiting for connections on " + s);
 					while (!Thread.currentThread().isInterrupted()) {
@@ -131,10 +132,16 @@ public class ServerService extends Service {
 	}
 
 	private String getIP() {
-		WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-		String IP = intToIp(wifiInfo.getIpAddress());
-		return (IP.equals("0.0.0.0") ? "localhost" : IP);
+		String IP;
+		try {
+			WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+			IP = intToIp(wifiInfo.getIpAddress());
+			if (IP.equals("0.0.0.0")) IP = "localhost";
+		} catch (Exception e) {
+			IP = "localhost";
+		}
+		return IP;
 	}
 
 	public static String intToIp(int i) {
