@@ -24,7 +24,7 @@ public class Request {
 				s = in.readLine().trim();
 				if (s.equals("")) break;
 				a = s.split(" ");
-				// The first line is the request method, resourse, and version (like 'GET /index.html HTTP/1.0')
+				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')
 				if (i == 0) {	// The first line
 					this.method = a[0];
 					this.uri = a[1].replace("/~", "/usr/");
