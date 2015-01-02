@@ -41,7 +41,7 @@ public class Settings extends PreferenceActivity {
 		try {
 			String value = p.getString(key, "").replaceAll("/$", "");
 			EditTextPreference pref = (EditTextPreference) findPreference(key);
-			if (key.equals("doc_root") && value.equals(""))
+			if (key.equals("root") && value.equals(""))
 				value = StartActivity.defaultDocRoot();
 			pref.setSummary(value);
 		} catch (Exception e) {

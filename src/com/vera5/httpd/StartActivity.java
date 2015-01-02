@@ -69,13 +69,12 @@ public class StartActivity extends Activity {
 		try {
 			String s = prefs.getString("port", "8080");
 			cfg.port = Integer.parseInt(s);
-			cfg.root = prefs.getString("doc_root", defaultDocRoot());
+			cfg.root = prefs.getString("root", defaultDocRoot());
 			// more here
 			cfg.defaultIndex = getText(R.string.index);
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
-		///FIXME if (cfg.root.endsWith("/")) cfg.root = cfg.root.substr(0, ...
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -152,13 +151,4 @@ public class StartActivity extends Activity {
 		return Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
 	}
 
-	private String getDocRoot() {
-		String s = prefs.getString("doc_root", "");
-		if (s.equals("")) {					// Default
-			s = defaultDocRoot();
-		} else {
-			s = s.replaceAll("/$", "");		// Remove trailing slash
-		}
-		return ((s.startsWith("/") ? "" : "/") + s);					// Add leading slash if ommited
-	}
 }

@@ -61,7 +61,6 @@ public class ServerService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		this.intent = intent;
 		final int currentId = startId;
-//cfg.port = 8080; cfg.root = "/sdcard/htdocs";
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
@@ -82,10 +81,10 @@ public class ServerService extends Service {
 					}
 				} catch (Exception ie) {
 					Log.d(TAG, "Thread shutting down...");
-					Tooltip("Shutting down");
 				} finally {
 Log.d(TAG, "***finally***");
 					serviceThread = null;
+					isRunning = false;
 				}
 			}
 		};

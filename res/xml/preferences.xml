@@ -8,7 +8,7 @@
 			android:summary="8080"
 			android:title="Port" />
 		<EditTextPreference
-			android:key="doc_root"
+			android:key="root"
 			android:defaultValue="/sdcard/htdocs"
 			android:summary="/sdcard/htdocs"
 			android:title="Document Root" />
