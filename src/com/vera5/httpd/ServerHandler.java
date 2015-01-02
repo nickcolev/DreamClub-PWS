@@ -40,12 +40,12 @@ class ServerHandler extends Thread {
 
 		String dokument = getDokument(request.uri);
 
-		// Folder? -- add 'index.html'
+		// Folder? -- add default document index name
 		try {
 			File f = new File(dokument);
 			if (f.exists()) {
 				if (f.isDirectory())
-					dokument += (dokument.endsWith("/") ? "" : "/")	+ "index.html";
+					dokument += (dokument.endsWith("/") ? "" : "/")	+ cfg.index;
 			}
 		} catch (Exception e) {}
 
@@ -76,8 +76,8 @@ class ServerHandler extends Thread {
 				log(dokument);
 			} else {
 				log(dokument+" not found");
-				if (dokument.equals(cfg.root+"/index.html") ||
-					dokument.equals(cfg.root+"/")) {	// index.html not setup yet
+				if (dokument.equals(cfg.root+"/"+cfg.index) ||
+					dokument.equals(cfg.root+"/")) {
 					plainResponse(200, "text/html", cfg.defaultIndex);
 				} else
 					plainResponse(404, request.uri + " not found");

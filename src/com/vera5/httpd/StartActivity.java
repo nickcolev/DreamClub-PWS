@@ -64,14 +64,13 @@ public class StartActivity extends Activity {
 		// Settings
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-//Log.d("***CP11***", prefs.getString("index", null));
 		// Configuration
 		cfg = new Config();
 		try {
 			String s = prefs.getString("port", "8080");
 			cfg.port = Integer.parseInt(s);
 			cfg.root = prefs.getString("root", defaultDocRoot());
-			cfg.index = prefs.getString("index", "index.html");	// FIXME Can't we get it from 'strings'?
+			cfg.index = prefs.getString("index", null);	// FIXME Can't we get it from 'strings'?
 			cfg.header = prefs.getString("header", "");
 			cfg.footer = prefs.getString("footer", "");
 			cfg.defaultIndex = getText(R.string.defaultIndex);
