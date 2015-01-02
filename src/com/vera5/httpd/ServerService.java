@@ -20,6 +20,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.ServerSocket;
 
@@ -43,6 +44,8 @@ public class ServerService extends Service {
     @Override
     public void onCreate() {
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		notification = new Notification(R.drawable.ic_launcher, "Starting...", System.currentTimeMillis());
+		showNotification();
     }
 
 	private void showNotification() {
@@ -53,8 +56,6 @@ public class ServerService extends Service {
 	public void init(Handler handler, Config cfg) {
 		this.handler = handler;
 		this.cfg = cfg;
-		notification = new Notification(R.drawable.ic_launcher, "Starting...", System.currentTimeMillis());
-		showNotification();
 	}
 
 	@Override
@@ -64,13 +65,16 @@ public class ServerService extends Service {
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
+				InetAddress localhost;
 				try {
-					serverSocket = new ServerSocket(cfg.port);
+					localhost = InetAddress.getLocalHost();
+					serverSocket = new ServerSocket(cfg.port, 0, localhost);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
+					return;
 				}
 				try {
-					String s = getIP() + ":" + cfg.port;
+					String s = localhost.getHostAddress() + ":" + cfg.port;
 					updateNotifiction(s);
 					log("Waiting for connections on " + s);
 					while (!Thread.currentThread().isInterrupted()) {
