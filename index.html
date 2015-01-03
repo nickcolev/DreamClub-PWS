@@ -12,6 +12,7 @@
 <ul>
  <li><tt>StartActivity</tt><br/>Starts and bind to the service. If service not already started &mdash; start it.</li>
  <li><tt>ServerService</tt><br/>Handle the binding requests, notifications, and <tt>onStartCommand</tt>.</li>
+ <li><tt>ServerHandler</tt><br/>Serve client requests (HTTP implementation)</li>
 </ul>
 
 <h3 class="ul">To do</h3>
@@ -20,7 +21,6 @@
  <li>Preferences</li>
  <li>Art work &mdash; new icons</li>
  <li>Implement <a href="http://developer.android.com/reference/android/net/wifi/WifiManager.WifiLock.html">WiFi lock</a> <small>(when only httpd runs, WiFi goes to sleep)</small></li>
- <li>Implement <tt title="see Apache conf">KeepAliveTimeout</tt></li>
 </ul>
 
 <h3 class="ul">Bugs</h3>
@@ -186,5 +186,10 @@ Create <tt>res/menu/main.xml</tt> and design the menu, i.e.</p>
 <p><b>Activity persistence</b><br/>
 In <tt>AndroidManifest.xml</tt> add to the main activity</p>
 <pre class="cp">android:launchMode="singleTop"</pre>
+<p>and implement</p>
+<pre class="cp">@Override
+<b>public void</b> onBackPressed() {
+    moveTaskToBack(true);
+}</pre>
 
 </body></html>
