@@ -6,8 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.text.SimpleDateFormat;
 import android.content.Context;
-import android.content.res.Resources;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -127,7 +125,7 @@ class ServerHandler extends Thread {
 		return	"HTTP/1.1 " + code
 			+ "\nContent-Type: " + type
 			+ "\nContent-Length: " + len
-			+ "\nServer: AndroidWebserver/1.0" // FIXME + Server.version
+			+ "\nServer: AndroidWebserver/" + cfg.version
 			+ "\nConnection: close";
 	}
 

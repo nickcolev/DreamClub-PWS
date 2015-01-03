@@ -16,17 +16,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.ServerSocket;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 public class ServerService extends Service {
 
@@ -37,7 +33,6 @@ public class ServerService extends Service {
 	private boolean isRunning = false;
     private Thread serviceThread = null;
 	private ServerSocket serverSocket;
-	private SharedPreferences prefs;
 	private Intent intent;
 	private Handler handler;
 	private Config cfg;
@@ -46,14 +41,10 @@ public class ServerService extends Service {
     @Override
     public void onCreate() {
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		notification = new Notification(R.drawable.ic_launcher, "Starting...", System.currentTimeMillis());
-		showNotification();
-    }
-
-	private void showNotification() {
+		notification = new Notification(R.drawable.ic_launcher, "Starting", System.currentTimeMillis());
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
-	}
+    }
 
 	public void init(Handler handler, Config cfg) {
 		this.handler = handler;
@@ -78,7 +69,6 @@ public class ServerService extends Service {
 		final int currentId = startId;
 		Runnable r = new Runnable() {
 			public void run() {
-				Log.i(TAG, "Starting...");
 				Socket client = null;
 				String ip = getIP();
 				try {

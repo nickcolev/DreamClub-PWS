@@ -7,4 +7,5 @@ public class Config {
 	public String header;
 	public String footer;
 	public CharSequence defaultIndex;
+	public String version;
 }

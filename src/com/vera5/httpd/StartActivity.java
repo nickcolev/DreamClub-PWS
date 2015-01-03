@@ -1,11 +1,6 @@
 package com.vera5.httpd;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +18,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -32,8 +26,6 @@ import android.content.SharedPreferences;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
-
-import android.content.res.Resources;
 
 
 public class StartActivity extends Activity {
@@ -73,17 +65,18 @@ public class StartActivity extends Activity {
 			cfg.index = prefs.getString("index", null);	// FIXME Can't we get it from 'strings'?
 			cfg.header = prefs.getString("header", "");
 			cfg.footer = prefs.getString("footer", "");
+			cfg.version = version();
 			cfg.defaultIndex = getText(R.string.defaultIndex);
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
+		log("Version "+cfg.version);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
 	@Override
 	public void onDestroy() {
 		if (mBoundService != null) {
-			//stopService(intent);
 			unbindService(mConnection);
 			mConnection = null;
 		}
@@ -113,7 +106,6 @@ public class StartActivity extends Activity {
 	    }
 		public void onServiceDisconnected(ComponentName className) {
 			mBoundService = null;
-			Tooltip("Service disconnected");
 		}
 	};
 
@@ -151,6 +143,17 @@ public class StartActivity extends Activity {
 
 	public static String defaultDocRoot() {
 		return Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
+	}
+
+	private String version() {
+		try {
+			PackageManager packageManager = getPackageManager();
+			PackageInfo packageInfo = packageManager.getPackageInfo(getPackageName(),0);
+			return packageInfo.versionName;
+		} catch (PackageManager.NameNotFoundException e) {
+			Log.e(TAG, "Error while fetching app version", e);
+			return "?";
+		}
 	}
 
 }
