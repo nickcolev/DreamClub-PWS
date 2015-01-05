@@ -18,9 +18,6 @@
 			android:summary="index.html"
 			android:title="Directory Index" />
 		<EditTextPreference
-			android:key="header"
-			android:title="Header" />
-		<EditTextPreference
 			android:key="footer"
 			android:title="Footer" />
 </PreferenceScreen>

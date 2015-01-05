@@ -63,7 +63,6 @@ public class StartActivity extends Activity {
 			cfg.port = Integer.parseInt(s);
 			cfg.root = prefs.getString("root", defaultDocRoot());
 			cfg.index = prefs.getString("index", null);	// FIXME Can't we get it from 'strings'?
-			cfg.header = prefs.getString("header", "");
 			cfg.footer = prefs.getString("footer", "");
 			cfg.version = version();
 			cfg.defaultIndex = getText(R.string.defaultIndex);

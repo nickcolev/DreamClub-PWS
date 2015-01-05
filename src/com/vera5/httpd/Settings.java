@@ -39,10 +39,9 @@ public class Settings extends PreferenceActivity {
 	}
 
 	private void setSummary(SharedPreferences p, String key) {
-		String value = p.getString(key, "");
 		try {
 			EditTextPreference pref = (EditTextPreference) findPreference(key);
-			pref.setSummary(value);
+			pref.setSummary(p.getString(key, ""));
 		} catch (Exception e) {
 			Log.e("httpd.setSummary()", e.getMessage());
 		}	
