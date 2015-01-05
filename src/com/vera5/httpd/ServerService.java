@@ -18,6 +18,8 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -157,4 +159,5 @@ public class ServerService extends Service {
     public boolean isRunning() {
     	return isRunning;
     }
+
 }

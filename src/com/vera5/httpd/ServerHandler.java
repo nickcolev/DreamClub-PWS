@@ -49,6 +49,7 @@ class ServerHandler extends Thread {
 
 		Log.d(TAG, "Serving " + dokument);
 
+		// Process
 		try {
 			File f = new File(dokument);
 			if (f.exists()) {
@@ -66,10 +67,10 @@ class ServerHandler extends Thread {
 				if(!request.method.equals("HEAD")) {
 					byte[] buf = new byte[8192];
 					int count = 0;
-					while((count = in.read(buf)) != -1) {
+					while((count = in.read(buf, 0, 8192)) != -1)
 						out.write(buf, 0, count);
-					}
 				}
+				//if (cfg.footerName.length() > 0) footer(out);
 				out.flush();
 				log(dokument);
 			} else {
@@ -121,7 +122,8 @@ class ServerHandler extends Thread {
 		return type;
 	}
 
-	private String getHeaderBase (int code, String type, long len) {
+	private String getHeaderBase (int code, String type, int len) {
+Log.d("***CP33***", "Len: "+len);
 		return	"HTTP/1.1 " + code
 			+ "\nContent-Type: " + type
 			+ "\nContent-Length: " + len
@@ -131,7 +133,8 @@ class ServerHandler extends Thread {
 
 	private String getHeader (int code, String type, File f) {
 		SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
-		return	getHeaderBase (code, type, f.length())
+		// BUG: int allows up to ~2GB file. It's OK for web content, but...?!
+		return	getHeaderBase (code, type, (int)f.length())
 			+ "\nETag: " + ETag(f)
 			+ "\nLast-Modified: " + sdf.format(f.lastModified())
 			+ "\n\n";
@@ -140,6 +143,23 @@ class ServerHandler extends Thread {
 	// Overloaded
 	private String getHeader (int code, String type, CharSequence msg) {
 		return	getHeaderBase (code, type, msg.length()) + "\n\n";
+	}
+
+	private void footer(OutputStream out) {
+		String fname = cfg.root + "/" + cfg.footerName;
+		File f = new File(fname);
+		int l = (int)f.length();
+		if (f.exists()) {
+			try {
+				FileInputStream in = new FileInputStream(fname);
+				byte b[] = new byte[l];
+				l = in.read(b, 0, l);
+				in.close();
+				out.write(b, 0, l);
+			} catch (IOException e) {
+				Log.e(TAG, e.getMessage());
+			}
+		}
 	}
 
 	// FIXME Same in the service
