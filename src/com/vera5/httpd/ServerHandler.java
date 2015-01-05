@@ -125,7 +125,7 @@ class ServerHandler extends Thread {
 		return	"HTTP/1.1 " + code
 			+ "\nContent-Type: " + type
 			+ "\nContent-Length: " + len
-			+ "\nServer: AndroidWebserver/" + cfg.version
+			+ "\nServer: PWS/" + cfg.version
 			+ "\nConnection: close";
 	}
 

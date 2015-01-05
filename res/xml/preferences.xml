@@ -5,17 +5,14 @@
 		<EditTextPreference
 			android:key="port"
 			android:defaultValue="8080"
-			android:summary="8080"
 			android:title="Port" />
 		<EditTextPreference
 			android:key="root"
 			android:defaultValue="/sdcard/htdocs"
-			android:summary="/sdcard/htdocs"
 			android:title="Document Root" />
 		<EditTextPreference
 			android:key="index"
 			android:defaultValue="index.html"
-			android:summary="index.html"
 			android:title="Directory Index" />
 		<EditTextPreference
 			android:key="footer"

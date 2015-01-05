@@ -87,6 +87,7 @@ public class StartActivity extends Activity {
     	mScroll.fullScroll(ScrollView.FOCUS_DOWN);
     }
 
+	// FIXME Not used. Remove it from final release if still not used.
 	private void Tooltip(String s) {
 		Toast.makeText(StartActivity.this, s, Toast.LENGTH_SHORT).show();
 	}
@@ -96,7 +97,7 @@ public class StartActivity extends Activity {
 			mBoundService = ((ServerService.LocalBinder)service).getService();
 			if(!mBoundService.isRunning()) {
 				try {
-					mBoundService.init(mHandler, cfg);
+					mBoundService.configure(mHandler, cfg);
 					startService(intent);
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());

@@ -8,6 +8,7 @@ import android.preference.EditTextPreference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import java.util.Map;
 
 public class Settings extends PreferenceActivity {
 
@@ -17,6 +18,12 @@ public class Settings extends PreferenceActivity {
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		prefs.edit().clear();
+		PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+		Map<String,?> keys = prefs.getAll();
+		for(Map.Entry<String,?> entry : keys.entrySet())
+			setSummary(prefs, entry.getKey());
 		listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 			public void onSharedPreferenceChanged(SharedPreferences p, String key) {
 				setSummary(p, key);

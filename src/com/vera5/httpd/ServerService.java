@@ -46,7 +46,7 @@ public class ServerService extends Service {
 		startForeground(NOTIFICATION_ID, notification);
     }
 
-	public void init(Handler handler, Config cfg) {
+	public void configure(Handler handler, Config cfg) {
 		this.handler = handler;
 		this.cfg = cfg;
 	}
@@ -55,7 +55,7 @@ public class ServerService extends Service {
 	public boolean onUnbind(Intent intent) {
 		try {
 			this.serverSocket.close();
-			///stopSelf();
+			stopSelf();
 			isRunning = false;
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
