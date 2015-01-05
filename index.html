@@ -23,6 +23,17 @@
  <li>Implement <a href="http://developer.android.com/reference/android/net/wifi/WifiManager.WifiLock.html">WiFi lock</a> <small>(when only httpd runs, WiFi goes to sleep)</small></li>
 </ul>
 
+<h3 class="ul">Icon</h3>
+<ul>
+ <li><a href="/~vera-5/logo.htm">Vera5 logo</a> <small>(Best for branding. Though, looks hollow and user won't associate it with a web server.)</small></li>
+ <li>ant <small>(As it is black, hard to be seen with transparency.)</small></li>
+ <li>butterfly <small>('but2.png' looks good, 'dragonart.png' as well, but a butterfly is a symbol of what?)</small></li>
+ <li>clover</li>
+ <li>globe <small>(best choice as it is associated with web folder/site; used OS X Maverick 10)</small></li>
+ <li>leaf(-ves)</li>
+</ul>
+<p class="note">Current version based on <a href="http://www.macgasm.net/2013/10/31/os-x-10-9-mavericks-server-review/">OS X 10.9 Mavericks Server</a>. Processed via Gimp to 64x64 96dpi. Squeezed to 24x24 for the notification.</p>
+
 <h3 class="ul">Bugs</h3>
 <ul>
  <li><del>[Back] goes to prev. screen, and the prev. log can be seen. The log view seems to be recreated on [Home] and next [Restore]. Something's wrong.</del></li>
@@ -32,156 +43,6 @@
 
 
 <h3>Lessons learned</h3>
-
-<p><b>Menu</b><br/>
-Create <tt>res/menu/main.xml</tt> and design the menu, i.e.</p>
-<pre class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;<b>menu</b> xmlns:android="http://schemas.android.com/apk/res/android"&gt;
-    &lt;<b>item</b> android:<var>id</var>="@+id/settings"
-          android:<var>title</var>="@string/settings" /&gt;
-    &lt;<b>item</b> android:<var>id</var>="@+id/exit"
-          android:<var>title</var>="@string/exit" /&gt;
-&lt;<b>/menu</b>&gt;</pre>
-
-<p>and in <tt>res/values/strings.xml</tt> add/adjust the variables</p>
-<pre class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;<b>resources</b>&gt;
-    &lt;<b>string</b> <var>name</var>="settings"&gt;Settings&lt;<b>/string</b>&gt;
-    &lt;<b>string</b> <var>name</var>="exit"&gt;Exit&lt;<b>/string</b>&gt;
-&lt;<b>/resources</b>&gt;</pre>
-<p>Finally, implement the logic</p>
-<pre class="cp">...
-<b>import</b> android.view.Menu;
-<b>import</b> android.view.MenuInflater;
-<b>import</b> android.view.MenuItem;
-...
-	@Override
-	<b>public boolean</b> onCreateOptionsMenu(Menu <var>menu</var>) {
-		MenuInflater <var>inflater</var> = getMenuInflater();
-		inflater.inflate(R.menu.main, menu);
-		<b>return</b> true;
-	}
-
-	@Override
-	<b>public boolean</b> onOptionsItemSelected(MenuItem <var>item</var>) {
-		<i class="comment">// Handle item selection</i>
-		<b>switch</b> (<var>item</var>.getItemId()) {
-			<b>case</b> R.id.settings:
-				<i class="comment">// do something</i>
-				<b>return</b> true;
-			<b>case</b> R.id.exit:
-				<i class="comment">// do something</i>
-				<b>return</b> true;
-			<b>default</b>:
-				<b>return</b> super.onOptionsItemSelected(<var>item</var>);
-		}
-	}
-
-</pre>
-
-<p><b><a href="http://developer.android.com/guide/topics/ui/settings.html" title="Guide">Settings/Preferences</a></b></p>
-<ol>
-<li>
-<p>Create <tt>res/xml/preferences.xml</tt>, i.e.</p>
-<pre class="cp">&lt;<a class="kw" href="http://developer.android.com/reference/android/preference/PreferenceScreen.html">PreferenceScreen</a> xmlns:android="http://schemas.android.com/apk/res/android"&gt;
-    &lt;<b>PreferenceCategory</b> android:<var>title</var>="@string/preferences"&gt;
-        &lt;<a class="kw" href="http://developer.android.com/reference/android/preference/CheckBoxPreference.html">CheckBoxPreference</a>
-            android:<var>key</var>="checkbox_preference"
-            android:<var>title</var>="@string/title_checkbox_preference"
-            android:<var>summary</var>="@string/summary_checkbox_preference"
-            android:<var>defaultValue</var>="true" /&gt;
-        &lt;<a class="kw" href="http://developer.android.com/reference/android/preference/EditTextPreference.html">EditTextPreference</a>
-            android:<var>defaultValue</var>="htdocs"
-            android:<var>key</var>="docroot"
-            android:<var>title</var>="Document root" /&gt;
-        &lt;<a class="kw" href="http://developer.android.com/reference/android/preference/ListPreference.html">ListPreference</a>
-            android:<var>key</var>="option"
-            android:<var>entryValues</var>="@array/options"
-            ... /&gt;
-        ...
-    &lt;<b>/PreferenceCategory</b>&gt;
-&lt;<b>/PreferenceScreen</b>&gt;
-</pre>
-<p>for <tt>ListPreference</tt>, in <tt>res/values/strings.xml</tt> define</p>
-<pre class="cp">&lt;<b>string-array</b> <var>name</var>="options"&gt;
-    &lt;<b>item</b>&gt;Item1&lt;<b>/item</b>&gt;
-    &lt;<b>item</b>&gt;Item2&lt;<b>/item</b>&gt;
-&lt;<b>/string-array</b>&gt;</pre>
-</li>
-<li>
-<p>Add in <tt>AndroidManifest.xml</tt> settings activity definition</p>
-<pre class="cp">&lt;<b>activity</b>
-    android:<var>name</var>=".Settings"
-    android:<var>label</var>="@string/app_name" &gt;
-    &lt;<b>intent-filter</b>&gt;
-        &lt;<b>action</b> android:<var>name</var>="com.vera5.httpd.Settings" /&gt;
-        &lt;<b>category</b> android:<var>name</var>="android.intent.category.PREFERENCE" /&gt;
-    &lt;<b>/intent-filter</b>&gt;
-&lt;<b>/activity</b>&gt;</pre>
-</li>
-<li>
-<p>Create <tt><a href="http://developer.android.com/reference/android/app/Activity.html">Activity</a></tt> that extends <tt><a href="http://developer.android.com/reference/android/preference/PreferenceActivity.html">PreferenceActivity</a></tt>.</p>
-<pre class="cp"><b>import</b> android.os.Bundle;
-<b>import</b> android.preference.PreferenceActivity;
-
-<b>public class</b> Settings extends PreferenceActivity {
-    @Override
-    <b>public void</b> onCreate(Bundle <var>savedInstanceState</var>) {
-        super.onCreate(<var>savedInstanceState</var>);
-        addPreferencesFromResource(R.xml.<var title="res/xml/preferences.xml">preferences</var>);
-    }
-}</pre>
-</li>
-<li>
-<p>To listen for changes</p>
-<pre class="cp"><b>public void</b> onSharedPreferenceChanged(SharedPreferences <var>sharedPreferences</var>, String <var>key</var>) {
-        if (<var>key</var>.equals(KEY_PREF_SYNC_CONN)) {
-            Preference <var>p</var> = findPreference(<var>key</var>);
-            <i class="comment">// Set summary to be the user-description for the selected value</i>
-            p.setSummary(sharedPreferences.getString(<var>key</var>, ""));
-        }
-    }</pre>
-<p>and hook <tt>onPause/onResume</tt></p>
-<pre class="cp">@Override
-<b>protected void</b> onResume() {
-    ...
-    getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-    ...
-}
-
-@Override
-<b>protected void</b> onPause() {
-    ...
-    getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-    ...
-}</pre>
-</li>
-<li>
-<p>In the main activity, initialize things</p>
-<pre class="cp"><b>import</b> android.content.SharedPreferences;
-...
-<b>private</b> SharedPreferences <var>preferences</var>;
-...
-<b>public void</b> onCreate() {
-    ...
-    <var>preferences</var> = PreferenceManager.getDefaultSharedPreferences(this);
-    Log.d(TAG, <var>preferences</var>.getString(<var>key</var>, ""));
-    ...
-}</pre>
-</li>
-<li>
-<p>To launch the activity</p>
-<pre class="cp">startActivity(new Intent("<var title="or whatever activity name is">.Settings</var>"));</pre>
-</li>
-</ol>
-
-<p class="note">References:
-<a href="http://developer.android.com/guide/topics/ui/settings.html">Guide</a>,
-<a href="http://wptrafficanalyzer.in/blog/a-preference-activity-application-in-android/">Sample app</a>
-</p>
-
-<p>For <tt>Settings</tt> activity &mdash; <small>(for me, when tested with the <tt>emulator</tt>)</small> when the activity is launched <tt>onStart</tt> is fired (instead of <tt>onCreate</tt>), and on [Back/Home] button <tt>onStop</tt> (instead of <tt>onPause</tt>).</p>
-<p>In order <tt>PreferenceManager</tt> save settings &mdash; every setting should have a key defined in <tt>preferences.xml</tt>.</p>
 
 <p><b>Activity persistence</b><br/>
 In <tt>AndroidManifest.xml</tt> add to the main activity</p>
