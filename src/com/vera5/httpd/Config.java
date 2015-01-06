@@ -6,7 +6,5 @@ public class Config {
 	public String index;
 	public CharSequence defaultIndex;
 	public String version;
-	public String footerName;
-	public byte[] footerData;
-	public int footerLen;
+	public String footer;
 }

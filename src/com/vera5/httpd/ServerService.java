@@ -38,6 +38,7 @@ public class ServerService extends Service {
 	private Intent intent;
 	private Handler handler;
 	private Config cfg;
+	public static PlainFile footer;
 
 
     @Override
@@ -51,6 +52,10 @@ public class ServerService extends Service {
 	public void configure(Handler handler, Config cfg) {
 		this.handler = handler;
 		this.cfg = cfg;
+		if (cfg.footer.length() > 0) {
+			footer = new PlainFile(cfg.root+"/"+cfg.footer);
+			footer.get();
+		}
 	}
 
 	@Override
