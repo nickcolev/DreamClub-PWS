@@ -57,7 +57,7 @@ class ServerHandler extends Thread {
 				// Caching
 				if (null != request.IfNoneMatch) {
 					if (request.IfNoneMatch.equals(doc.ETag)) {
-						plainResponse(304, "Not Modified");
+						plainResponse(304, doc.type, "Not Modified");
 						return;
 					}
 				}

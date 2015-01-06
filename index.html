@@ -24,6 +24,7 @@
  <li>Implement autostart of the service</li>
  <li>PUT/POST implementation</li>
  <li>Footer implementation</li>
+ <li>Remove trailing <tt>/</tt>/add leading <tt>/</tt> to paths</li>
  <li>When WiFi goes off &mdash; restart at localhost. When goes on &mdash; restart at the IP.</li>
 </ul>
 
@@ -57,5 +58,9 @@ In <tt>AndroidManifest.xml</tt> add to the main activity</p>
 <b>public void</b> onBackPressed() {
     moveTaskToBack(true);
 }</pre>
+
+<p><b>APK name</b><br/>
+it <tt>build.xml</tt></p>
+<pre class="cp">&lt;<b>project</b> <var>name</var>="aws" ...</pre>
 
 </body></html>

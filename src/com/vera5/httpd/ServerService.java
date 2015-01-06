@@ -52,8 +52,8 @@ public class ServerService extends Service {
 	public void configure(Handler handler, Config cfg) {
 		this.handler = handler;
 		this.cfg = cfg;
-		if (cfg.footer.length() > 0) {
-			footer = new PlainFile(cfg.root+"/"+cfg.footer);
+		if (cfg.footer.length() > 0) {						// FIXME What if footer has been manually changed?
+			footer = new PlainFile(cfg.root+cfg.footer);	// FIXME Watch for leading/trailing slash
 			footer.get();
 		}
 	}

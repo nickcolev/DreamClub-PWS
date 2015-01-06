@@ -51,8 +51,8 @@ public class PlainFile {
 		return "" + f.length() + f.lastModified();
 	}
 
-	private String guessContentType (String fname) {
-		FileNameMap map = URLConnection.getFileNameMap();
+	private String guessContentType (final String fname) {
+		final FileNameMap map = URLConnection.getFileNameMap();
 		String type = map.getContentTypeFor(fname);
 		if (null == type) type = "application/octet-stream";
 		// My env doesn't recognize SVG
