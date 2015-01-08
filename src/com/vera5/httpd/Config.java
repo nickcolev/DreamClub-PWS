@@ -12,7 +12,6 @@ import android.util.Log;
 public class Config {
 
 	static final String TAG = "PWS.Config";
-	public static int port;
 	public static String root;
 	public static String index;
 	public static CharSequence defaultIndex;
@@ -21,11 +20,9 @@ public class Config {
 
 	public void configure(SharedPreferences p) {
 		try {
-			String s = p.getString("port", "8080");
-			this.port = Integer.parseInt(s);
-			this.root = p.getString("root", defaultDocRoot());
+			this.root = setPath(p.getString("root", defaultDocRoot()));
 			this.index = p.getString("index", null);	// FIXME Can't we get it from 'strings'?
-			this.footer = p.getString("footer", "");
+			this.footer = setPath(p.getString("footer", ""));
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
@@ -33,6 +30,14 @@ public class Config {
 
 	private String defaultDocRoot() {
 		return Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
+	}
+
+	private String setPath(String path) {
+		// Remove trailing slash
+		if (path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
+		// Add leading slash on return
+		return (path.startsWith("/") ? "" : "/") + path;
 	}
 
 }

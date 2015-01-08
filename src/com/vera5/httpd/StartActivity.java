@@ -139,11 +139,11 @@ public class StartActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == SETTINGS_REQUEST) {
+			cfg.configure(prefs);
 			if (resultCode == SETTINGS_CHANGED) {
 				// Restart service (better approach?)
 				stopService(intent);
 				mBoundService.closeSocket();
-				cfg.configure(prefs);
 				startService(intent);
 			}
 		}

@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class Settings extends PreferenceActivity {
 
-  private boolean changed;
   OnSharedPreferenceChangeListener listener;
 
 	@Override
@@ -28,8 +27,6 @@ public class Settings extends PreferenceActivity {
 		listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 			public void onSharedPreferenceChanged(SharedPreferences p, String key) {
 				setSummary(p, key);
-				setResult(StartActivity.SETTINGS_CHANGED);
-				// TODO Restart server if port changed
 			}
 		};
 	}
@@ -37,7 +34,6 @@ public class Settings extends PreferenceActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		this.changed = false;
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
 		p.registerOnSharedPreferenceChangeListener(listener);
 	}
@@ -52,7 +48,9 @@ public class Settings extends PreferenceActivity {
 		try {
 			EditTextPreference pref = (EditTextPreference) findPreference(key);
 			pref.setSummary(p.getString(key, ""));
-			this.changed = true;
+			// Not necessary to signal restart but for port change
+			if (key.equals("port"))
+				setResult(StartActivity.SETTINGS_CHANGED);
 		} catch (Exception e) {
 			Log.e("httpd.setSummary()", e.getMessage());
 		}	

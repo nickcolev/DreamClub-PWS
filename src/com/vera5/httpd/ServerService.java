@@ -25,6 +25,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.ServerSocket;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 
 public class ServerService extends Service {
 
@@ -45,6 +48,7 @@ public class ServerService extends Service {
     public void onCreate() {
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notification = new Notification(R.drawable.icon24, "Starting", System.currentTimeMillis());
+		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
     }
 
@@ -73,13 +77,14 @@ public class ServerService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		this.intent = intent;
 		final int currentId = startId;
+		final int port = getPort();
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
 				String ip = getIP();
 				try {
 					InetAddress localhost = InetAddress.getByName(ip);;
-					serverSocket = new ServerSocket(cfg.port, 0, localhost);
+					serverSocket = new ServerSocket(port, 0, localhost);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
 					log(e.getMessage());
@@ -87,7 +92,7 @@ public class ServerService extends Service {
 					return;
 				}
 				try {
-					String s = ip + ":" + cfg.port;
+					String s = ip + ":" + port;
 					updateNotifiction(s);
 					log("Waiting for connections on " + s);
 					while (!Thread.currentThread().isInterrupted()) {
@@ -107,6 +112,11 @@ public class ServerService extends Service {
 		serviceThread = new Thread(r);
 		serviceThread.start();
 		return Service.START_STICKY;
+	}
+
+	private int getPort() {
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+		return Integer.parseInt(p.getString("port", "8080"));
 	}
 
 	@Override

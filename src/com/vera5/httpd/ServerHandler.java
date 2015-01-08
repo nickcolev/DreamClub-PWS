@@ -36,24 +36,20 @@ class ServerHandler extends Thread {
 
 	private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
 
+		if (request.uri == null) {
+			Log.e(TAG, "(null) requested");
+			return;
+		}
+
 		String dokument = getDokument(request.uri);
-
-		// Folder? -- add default document index name
-		try {
-			File f = new File(dokument);
-			if (f.exists()) {
-				if (f.isDirectory())
-					dokument += (dokument.endsWith("/") ? "" : "/")	+ cfg.index;
-			}
-		} catch (Exception e) {}
-
-		Log.d(TAG, "Serving " + dokument);
+		String path = cfg.root + dokument;
+		Log.i(TAG, "Serving " + path);
 
 		// Process
 		try {
-			File f = new File(dokument);
+			File f = new File(path);
 			if (f.exists()) {
-				PlainFile doc = new PlainFile(dokument);
+				PlainFile doc = new PlainFile(path);
 				// Caching
 				if (null != request.IfNoneMatch) {
 					if (request.IfNoneMatch.equals(doc.ETag)) {
@@ -78,11 +74,11 @@ class ServerHandler extends Thread {
 				log(dokument);
 			} else {
 				log(dokument+" not found");
-				if (dokument.equals(cfg.root+"/"+cfg.index) ||
-					dokument.equals(cfg.root+"/")) {
+				if (dokument.equals("/"+cfg.index)) {
 					plainResponse(200, "text/html", cfg.defaultIndex);
-				} else
-					plainResponse(404, request.uri + " not found");
+				} else {
+					plainResponse(403, "Forbidden");
+				}
 			}
 		} catch (Exception e) {
 			log(e.getMessage());
@@ -105,12 +101,22 @@ class ServerHandler extends Thread {
 	}
 
 	private String getDokument (String fname) {
-		String s;
+		if (fname == null) return cfg.root;
+		String s = fname.replaceFirst ("[\\?#](.*)","");	// Strip after ? or #
 		try {
-			s = fname.replaceFirst ("[\\?#](.*)","");
 			s = URLDecoder.decode (s);
-		} catch (Exception e) { s = fname; }
-		return cfg.root + s;
+		} catch (Exception e) {
+			s = fname;
+		}
+		// Folder? -- add default document index name
+		try {
+			File f = new File(cfg.root + s);
+			if (f.exists()) {
+				if (f.isDirectory())
+					s += (s.endsWith("/") ? "" : "/")	+ cfg.index;
+			}
+		} catch (Exception e) {}
+		return s;
 	}
 
 	private String getHeaderBase (int code, String type, int len) {
