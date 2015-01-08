@@ -108,7 +108,6 @@ class ServerHandler extends Thread {
 		String s;
 		try {
 			s = fname.replaceFirst ("[\\?#](.*)","");
-			s = 
 			s = URLDecoder.decode (s);
 		} catch (Exception e) { s = fname; }
 		return cfg.root + s;

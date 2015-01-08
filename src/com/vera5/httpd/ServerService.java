@@ -99,6 +99,7 @@ public class ServerService extends Service {
 					}
 				} catch (Exception ie) {
 					Log.i(TAG, "Shutting down...");
+					closeSocket();
 					serviceThread = null;
 				}
 			}
@@ -107,6 +108,20 @@ public class ServerService extends Service {
 		serviceThread = new Thread(r);
 		serviceThread.start();
 		return Service.START_STICKY;
+	}
+
+	@Override
+	public void onDestroy() {
+		mNM.cancel(NOTIFICATION_ID);
+		super.onDestroy();
+	}
+
+	public void closeSocket() {
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			Log.e(TAG, e.getMessage());
+		}
 	}
 
 	private void Tooltip(String s) {

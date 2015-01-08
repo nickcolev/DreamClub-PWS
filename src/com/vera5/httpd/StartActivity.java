@@ -30,13 +30,15 @@ import android.preference.PreferenceManager;
 
 public class StartActivity extends Activity {
 
-	private static final String TAG = "PWS";
+	static final String TAG = "PWS";
+	static final int SETTINGS_REQUEST = 4711;
+	static final int SETTINGS_CHANGED = 12;
     private static ScrollView mScroll;
     private static TextView mLog;
 	private ServerService mBoundService;
 	private SharedPreferences prefs;
 	private Intent intent;
-	private Config cfg;
+	private static Config cfg;
 
     final Handler mHandler = new Handler() {
 		@Override
@@ -58,17 +60,10 @@ public class StartActivity extends Activity {
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		// Configuration
 		cfg = new Config();
-		try {
-			String s = prefs.getString("port", "8080");
-			cfg.port = Integer.parseInt(s);
-			cfg.root = prefs.getString("root", defaultDocRoot());
-			cfg.index = prefs.getString("index", null);	// FIXME Can't we get it from 'strings'?
-			cfg.footer = prefs.getString("footer", "");
-			cfg.version = version();
-			cfg.defaultIndex = getText(R.string.defaultIndex);
-		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
-		}
+		cfg.configure(prefs);
+		// Version, default index content are static
+		cfg.version = version();
+		cfg.defaultIndex = getText(R.string.defaultIndex);
 		log("Version "+cfg.version);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
@@ -88,7 +83,7 @@ public class StartActivity extends Activity {
     }
 
 	// FIXME Not used. Remove it from final release if still not used.
-	private void Tooltip(String s) {
+	public void Tooltip(String s) {
 		Toast.makeText(StartActivity.this, s, Toast.LENGTH_SHORT).show();
 	}
 
@@ -128,7 +123,7 @@ public class StartActivity extends Activity {
 		switch (item.getItemId()) {
 			case R.id.settings:
 				try {
-					startActivity(new Intent(".Settings"));
+					startActivityForResult(new Intent(".Settings"), SETTINGS_REQUEST);
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());
 				}
@@ -141,8 +136,17 @@ public class StartActivity extends Activity {
 		}
 	}
 
-	public static String defaultDocRoot() {
-		return Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == SETTINGS_REQUEST) {
+			if (resultCode == SETTINGS_CHANGED) {
+				// Restart service (better approach?)
+				stopService(intent);
+				mBoundService.closeSocket();
+				cfg.configure(prefs);
+				startService(intent);
+			}
+		}
 	}
 
 	private String version() {
