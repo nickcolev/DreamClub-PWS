@@ -45,7 +45,6 @@ public class ServerService extends Service {
     public void onCreate() {
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notification = new Notification(R.drawable.icon24, "Starting", System.currentTimeMillis());
-		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
     }
 
