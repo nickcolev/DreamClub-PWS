@@ -78,6 +78,8 @@ public class ServerService extends Service {
 		this.intent = intent;
 		final int currentId = startId;
 		final int port = getPort();
+Log.d("***CP28***", "port="+port);
+		///if (serverSocket != null) closeSocket();	// FIXME Necessary?!
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;

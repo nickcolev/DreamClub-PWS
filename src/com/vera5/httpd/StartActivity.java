@@ -142,8 +142,8 @@ public class StartActivity extends Activity {
 			cfg.configure(prefs);
 			if (resultCode == SETTINGS_CHANGED) {
 				// Restart service (better approach?)
-				stopService(intent);
 				mBoundService.closeSocket();
+				stopService(intent);
 				startService(intent);
 			}
 		}
