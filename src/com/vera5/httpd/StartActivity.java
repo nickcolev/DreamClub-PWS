@@ -123,7 +123,8 @@ public class StartActivity extends Activity {
 		switch (item.getItemId()) {
 			case R.id.settings:
 				try {
-					startActivityForResult(new Intent(".Settings"), SETTINGS_REQUEST);
+					///startActivityForResult(new Intent(".Settings"), SETTINGS_REQUEST);
+					startActivity(new Intent(".Settings"));
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());
 				}

@@ -6,6 +6,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.SupplicantState;
@@ -55,10 +56,19 @@ public class ServerService extends Service {
 	public void configure(Handler handler, Config cfg) {
 		this.handler = handler;
 		this.cfg = cfg;
-		if (cfg.footer.length() > 0) {						// FIXME What if footer has been manually changed?
-			footer = new PlainFile(cfg.root+cfg.footer);	// FIXME Watch for leading/trailing slash
+		if (cfg.footer.length() > 0) {					// FIXME What if footer has been manually changed?
+			footer = new PlainFile(cfg.root+cfg.footer);
 			footer.get();
 		}
+	}
+
+	public void ReStart() {
+		Intent intent = new Intent(getApplicationContext(), ServerService.class);
+		Tooltip("ReStart");
+		closeSocket();
+		stopService(intent);
+		// Configure here
+		startService(intent);
 	}
 
 	@Override
@@ -105,6 +115,7 @@ public class ServerService extends Service {
 					Log.i(TAG, "Shutting down...");
 					closeSocket();
 					serviceThread = null;
+					updateNotifiction("Stopped");
 				}
 			}
 		};
