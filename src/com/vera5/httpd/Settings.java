@@ -60,10 +60,12 @@ public class Settings extends PreferenceActivity {
 			EditTextPreference pref = (EditTextPreference) findPreference(key);
 			pref.setSummary(p.getString(key, ""));
 			// Not necessary to signal restart but for port change
-			if (key.equals("port")) {
-				setResult(StartActivity.SETTINGS_CHANGED);
-				if (mBoundService != null) {
+			if (mBoundService != null) {
+				if (key.equals("port")) {
 					mBoundService.ReStart();
+				}
+				if (key.equals("footer")) {
+					mBoundService.getFooter();
 				}
 			}
 		} catch (Exception e) {

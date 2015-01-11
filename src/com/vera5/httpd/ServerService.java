@@ -56,10 +56,7 @@ public class ServerService extends Service {
 	public void configure(Handler handler, Config cfg) {
 		this.handler = handler;
 		this.cfg = cfg;
-		if (cfg.footer.length() > 0) {					// FIXME What if footer has been manually changed?
-			footer = new PlainFile(cfg.root+cfg.footer);
-			footer.get();
-		}
+		getFooter();
 	}
 
 	public void ReStart() {
@@ -68,6 +65,7 @@ public class ServerService extends Service {
 		closeSocket();
 		stopService(intent);
 		// Configure here
+		getFooter();
 		startService(intent);
 	}
 
@@ -125,6 +123,19 @@ public class ServerService extends Service {
 		return Service.START_STICKY;
 	}
 
+	public void getFooter() {
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+		String fname = p.getString("footer", "");
+		if (fname.length() > 0) {
+			fname = sanify(p.getString("root", "/sdcard/htdocs")) + sanify(fname);
+			footer = new PlainFile(fname);
+			if (footer.length > 0) {
+				log("Setting "+fname);
+				footer.get();
+			}
+		}
+	}
+
 	private int getPort() {
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
 		return Integer.parseInt(p.getString("port", "8080"));
@@ -156,11 +167,13 @@ public class ServerService extends Service {
 	}
 
 	private void log(String s) {
-		Message msg = new Message();
-		Bundle b = new Bundle();
-		b.putString("msg", s);
-		msg.setData(b);
-		handler.sendMessage(msg);
+		if (handler != null) {
+			Message msg = new Message();
+			Bundle b = new Bundle();
+			b.putString("msg", s);
+			msg.setData(b);
+			handler.sendMessage(msg);
+		}
 	}
 
 	private String getIP() {
@@ -200,4 +213,8 @@ public class ServerService extends Service {
     	return isRunning;
     }
 
+	private String sanify(String path) {
+		if (path.endsWith("/")) path = path.substring(1, path.length() - 1);	// Remove trailing slash
+		return (path.startsWith("/") ? "" : "/") + path;	// Add leading slash
+	}
 }
