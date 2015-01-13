@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 public class Settings extends PreferenceActivity {
 
-  ///private Intent intent;
   private ServerService mBoundService;
   OnSharedPreferenceChangeListener listener;
 
@@ -59,10 +58,13 @@ public class Settings extends PreferenceActivity {
 		try {
 			EditTextPreference pref = (EditTextPreference) findPreference(key);
 			pref.setSummary(p.getString(key, ""));
-			// Not necessary to signal restart but for port change
 			if (mBoundService != null) {
+				// Not necessary to restart but for port change
 				if (key.equals("port")) {
 					mBoundService.ReStart();
+				}
+				if (key.equals("index")) {
+					mBoundService.cfg.index = p.getString(key, "");
 				}
 				if (key.equals("footer")) {
 					mBoundService.getFooter();

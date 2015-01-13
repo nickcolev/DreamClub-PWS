@@ -14,22 +14,24 @@ public class PlainFile {
 	public String time;		// last updated
 	public byte[] content;
 	public String type;
-	public String ETag;
+	public String ETag = "";
 	public boolean exists = false;
-	private String fname;
+	public String fname;
+	public String err;
 	private File f;
 
 	public PlainFile(String fname) {
-		this.fname = fname;
 		f = new File(fname);
-		if (f.exists()) {
-			SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
-			this.time = sdf.format(f.lastModified());
-			this.ETag = ETag(f);
-			this.length = (int)f.length();
-			this.type = guessContentType(fname);
-			this.exists = true;
-		}
+		if (f.exists())
+			if (f.isFile()) {
+				this.fname = fname;
+				SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
+				this.time = sdf.format(f.lastModified());
+				this.ETag = ETag(f);
+				this.length = (int)f.length();
+				this.type = guessContentType(fname);
+				this.exists = true;
+			}
 	}
 
 	public void get() {

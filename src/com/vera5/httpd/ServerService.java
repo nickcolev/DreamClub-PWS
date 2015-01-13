@@ -8,7 +8,11 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -17,6 +21,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 import java.io.File;
@@ -26,13 +31,11 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.ServerSocket;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-
 
 public class ServerService extends Service {
 
 	private static final String TAG = "PWS.Service";
+	private static String version;
     private int NOTIFICATION_ID = 4711;
     private NotificationManager mNM;
     private Notification notification;
@@ -40,22 +43,28 @@ public class ServerService extends Service {
     private Thread serviceThread = null;
 	private ServerSocket serverSocket;
 	private Intent intent;
-	private Handler handler;
-	private Config cfg;
+	private SharedPreferences prefs;
+	public Config cfg;
+	public Handler handler;
 	public static PlainFile footer;
 
 
     @Override
     public void onCreate() {
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notification = new Notification(R.drawable.icon24, "Starting", System.currentTimeMillis());
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
+		configure();
     }
 
-	public void configure(Handler handler, Config cfg) {
-		this.handler = handler;
-		this.cfg = cfg;
+	public void configure() {
+		cfg = new Config();
+		cfg.configure(prefs);
+		cfg.version = version();
+		cfg.defaultIndex = getResources().getText(R.string.defaultIndex);
 		getFooter();
 	}
 
@@ -64,8 +73,6 @@ public class ServerService extends Service {
 		Tooltip("ReStart");
 		closeSocket();
 		stopService(intent);
-		// Configure here
-		getFooter();
 		startService(intent);
 	}
 
@@ -124,21 +131,17 @@ public class ServerService extends Service {
 	}
 
 	public void getFooter() {
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-		String fname = p.getString("footer", "");
-		if (fname.length() > 0) {
-			fname = sanify(p.getString("root", "/sdcard/htdocs")) + sanify(fname);
-			footer = new PlainFile(fname);
-			if (footer.length > 0) {
-				log("Setting "+fname);
-				footer.get();
-			}
+		String fname = prefs.getString("footer", "");
+		fname = cfg.sanify(prefs.getString("root", "/sdcard/htdocs")) + cfg.sanify(fname);
+		footer = new PlainFile(fname);
+		if (footer.length > 0) {	// FIXME Add check if it's text/html?
+			log("Setting "+fname);
+			footer.get();
 		}
 	}
 
 	private int getPort() {
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-		return Integer.parseInt(p.getString("port", "8080"));
+		return Integer.parseInt(prefs.getString("port", "8080"));
 	}
 
 	@Override
@@ -213,8 +216,14 @@ public class ServerService extends Service {
     	return isRunning;
     }
 
-	private String sanify(String path) {
-		if (path.endsWith("/")) path = path.substring(1, path.length() - 1);	// Remove trailing slash
-		return (path.startsWith("/") ? "" : "/") + path;	// Add leading slash
+	private String version() {
+		try {
+			PackageManager packageManager = getPackageManager();
+			PackageInfo packageInfo = packageManager.getPackageInfo(getPackageName(),0);
+			return packageInfo.versionName;
+		} catch (PackageManager.NameNotFoundException e) {
+			Log.e(TAG, "Error while fetching app version", e);
+			return "?";
+		}
 	}
 }

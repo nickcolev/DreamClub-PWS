@@ -31,14 +31,10 @@ import android.preference.PreferenceManager;
 public class StartActivity extends Activity {
 
 	static final String TAG = "PWS";
-	static final int SETTINGS_REQUEST = 4711;
-	static final int SETTINGS_CHANGED = 12;
     private static ScrollView mScroll;
     private static TextView mLog;
 	private ServerService mBoundService;
-	private SharedPreferences prefs;
 	private Intent intent;
-	private static Config cfg;
 
     final Handler mHandler = new Handler() {
 		@Override
@@ -55,16 +51,6 @@ public class StartActivity extends Activity {
 		mLog = (TextView) findViewById(R.id.log);
 		mScroll = (ScrollView) findViewById(R.id.ScrollView01);
 		intent = new Intent(this, ServerService.class);
-		// Settings
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		// Configuration
-		cfg = new Config();
-		cfg.configure(prefs);
-		// Version, default index content are static
-		cfg.version = version();
-		cfg.defaultIndex = getText(R.string.defaultIndex);
-		log("Version "+cfg.version);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -90,9 +76,9 @@ public class StartActivity extends Activity {
 	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 			mBoundService = ((ServerService.LocalBinder)service).getService();
+			mBoundService.handler = mHandler;
 			if(!mBoundService.isRunning()) {
 				try {
-					mBoundService.configure(mHandler, cfg);
 					startService(intent);
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());
@@ -123,7 +109,6 @@ public class StartActivity extends Activity {
 		switch (item.getItemId()) {
 			case R.id.settings:
 				try {
-					///startActivityForResult(new Intent(".Settings"), SETTINGS_REQUEST);
 					startActivity(new Intent(".Settings"));
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage());
@@ -134,30 +119,6 @@ public class StartActivity extends Activity {
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
-		}
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == SETTINGS_REQUEST) {
-			cfg.configure(prefs);
-			if (resultCode == SETTINGS_CHANGED) {
-				// Restart service (better approach?)
-				mBoundService.closeSocket();
-				stopService(intent);
-				startService(intent);
-			}
-		}
-	}
-
-	private String version() {
-		try {
-			PackageManager packageManager = getPackageManager();
-			PackageInfo packageInfo = packageManager.getPackageInfo(getPackageName(),0);
-			return packageInfo.versionName;
-		} catch (PackageManager.NameNotFoundException e) {
-			Log.e(TAG, "Error while fetching app version", e);
-			return "?";
 		}
 	}
 

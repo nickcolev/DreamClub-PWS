@@ -37,23 +37,26 @@ class ServerHandler extends Thread {
 	private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
 
 		if (request.uri == null) {
+			log("(null) requested");
 			Log.e(TAG, "(null) requested");
 			return;
 		}
 
 		String dokument = getDokument(request.uri);
 		String path = cfg.root + dokument;
-		Log.i(TAG, "Serving " + path);
 
 		// Process
 		try {
 			File f = new File(path);
 			if (f.exists()) {
 				PlainFile doc = new PlainFile(path);
+				String ETag = doc.ETag + ServerService.footer.ETag;
+// FIXME Combined file/footer ETag
+Log.d("***CP36***", "ETag: "+ETag);
 				// Caching
 				if (null != request.IfNoneMatch) {
 					if (request.IfNoneMatch.equals(doc.ETag)) {
-						plainResponse(304, doc.type, "Not Modified");
+						plainResponse(304, doc.type, "Not Modified");	// FIXME Do we need msg for 304?
 						return;
 					}
 				}
@@ -111,10 +114,9 @@ class ServerHandler extends Thread {
 		// Folder? -- add default document index name
 		try {
 			File f = new File(cfg.root + s);
-			if (f.exists()) {
+			if (f.exists())
 				if (f.isDirectory())
 					s += (s.endsWith("/") ? "" : "/")	+ cfg.index;
-			}
 		} catch (Exception e) {}
 		return s;
 	}
