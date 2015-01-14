@@ -47,6 +47,7 @@ public class ServerService extends Service {
 	public Config cfg;
 	public Handler handler;
 	public static PlainFile footer;
+	public static Logger logger;
 
 
     @Override
@@ -58,6 +59,7 @@ public class ServerService extends Service {
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
 		configure();
+		logger = new Logger(getFilesDir().getPath());
     }
 
 	public void configure() {
@@ -92,11 +94,13 @@ public class ServerService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		this.intent = intent;
 		final int currentId = startId;
+		final String ip = getIP();
 		final int port = getPort();
+		logger.put("Starting at "+ip+":"+port);
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
-				String ip = getIP();
+				///String ip = getIP();
 				try {
 					InetAddress localhost = InetAddress.getByName(ip);;
 					serverSocket = new ServerSocket(port, 0, localhost);
@@ -106,13 +110,15 @@ public class ServerService extends Service {
 					stopSelf();
 					return;
 				}
+				String s = ip + ":" + port;
+				updateNotifiction(s);
+				log("Waiting for connections on " + s);
 				try {
-					String s = ip + ":" + port;
-					updateNotifiction(s);
-					log("Waiting for connections on " + s);
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
-						log("request  from " + client.getInetAddress().toString());
+						s = "request  from " + client.getInetAddress().toString();
+						log(s);
+						logger.put(s);
 						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();
 					}
@@ -120,7 +126,7 @@ public class ServerService extends Service {
 					Log.i(TAG, "Shutting down...");
 					closeSocket();
 					serviceThread = null;
-					updateNotifiction("Stopped");
+					stopSelf();
 				}
 			}
 		};

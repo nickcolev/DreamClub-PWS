@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.text.SimpleDateFormat;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,8 +36,7 @@ class ServerHandler extends Thread {
 	private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
 
 		if (request.uri == null) {
-			log("(null) requested");
-			Log.e(TAG, "(null) requested");
+			ServerService.logger.put("(null) requested");
 			return;
 		}
 
@@ -77,6 +75,7 @@ Log.d("***CP36***", "ETag: "+ETag);
 				log(dokument);
 			} else {
 				log(dokument+" not found");
+				ServerService.logger.put(dokument);
 				if (dokument.equals("/"+cfg.index)) {
 					plainResponse(200, "text/html", cfg.defaultIndex);
 				} else {
@@ -130,8 +129,7 @@ Log.d("***CP36***", "ETag: "+ETag);
 	}
 
 	private String getHeader (PlainFile doc, int len) {
-		SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
-		// BUG: int allows up to ~2GB file. It's OK for web content, but...?!
+		// BUG: 'int' allows up to ~2GB file. It's OK for web content, but...?!
 		return	getHeaderBase (200, doc.type, len + doc.length)
 			+ "\nETag: " + doc.ETag
 			+ "\nLast-Modified: " + doc.time
@@ -145,6 +143,7 @@ Log.d("***CP36***", "ETag: "+ETag);
 
 	// FIXME Same in the service
 	private void log(String s) {
+		ServerService.logger.put(s);
 		Message msg = new Message();
 		Bundle b = new Bundle();
 		b.putString("msg", s);
