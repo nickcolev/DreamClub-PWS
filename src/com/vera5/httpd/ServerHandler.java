@@ -39,7 +39,13 @@ class ServerHandler extends Thread {
 	private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
 
 		if (request.uri == null) {
-			log("(null) requested", M_FILE);
+			logE("(null) requested");
+			return;
+		}
+
+		if (request.uri.equals("/log")) {
+Log.d("***CP33***", "log request");
+			plainResponse(200, "text/plain", ServerService.log.get());
 			return;
 		}
 
@@ -75,10 +81,10 @@ Log.d("***CP36***", "ETag: "+ETag);
 					out.write(ServerService.footer.content, 0, ServerService.footer.length);
 				}
 				out.flush();
-				log(request.log + dokument, M_FILE);
+				logI(request.log + dokument);
 			} else {
-				log(dokument+" not found", M_VIEW);
-				log(request.log + dokument + "--not found", M_FILE);
+				logV(dokument+" not found");
+				logE(request.log + dokument + "--not found");
 				if (dokument.equals("/"+cfg.index)) {
 					plainResponse(200, "text/html", cfg.defaultIndex);
 				} else {
@@ -86,7 +92,8 @@ Log.d("***CP36***", "ETag: "+ETag);
 				}
 			}
 		} catch (Exception e) {
-			log(e.getMessage(), M_FILE + M_VIEW);
+			logV(e.getMessage());
+			logE(e.getMessage());
 		}
 	}
 
@@ -144,16 +151,13 @@ Log.d("***CP36***", "ETag: "+ETag);
 		return	getHeaderBase (code, type, msg.length()) + "\n\n";
 	}
 
-	// FIXME Same in the service
+	// Aliases
+	private void logE(String s) { ServerService.log.e(s); }
+	private void logI(String s) { ServerService.log.i(s); }
+	private void logV(String s) { ServerService.log.v(s); }
 	private void log(String s, int mask) {
-		if ((mask & M_FILE) == M_FILE) ServerService.logger.put(s);
-		if ((mask & M_VIEW) == M_VIEW) {
-			Message msg = new Message();
-			Bundle b = new Bundle();
-			b.putString("msg", s);
-			msg.setData(b);
-			handler.sendMessage(msg);
-		}
+		if ((mask & M_FILE) == M_FILE) ServerService.log.i(s);
+		if ((mask & M_VIEW) == M_VIEW) ServerService.log.v(s);
 	}
 
 }

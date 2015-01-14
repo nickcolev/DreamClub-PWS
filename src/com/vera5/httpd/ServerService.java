@@ -47,7 +47,7 @@ public class ServerService extends Service {
 	public Config cfg;
 	public Handler handler;
 	public static PlainFile footer;
-	public static Logger logger;
+	public static Logger log;
 
 
     @Override
@@ -59,7 +59,8 @@ public class ServerService extends Service {
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
 		configure();
-		logger = new Logger(getFilesDir().getPath());
+		log = new Logger(getFilesDir().getPath());
+		log.enable();
     }
 
 	public void configure() {
@@ -72,7 +73,6 @@ public class ServerService extends Service {
 
 	public void ReStart() {
 		Intent intent = new Intent(getApplicationContext(), ServerService.class);
-		Tooltip("ReStart");
 		closeSocket();
 		stopService(intent);
 		startService(intent);
@@ -96,33 +96,33 @@ public class ServerService extends Service {
 		final int currentId = startId;
 		final String ip = getIP();
 		final int port = getPort();
-		logger.put("Starting at "+ip+":"+port);
+		log.setHandler(this.handler);
+		log.i("Starting at "+ip+":"+port);
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
-				///String ip = getIP();
 				try {
 					InetAddress localhost = InetAddress.getByName(ip);;
 					serverSocket = new ServerSocket(port, 0, localhost);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
-					log(e.getMessage());
+					log.v(e.getMessage());
 					stopSelf();
 					return;
 				}
 				String s = ip + ":" + port;
 				updateNotifiction(s);
-				log("Waiting for connections on " + s);
+				log.v("Waiting for connections on " + s);
 				try {
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
 						s = "request  from " + client.getInetAddress().toString();
-						log(s);
+						log.v(s);
 						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();
 					}
 				} catch (Exception ie) {
-					logger.put("Shutting down");
+					log.i("Shutting down");
 					closeSocket();
 					serviceThread = null;
 					stopSelf();
@@ -140,7 +140,7 @@ public class ServerService extends Service {
 		fname = cfg.sanify(prefs.getString("root", "/sdcard/htdocs")) + cfg.sanify(fname);
 		footer = new PlainFile(fname);
 		if (footer.length > 0) {	// FIXME Add check if it's text/html?
-			log("Setting "+fname);
+			log.v("Setting "+fname);
 			footer.get();
 		}
 	}
@@ -172,16 +172,6 @@ public class ServerService extends Service {
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, StartActivity.class), 0);
 		notification.setLatestEventInfo(this, getString(R.string.app_name), text, contentIntent);
 		mNM.notify(NOTIFICATION_ID, notification);
-	}
-
-	private void log(String s) {
-		if (handler != null) {
-			Message msg = new Message();
-			Bundle b = new Bundle();
-			b.putString("msg", s);
-			msg.setData(b);
-			handler.sendMessage(msg);
-		}
 	}
 
 	private String getIP() {
@@ -231,4 +221,5 @@ public class ServerService extends Service {
 			return "?";
 		}
 	}
+
 }
