@@ -118,12 +118,11 @@ public class ServerService extends Service {
 						client = serverSocket.accept();
 						s = "request  from " + client.getInetAddress().toString();
 						log(s);
-						logger.put(s);
 						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();
 					}
 				} catch (Exception ie) {
-					Log.i(TAG, "Shutting down...");
+					logger.put("Shutting down");
 					closeSocket();
 					serviceThread = null;
 					stopSelf();

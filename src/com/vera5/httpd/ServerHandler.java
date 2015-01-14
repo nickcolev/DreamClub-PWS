@@ -13,6 +13,9 @@ import android.util.Log;
 
 class ServerHandler extends Thread {
 
+  static final int M_VIEW = 1;
+  static final int M_FILE = 2;
+  
   private static final String TAG = "PWS.Handler";
   private BufferedReader in;
   private PrintWriter out;
@@ -36,7 +39,7 @@ class ServerHandler extends Thread {
 	private void response(Request request) {		// TODO Implement HEAD/POST/PUT/DELETE
 
 		if (request.uri == null) {
-			ServerService.logger.put("(null) requested");
+			log("(null) requested", M_FILE);
 			return;
 		}
 
@@ -72,18 +75,18 @@ Log.d("***CP36***", "ETag: "+ETag);
 					out.write(ServerService.footer.content, 0, ServerService.footer.length);
 				}
 				out.flush();
-				log(dokument);
+				log(request.log + dokument, M_FILE);
 			} else {
-				log(dokument+" not found");
-				ServerService.logger.put(dokument);
+				log(dokument+" not found", M_VIEW);
+				log(request.log + dokument + "--not found", M_FILE);
 				if (dokument.equals("/"+cfg.index)) {
 					plainResponse(200, "text/html", cfg.defaultIndex);
 				} else {
-					plainResponse(403, "Forbidden");
+					plainResponse(403, "Forbidden");	// FIXME Rather "Not found". Forbidden when there's not default index.
 				}
 			}
 		} catch (Exception e) {
-			log(e.getMessage());
+			log(e.getMessage(), M_FILE + M_VIEW);
 		}
 	}
 
@@ -142,13 +145,15 @@ Log.d("***CP36***", "ETag: "+ETag);
 	}
 
 	// FIXME Same in the service
-	private void log(String s) {
-		ServerService.logger.put(s);
-		Message msg = new Message();
-		Bundle b = new Bundle();
-		b.putString("msg", s);
-		msg.setData(b);
-		handler.sendMessage(msg);
+	private void log(String s, int mask) {
+		if ((mask & M_FILE) == M_FILE) ServerService.logger.put(s);
+		if ((mask & M_VIEW) == M_VIEW) {
+			Message msg = new Message();
+			Bundle b = new Bundle();
+			b.putString("msg", s);
+			msg.setData(b);
+			handler.sendMessage(msg);
+		}
 	}
 
 }

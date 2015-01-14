@@ -14,6 +14,7 @@ public class Request {
 	public String IfModifiedSince;
 	public String IfNoneMatch;
 	public byte[] data;			// PUT/POST
+	public String log;			// For Logger
 
 	public void get(Socket client) {
 		String s, a[];
@@ -42,6 +43,8 @@ public class Request {
 				i++;
 				// Note: 'this.' is not necessary (mandatory). Used for clarity.
 			}
+			this.log = client.getInetAddress().toString() +
+				" " + this.method + " ";
 		} catch (Exception e) {
 		}
 	}
