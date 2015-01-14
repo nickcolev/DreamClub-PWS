@@ -43,11 +43,17 @@ class ServerHandler extends Thread {
 			return;
 		}
 
+		// FIXME to be continued log output to client
 		if (request.uri.equals("/log")) {
-Log.d("***CP33***", "log request");
-			plainResponse(200, "text/plain", ServerService.log.get());
+			ServerService.log.get(toClient);
 			return;
 		}
+		if (request.uri.equals("/log?f=c")) {
+			ServerService.log.clean();
+			plainResponse(200, "text/plain", "log reset");
+			return;
+		}
+		
 
 		String dokument = getDokument(request.uri);
 		String path = cfg.root + dokument;

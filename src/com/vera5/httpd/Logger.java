@@ -4,10 +4,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -20,6 +24,16 @@ public class Logger {
 
 	public Logger(String path) {
 		this.path = path;
+	}
+
+	public void clean() {
+		String log = this.path + "/log.txt";
+		File f = new File(log);
+		try {
+			f.delete();
+			f.createNewFile();
+		} catch (IOException e) {
+		}
 	}
 
 	private void put(String tag, String s) {
@@ -56,9 +70,25 @@ public class Logger {
 		}
 	}
 
-	public CharSequence get() {	// We save timestamp in the log (to save space).
+	public CharSequence get(Socket socket) {	// We save timestamp in the log (to save space).
 								// For display, format it properly.
 		//String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz").format(new Date());	// GMT
+		String log = this.path + "/log.txt";
+		File f = new File(log);
+		String msg = "log to be here... (under development)";
+		try {
+			PrintWriter out = new PrintWriter (socket.getOutputStream(), true);
+			out.print("HTTP/1.1 200\nContent-Type: text/plain\nConnection: close\n\n");
+			BufferedReader in = new BufferedReader(new FileReader(f), 8192);
+			String line;
+			while ((line = in.readLine()) != null) {
+				out.println(line);
+			}
+			in.close();
+			out.flush();
+			out.close();
+		} catch (IOException e) {
+		}
 		return "log to be here... (under development)";
 	}
 
