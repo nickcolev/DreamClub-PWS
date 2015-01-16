@@ -20,31 +20,32 @@ public class Logger {
 	static final String TAG = "PWS.Logger";
 	private Handler handler = null;
 	private String path;
-	private boolean enable = false;	// (future development) set to 'false' to disable file logging
+	private boolean enable = true;	// Logging enabled by default
 
 	public Logger(String path) {
 		this.path = path;
 	}
 
 	public void clean() {
-		String log = this.path + "/log.txt";
+		String log = fname();
 		File f = new File(log);
 		try {
 			f.delete();
 			f.createNewFile();
 		} catch (IOException e) {
+			Log.e(TAG, e.getMessage());
 		}
 	}
 
 	private void put(String tag, String s) {
 		if (!enable) return;
 		String now = "" + new Date().getTime();		// write timestamp to save space (GMT)
-		String log = this.path + "/log.txt";
+		String log = fname();
 		File f = new File(log);
 		try {
 			if (!f.exists()) f.createNewFile();
 			BufferedWriter b = new BufferedWriter(new FileWriter(log, true));
-			b.append(now + "\t" + tag + "/" + s + "\n");
+			b.append(now + "\t" + tag + (s.startsWith("/") ? "" : "/") + s + "\n");
 			b.flush();
 			b.close();
 		} catch (IOException e) {
@@ -52,13 +53,14 @@ public class Logger {
 		}
 	}
 
+	// Helpers
 	public void enable() { enable = true; }
 	public void disable() { enable = false; }
-
 	public void setHandler(Handler handler) { this.handler = handler; }
-
 	public void i(String s) { put("I", s); }
 	public void e(String s) { put("E", s); }
+	public void s(String s) { put("S", s); }
+	private String fname() { return this.path + "/log.txt"; }
 
 	public void v(String s) {	// To a TextView
 		if (this.handler != null) {
@@ -70,26 +72,41 @@ public class Logger {
 		}
 	}
 
-	public CharSequence get(Socket socket) {	// We save timestamp in the log (to save space).
-								// For display, format it properly.
-		//String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz").format(new Date());	// GMT
-		String log = this.path + "/log.txt";
+	public void get(Socket socket, char c) {
+						// We save timestamp in the log (to save space).
+						// For display, format it properly.
+		String ts, a[], line, log = fname(), m = c + "/";
 		File f = new File(log);
-		String msg = "log to be here... (under development)";
 		try {
 			PrintWriter out = new PrintWriter (socket.getOutputStream(), true);
 			out.print("HTTP/1.1 200\nContent-Type: text/plain\nConnection: close\n\n");
 			BufferedReader in = new BufferedReader(new FileReader(f), 8192);
-			String line;
 			while ((line = in.readLine()) != null) {
-				out.println(line);
+				a = line.split("\t");
+				if (c != '?')	// Filter
+					if (!a[1].startsWith(m)) continue;
+				ts = formatTime(a[0]);
+				//out.println(line);
+				out.println(ts + "\t" + a[1]);
 			}
 			in.close();
 			out.flush();
 			out.close();
 		} catch (IOException e) {
+			Log.e(TAG, e.getMessage());
 		}
-		return "log to be here... (under development)";
+	}
+
+	private String formatTime(String timestamp) {
+		String sdf;
+		try {
+			// FIXME Better way?! (every cycle 'new')
+			sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(Long.valueOf(timestamp)));
+		} catch (Exception e) {
+			sdf = timestamp;
+			Log.e(TAG, e.getMessage());
+		}
+		return sdf;
 	}
 
 }

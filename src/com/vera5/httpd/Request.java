@@ -10,6 +10,7 @@ public class Request {
 	public String uri;
 	public String version;
 	public String ContentType;
+	public String ContentLength;
 	public String AcceptEncoding;
 	public String IfModifiedSince;
 	public String IfNoneMatch;
@@ -35,6 +36,8 @@ public class Request {
 					this.AcceptEncoding = a[1];
 				} else if (a[0].equals("Content-Type:")) {
 					this.ContentType = a[1];
+				} else if (a[0].equals("Content-Length:")) {
+					this.ContentLength = a[1];
 				} else if (a[0].equals("If-Modified-Since:")) {
 					this.IfModifiedSince = a[1];
 				} else if (a[0].equals("If-None-Match:")) {

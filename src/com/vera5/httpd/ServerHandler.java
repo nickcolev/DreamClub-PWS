@@ -43,15 +43,23 @@ class ServerHandler extends Thread {
 			return;
 		}
 
-		// FIXME to be continued log output to client
-		if (request.uri.equals("/log")) {
-			ServerService.log.get(toClient);
-			return;
-		}
-		if (request.uri.equals("/log?f=c")) {
-			ServerService.log.clean();
-			plainResponse(200, "text/plain", "log reset");
-			return;
+		// log, loge, logi
+		if (request.uri.startsWith("/log") && request.uri.length() < 6) {
+			char c = request.uri.length() == 4 ? '?' : request.uri.charAt(4);
+			switch(c) {
+				case 'c':
+					ServerService.log.clean();
+					plainResponse(200, "text/plain", "log reset");
+					return;
+				case 'e':
+				case 'i':
+				case 's':
+					ServerService.log.get(toClient, Character.toUpperCase(c));
+					return;
+				case '?':
+					ServerService.log.get(toClient, c);
+					return;
+			}
 		}
 		
 
@@ -73,16 +81,17 @@ Log.d("***CP36***", "ETag: "+ETag);
 						return;
 					}
 				}
-				doc.get();
 				boolean isHTML = doc.type.equals("text/html");
 				int l = isHTML ? ServerService.footer.length : 0;
 				OutputStream out = toClient.getOutputStream();
+				doc.get();	// FIXME If method is GET
 				String header = getHeader (doc, l);
 				out.write(header.getBytes());
 				if(!request.method.equals("HEAD")) {
 					out.write(doc.content, 0, doc.length);
 				}
 				// Footer -- maybe better to insert it before </body>
+				// FIXME HEAD must never contain a message according to HTTP spec
 				if (ServerService.footer.length > 0 && isHTML) {
 					out.write(ServerService.footer.content, 0, ServerService.footer.length);
 				}
@@ -94,7 +103,7 @@ Log.d("***CP36***", "ETag: "+ETag);
 				if (dokument.equals("/"+cfg.index)) {
 					plainResponse(200, "text/html", cfg.defaultIndex);
 				} else {
-					plainResponse(403, "Forbidden");	// FIXME Rather "Not found". Forbidden when there's not default index.
+					plainResponse(404, request.uri+" not found");
 				}
 			}
 		} catch (Exception e) {

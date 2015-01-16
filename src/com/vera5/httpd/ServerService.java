@@ -60,7 +60,6 @@ public class ServerService extends Service {
 		startForeground(NOTIFICATION_ID, notification);
 		configure();
 		log = new Logger(getFilesDir().getPath());
-		log.enable();
     }
 
 	public void configure() {
@@ -85,6 +84,7 @@ public class ServerService extends Service {
 			stopSelf();
 			isRunning = false;
 		} catch (IOException e) {
+			log.e(e.getMessage());
 			Log.e(TAG, e.getMessage());
 		}
         return true;	// allow rebind
@@ -97,7 +97,7 @@ public class ServerService extends Service {
 		final String ip = getIP();
 		final int port = getPort();
 		log.setHandler(this.handler);
-		log.i("Starting at "+ip+":"+port);
+		log.s("Start at "+ip+":"+port);
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
@@ -106,7 +106,7 @@ public class ServerService extends Service {
 					serverSocket = new ServerSocket(port, 0, localhost);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
-					log.v(e.getMessage());
+					log.e(e.getMessage());
 					stopSelf();
 					return;
 				}
@@ -122,7 +122,7 @@ public class ServerService extends Service {
 						new Thread(h).start();
 					}
 				} catch (Exception ie) {
-					log.i("Shutting down");
+					log.s("Shutdown");
 					closeSocket();
 					serviceThread = null;
 					stopSelf();
