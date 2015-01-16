@@ -6,7 +6,6 @@ import java.net.Socket;
 
 public class Request {
 
-	public String method;
 	public String uri;
 	public String version;
 	public String ContentType;
@@ -16,20 +15,23 @@ public class Request {
 	public String IfNoneMatch;
 	public byte[] data;			// PUT/POST
 	public String log;			// For Logger
+	// Methods
+	private String[] aMethod = { "", "GET", "HEAD", "OPTIONS", "TRACE", "POST", "PUT", "DELETE" };
+	public int method;
 
 	public void get(Socket client) {
-		String s, a[];
+		String s, a[], method = "GET";
 		int i = 0;
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()), 8192);
-			// Receive data
+			// Receive the header
 			while (true) {
 				s = in.readLine().trim();
 				if (s.equals("")) break;
 				a = s.split(" ");
 				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')
 				if (i == 0) {	// The first line
-					this.method = a[0];
+					method = a[0];
 					this.uri = a[1].replace("/~", "/usr/");
 					this.version = a[2];
 				} else if (a[0].equals("Accept-Encoding:")) {
@@ -47,7 +49,12 @@ public class Request {
 				// Note: 'this.' is not necessary (mandatory). Used for clarity.
 			}
 			this.log = client.getInetAddress().toString() +
-				" " + this.method + " ";
+				" " + method + " ";
+			for (int m=1; m<this.aMethod.length; m++)
+				if (method.equals(this.aMethod[m])) {
+					this.method = m;
+				}
+			// Get content (if any -- PUT/POST)
 		} catch (Exception e) {
 		}
 	}

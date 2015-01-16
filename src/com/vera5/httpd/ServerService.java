@@ -97,7 +97,7 @@ public class ServerService extends Service {
 		final String ip = getIP();
 		final int port = getPort();
 		log.setHandler(this.handler);
-		log.s("Start at "+ip+":"+port);
+		log.s("Start at "+ip+":"+port+", Root "+cfg.root);
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;

@@ -43,6 +43,7 @@ public class PlainFile {
 			} catch (IOException e) {
 				this.length = 0;
 				this.content = null;
+				this.err = e.getMessage();
 				Log.e("PWS.PlainFile", e.getMessage());
 			}
 		}

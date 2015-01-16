@@ -44,7 +44,7 @@ public class Logger {
 		File f = new File(log);
 		try {
 			if (!f.exists()) f.createNewFile();
-			BufferedWriter b = new BufferedWriter(new FileWriter(log, true));
+			BufferedWriter b = new BufferedWriter(new FileWriter(log, true), 8192);
 			b.append(now + "\t" + tag + (s.startsWith("/") ? "" : "/") + s + "\n");
 			b.flush();
 			b.close();
