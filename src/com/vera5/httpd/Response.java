@@ -139,6 +139,7 @@ public class Response {
 			+ (ContentType.equals("") ? "" : "\nContent-Type: "+ContentType)
 			+ (length > 0 ? "\nContent-Length: "+length : "")
 			+ "\nServer: PWS/" + cfg.version
+			+ "\nAccess-Control-Allow-Origin: *"	// FIXME restrict cross-domain requests
 			+ "\nConnection: close";
 	}
 

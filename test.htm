@@ -1,0 +1,59 @@
+<html><head><title>PWS Method test</title>
+<link href="/nick.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+var xmlReg = null;		// Global xmlHttpRequest
+function del() {
+}
+function get() {
+	xhr("GET", "http://192.168.1.12:8080/git.htm");
+}
+function post() {
+}
+function put() {
+	xhr("PUT", "http://192.168.1.12:8080/pwsput.txt", "Hello, world!");
+}
+function xhr (method, url, data) {
+  if (!xmlReg) xmlReg = getHttpRequest ();
+  else if (xmlReg.readyState != 0) xmlReg.abort ();
+  xmlReg.onreadystatechange = function() {
+    if (xmlReg.readyState == 4)
+      if (xmlReg.status == 200) {
+console.log("CP82:")
+console.log(xmlReg.responseText);
+      }
+  }
+  xmlReg.open (method, url, true);
+  xmlReg.send (data);
+}
+function getHttpRequest () {
+  var xmlHttp;
+  try {
+    xmlHttp = new XMLHttpRequest();	// Firefox, Opera 8.0+, Safari
+    xmlHttp.overrideMimeType ('text/html');
+  } catch (e) {
+    // Internet Explorer
+    try {
+      xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
+    } catch (e) {
+      try {
+        xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+      } catch (e) {
+        alert ('Your browser does not support AJAX!');
+        return false;
+      }
+    }
+  }
+  return xmlHttp;
+}
+</script>
+</head>
+<body>
+
+<h1>APWS method test</h1>
+
+<ul>
+ <li><a href="javascript:get()">GET</a></li>
+ <li><a href="javascript:put()">PUT</a></li>
+</ul>
+
+</body></html>
