@@ -54,8 +54,8 @@ public class Response {
 			// other methods
 			default:
 				String err = "501 Not Implemented";
-				plainResponse("501", "Not Implemented");
-				logS("Not Implemented");	// FIXME (dup string)
+				plainResponse("501 Not Implemented", "");
+				logS(request.sMethod+" Not Implemented");	// FIXME (dup string)
 		}
 	}
 
