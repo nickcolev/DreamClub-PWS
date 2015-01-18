@@ -51,6 +51,11 @@ public class Response {
 				else
 					notExists(doc);
 				break;
+			case 5:
+Log.d("***CP55***", "->"+request.data);
+				logV("POST not implemented yet");
+				plainResponse("501", "POST not implemented");
+				break;
 			// other methods
 			default:
 				String err = "501 Not Implemented";

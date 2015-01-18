@@ -8,9 +8,10 @@ function get() {
 	xhr("GET", "http://192.168.1.12:8080/git.htm");
 }
 function post() {
+	xhr("POST", "http://localhost:8080/test.htm", "POST test");
 }
 function put() {
-	xhr("PUT", "http://192.168.1.12:8080/pwsput.txt", "Hello, world!");
+	xhr("PUT", "http://localhost:8080/test.htm", "PUT test");
 }
 function xhr (method, url, data) {
   if (!xmlReg) xmlReg = getHttpRequest ();
@@ -18,12 +19,14 @@ function xhr (method, url, data) {
   xmlReg.onreadystatechange = function() {
     if (xmlReg.readyState == 4)
       if (xmlReg.status == 200) {
+alert("CP81:");
 console.log("CP82:")
 console.log(xmlReg.responseText);
       }
   }
   xmlReg.open (method, url, true);
-  xmlReg.send (data);
+  xmlReg.setRequestHeader("Content-Type", "text/plain");
+  xmlReg.send ("abc");
 }
 function getHttpRequest () {
   var xmlHttp;
@@ -53,6 +56,7 @@ function getHttpRequest () {
 
 <ul>
  <li><a href="javascript:get()">GET</a></li>
+ <li><a href="javascript:post()">POST</a></li>
  <li><a href="javascript:put()">PUT</a></li>
 </ul>
 

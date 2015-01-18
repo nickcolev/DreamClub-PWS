@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import android.util.Log;
+import java.nio.ByteBuffer;
 
 public class Request {
 
@@ -14,9 +15,9 @@ public class Request {
 	public String AcceptEncoding;
 	public String IfModifiedSince;
 	public String IfNoneMatch;
-	public byte[] data;			// PUT/POST
+	public char[] data;			// PUT/POST
 	public String log;			// For Logger
-	public String sMethod;
+	public String sMethod = "?";
 	// Methods
 	private String[] aMethod = { "", "GET", "HEAD", "OPTIONS", "TRACE", "POST", "PUT", "DELETE" };
 	public int method;
@@ -28,6 +29,7 @@ public class Request {
 			BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()), 8192);
 			// Receive the header
 			while ((s = in.readLine()) != null) {
+Log.d("***", "s="+s);
 				if (s.equals("")) break;
 				a = s.split(" ");
 				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')
@@ -50,17 +52,40 @@ public class Request {
 				i++;
 				// Note: 'this.' is not necessary (mandatory). Used for clarity.
 			}
+			// Get content (if any -- PUT/POST)
+			if (this.ContentLength != null) {
+				int len = Integer.parseInt(this.ContentLength);
+Log.d("***CP43***", "len="+len);
+				ByteBuffer buffer = ByteBuffer.allocate(len);
+while (is.read(buffer) != -1) {
+	/*
+      buffer.flip();
+      out.write(buffer);
+      buffer.clear();
+      */
+}
+Log.d("***CP44***", "b="+buffer);
+   				/*
+				int c;
+				char[] b = new char[4+len];
+				i = 0;
+				while(len-- > 0) {
+					c = in.read();
+Log.d("***", "t="+c+" "+(char)(c&0xFF));
+					if (c < 0) break;
+					b[i++] = (char)(c & 0xFF);
+				}
+				b[i] = 0;
+				Log.d("***CP44***", "b="+b.toString());
+				*/
+			}
+			// Setup properties
 			this.log = client.getInetAddress().toString() +
-				" " + method + " ";
+				" " + sMethod + " ";
 			for (int m=1; m<this.aMethod.length; m++)
 				if (method.equals(this.aMethod[m])) {
 					this.method = m;
 				}
-			// Get content (if any -- PUT/POST)
-			if (this.ContentLength != null) {
-				int len = Integer.parseInt(this.ContentLength);
-Log.d("***CP43***", "len="+this.ContentLength);
-			}
 		} catch (Exception e) {
 		}
 	}
