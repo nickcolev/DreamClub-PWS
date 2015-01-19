@@ -21,7 +21,7 @@ class ServerHandler extends Thread {
 		Request request = new Request();
 		request.get(toClient);
 		Response response = new Response(cfg, toClient);
-		response.put(request);
+		response.send(request);
 	}
 
 }

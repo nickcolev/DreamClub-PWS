@@ -4,37 +4,35 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import android.util.Log;
-import java.nio.ByteBuffer;
 
 public class Request {
 
 	public String uri;
 	public String version;
 	public String ContentType;
-	public String ContentLength;
+	public int ContentLength;
 	public String AcceptEncoding;
 	public String IfModifiedSince;
 	public String IfNoneMatch;
-	public char[] data;			// PUT/POST
-	public String log;			// For Logger
-	public String sMethod = "?";
+	public static byte[] data;			// PUT/POST
+	public String log;					// For Logger
+	public String err;
 	// Methods
-	private String[] aMethod = { "", "GET", "HEAD", "OPTIONS", "TRACE", "POST", "PUT", "DELETE" };
+	public String[] aMethod = { "", "GET", "HEAD", "OPTIONS", "TRACE", "POST", "PUT", "DELETE" };
 	public int method;
 
 	public void get(Socket client) {
 		String s, a[], method = "GET";
-		int i = 0;
+		int i = 0, len = 0;
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()), 8192);
 			// Receive the header
 			while ((s = in.readLine()) != null) {
-Log.d("***", "s="+s);
+Log.d("***Req***", " "+s);
 				if (s.equals("")) break;
 				a = s.split(" ");
 				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')
 				if (i == 0) {		// The first line
-					sMethod = a[0];
 					method = a[0];
 					this.uri = a[1].replace("/~", "/usr/");
 					this.version = a[2];
@@ -43,7 +41,7 @@ Log.d("***", "s="+s);
 				} else if (a[0].equals("Content-Type:")) {
 					this.ContentType = a[1];
 				} else if (a[0].equals("Content-Length:")) {
-					this.ContentLength = a[1];
+					len = Integer.parseInt(a[1]);
 				} else if (a[0].equals("If-Modified-Since:")) {
 					this.IfModifiedSince = a[1];
 				} else if (a[0].equals("If-None-Match:")) {
@@ -53,40 +51,26 @@ Log.d("***", "s="+s);
 				// Note: 'this.' is not necessary (mandatory). Used for clarity.
 			}
 			// Get content (if any -- PUT/POST)
-			if (this.ContentLength != null) {
-				int len = Integer.parseInt(this.ContentLength);
-Log.d("***CP43***", "len="+len);
-				ByteBuffer buffer = ByteBuffer.allocate(len);
-while (is.read(buffer) != -1) {
-	/*
-      buffer.flip();
-      out.write(buffer);
-      buffer.clear();
-      */
-}
-Log.d("***CP44***", "b="+buffer);
-   				/*
+			if (len > 0) {
+				this.ContentLength = len;	// FIXME Potential bug -- what if actual length < Content-Length? (Heartbleed bug)
 				int c;
-				char[] b = new char[4+len];
+				this.data = new byte[len];
 				i = 0;
 				while(len-- > 0) {
 					c = in.read();
-Log.d("***", "t="+c+" "+(char)(c&0xFF));
 					if (c < 0) break;
-					b[i++] = (char)(c & 0xFF);
+					this.data[i++] = (byte)(c & 0xFF);
 				}
-				b[i] = 0;
-				Log.d("***CP44***", "b="+b.toString());
-				*/
 			}
 			// Setup properties
 			this.log = client.getInetAddress().toString() +
-				" " + sMethod + " ";
+				" " + method + " ";
 			for (int m=1; m<this.aMethod.length; m++)
 				if (method.equals(this.aMethod[m])) {
 					this.method = m;
 				}
 		} catch (Exception e) {
+			err = e.getMessage();
 		}
 	}
 }

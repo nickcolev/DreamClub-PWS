@@ -5,13 +5,13 @@ var xmlReg = null;		// Global xmlHttpRequest
 function del() {
 }
 function get() {
-	xhr("GET", "http://192.168.1.12:8080/git.htm");
+	xhr("GET", "http://192.168.1.12:8080/git.htm", null);
 }
 function post() {
-	xhr("POST", "http://localhost:8080/test.htm", "POST test");
+	xhr("POST", "http://localhost:8080/post.txt", "POST test\n");
 }
 function put() {
-	xhr("PUT", "http://localhost:8080/test.htm", "PUT test");
+	xhr("PUT", "http://localhost:8080/put.txt", "PUT test\n");
 }
 function xhr (method, url, data) {
   if (!xmlReg) xmlReg = getHttpRequest ();
@@ -20,13 +20,11 @@ function xhr (method, url, data) {
     if (xmlReg.readyState == 4)
       if (xmlReg.status == 200) {
 alert("CP81:");
-console.log("CP82:")
-console.log(xmlReg.responseText);
       }
   }
   xmlReg.open (method, url, true);
   xmlReg.setRequestHeader("Content-Type", "text/plain");
-  xmlReg.send ("abc");
+  xmlReg.send (data);
 }
 function getHttpRequest () {
   var xmlHttp;

@@ -1,8 +1,8 @@
-// 403 Forbidden, 501 Not Implemented
 package com.vera5.httpd;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,6 +19,7 @@ public class Response {
   private OutputStream out;
   private Config cfg;
   private Request request;
+  public String lastError;
 
 	public Response(Config cfg, Socket client) {
 		this.cfg = cfg;
@@ -30,7 +31,7 @@ public class Response {
 		}
 	}
 
-	public void put(Request request) {
+	public void send(Request request) {
 		this.request = request;
 		String dokument = getDokument(request.uri);
 		String path = cfg.root + dokument;
@@ -51,17 +52,33 @@ public class Response {
 				else
 					notExists(doc);
 				break;
-			case 5:
-Log.d("***CP55***", "->"+request.data);
-				logV("POST not implemented yet");
-				plainResponse("501", "POST not implemented");
+			case 6:		// PUT
+				if (put(request)) {
+					plainResponse("201", request.uri+" OK");
+				} else {
+					logV("POST not implemented yet");
+					plainResponse("500", this.lastError);
+				}
 				break;
 			// other methods
 			default:
-				String err = "501 Not Implemented";
-				plainResponse("501 Not Implemented", "");
-				logS(request.sMethod+" Not Implemented");	// FIXME (dup string)
+				String err = request.aMethod[request.method]+" Not Implemented";
+				plainResponse("501", err);
+				logS(err);
 		}
+	}
+
+	private boolean put(Request request) {
+		boolean ok = false;
+		try {
+			FileOutputStream fd = new FileOutputStream(this.cfg.root+request.uri);
+			fd.write(request.data, 0, request.ContentLength);
+			fd.close();
+			ok = true;
+		} catch (IOException e) {
+			this.lastError = e.getMessage();
+		}
+		return ok;
 	}
 
 	private boolean putLog(Request request) {
