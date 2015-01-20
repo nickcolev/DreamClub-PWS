@@ -6,58 +6,17 @@
 </head>
 <body>
 
-<h1>APWS<br/><fn>Android Personal Web Server (based on <a href="https://twitter.com/bodeme">bodeme</a> <a href="https://github.com/bodeme/androidwebserver">androidwebserver</a>)</fn></h1>
+<h1>APWS<br/><fn>Android Personal Web Server</fn></h1>
 
-<h3 class="ul">Overview</h3>
 <ul>
- <li><tt>StartActivity</tt><br/>Starts and bind to the service. If service not already started &mdash; start it.</li>
- <li><tt>ServerService</tt><br/>Handle the binding requests, notifications, and <tt>onStartCommand</tt>.</li>
- <li><tt>ServerHandler</tt><br/>Serve client requests (HTTP implementation)</li>
+ <li><a href="devel.htm">Development</a></li>
+ <li>Business Model</li>
+ <li>Distribution Channel(s)</li>
+ <li>Support</li>
+ <li>Cashflow</li>
 </ul>
 
-<h3 class="ul">To do</h3>
-<ul>
- <li>Art work &mdash; new icons</li>
- <li>Implement <a href="http://developer.android.com/reference/android/net/wifi/WifiManager.WifiLock.html">WiFi lock</a> <small>(when only httpd runs, WiFi goes to sleep)</small></li>
- <li>Implement start on boot of the service</li>
- <li>PUT/POST implementation</li>
- <li>When WiFi goes off &mdash; restart at localhost. When goes on &mdash; restart at the IP.</li>
-</ul>
-
-<h3 class="ul">Icon</h3>
-<ul>
- <li><a href="/~vera-5/logo.htm">Vera5 logo</a> <small>(Best for branding. Though, looks hollow and user won't associate it with a web server.)</small></li>
- <li>ant <small>(As it is black, hard to be seen with transparency.)</small></li>
- <li>butterfly <small>('but2.png' looks good, 'dragonart.png' as well, but a butterfly is a symbol of what?)</small></li>
- <li>clover</li>
- <li>globe <small>(best choice as it is associated with web folder/site; used OS X Maverick 10)</small></li>
- <li>leaf(-ves)</li>
-</ul>
-<p class="note">Current version based on <a href="http://www.macgasm.net/2013/10/31/os-x-10-9-mavericks-server-review/">OS X 10.9 Mavericks Server</a>. Processed via Gimp to 64x64 96dpi. Squeezed to 24x24 for the notification. Good candidates are <a href="http://www.nasa.gov/externalflash/earthday_gallery/hi-resjpgs/4.jpg">this</a> and <a href="http://www.nasa.gov/sites/default/files/s1431aw_0.jpg">this</a> NASA images. Take a look at <a href="http://photography.nationalgeographic.com/photography/">National Georgaphic photos</a>.</p>
-
-<h3 class="ul">Bugs</h3>
-<ul>
- <li><del>On Settings open, summary is displayed from the xml. Should be set from actual values set by the user.</del></li>
- <li><del>[Back] goes to prev. screen, and the prev. log can be seen. The log view seems to be recreated on [Home] and next [Restore]. Something's wrong.</del></li>
- <li><del><tt>some.htm?a=b</tt> fails <small>(question mark)</small></del></li>
- <li><del><tt><q>A B C.htm</q></tt> fails <small>(space in the name)</small></del></li>
-</ul>
-
-<p class="note">While testing, saw access from 59.31.246.215 (South Korea), 60.173.26.206 (China) &mdash; see <a href="http://www.ipligence.com/geolocation">IP geolocation</a>.</p>
-
-<h3>Lessons learned</h3>
-
-<p><b>Activity persistence</b><br/>
-In <tt>AndroidManifest.xml</tt> add to the main activity</p>
-<pre class="cp">android:launchMode="singleTop"</pre>
-<p>and implement</p>
-<pre class="cp">@Override
-<b>public void</b> onBackPressed() {
-    moveTaskToBack(true);
-}</pre>
-
-<p><b>APK name</b><br/>
-it <tt>build.xml</tt></p>
-<pre class="cp">&lt;<b>project</b> <var>name</var>="aws" ...</pre>
+<div id="briefs">
+</div>
 
 </body></html>
