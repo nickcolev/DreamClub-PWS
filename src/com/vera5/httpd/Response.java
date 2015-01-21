@@ -56,7 +56,7 @@ public class Response {
 				if (put(request)) {
 					plainResponse("201", request.uri+" OK");
 				} else {
-					logV("POST not implemented yet");
+					logV("PUT not implemented yet "+this.lastError);
 					plainResponse("500", this.lastError);
 				}
 				break;
@@ -70,12 +70,16 @@ public class Response {
 
 	private boolean put(Request request) {
 		boolean ok = false;
+String msg = "PUT "+request.uri+", len="+request.ContentLength+", data="+request.data;
+logI(msg);
+logV(msg);
 		try {
-			FileOutputStream fd = new FileOutputStream(this.cfg.root+request.uri);
-			fd.write(request.data, 0, request.ContentLength);
+			FileOutputStream fd = new FileOutputStream(this.cfg.root+request.uri, false);
+			fd.write(request.data);
 			fd.close();
 			ok = true;
 		} catch (IOException e) {
+logS(e.getMessage());
 			this.lastError = e.getMessage();
 		}
 		return ok;
@@ -147,6 +151,7 @@ public class Response {
 			"text/" + (msg.startsWith("<") ? "html" : "plain");
 		String response = header(code, ContentType, msg.length())
 			+ "\n\n" + msg;
+Log.d(TAG, "pr: "+response);
 		try {
 			out.write(response.getBytes(), 0, response.length());
 			out.flush();

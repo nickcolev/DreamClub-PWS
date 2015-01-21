@@ -10,41 +10,102 @@ function get() {
 function post() {
 	xhr("POST", "http://localhost:8080/post.txt", "POST test\n");
 }
-function put() {
-	xhr("PUT", "http://localhost:8080/put.txt", "PUT test\n");
+function onInitFs(fs) {
+console.log('Opened file system: ' + fs.name);
+  fs.root.getFile("/backup.sh", {}, function(fileEntry) {
+console.log("Opened...");
+    // Get a File object representing the file,
+    // then use FileReader to read its contents.
+    fileEntry.file(function(file) {
+       var reader = new FileReader();
+       reader.onloadend = function(e) {
+         var txtArea = document.createElement('textarea');
+         txtArea.value = this.result;
+         document.body.appendChild(txtArea);
+       };
+
+       reader.readAsText(file);
+    }, errorHandler);
+
+  }, errorHandler);
+
 }
-function xhr (method, url, data) {
-  if (!xmlReg) xmlReg = getHttpRequest ();
-  else if (xmlReg.readyState != 0) xmlReg.abort ();
+function errorHandler(e) { console.log("Err"+e.code+":", e.message); }
+function dFile() {
+	if (window.File && window.FileReader && window.FileList && window.Blob) {
+		//do your stuff!
+		window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+console.log(window);
+		window.requestFileSystem(window.TEMPORARY, 1024*1024 /*1MB*/, onInitFs, errorHandler);
+	} else {
+		alert('The File APIs are not fully supported by your browser.');
+	}
+/*
+	var b = new Blob(["foobarbazetcetc" + "birdiebirdieboo"], {type: "text/plain;charset=UTF-8"});
+	var reader = new FileReader(); 
+	var file = new File(b);
+	//var xhr = new XMLHttpRequest();
+	reader.onload = function(evt) {
+console.log("got file ", reader);
+		//xhr.sendAsBinary(evt.target.result);
+	};
+	reader.readAsBinaryString(file);
+
+	xhr.open('PUT', '/put.txt', true);
+	xhr.onload = function () {
+		if (xhr.status === 200) {
+			console.log("File uploaded");
+		} else {
+			alert('An error occurred!');
+		}
+	};
+*/
+}
+function put() {
+	xhr("PUT", "http://localhost:8080/put.txt", "PUTÀÁÂ\n");
+}
+function xhr(method, url, data) {
+  if (!xmlReg) xmlReg = new XMLHttpRequest();
+  else if (xmlReg.readyState != 0) xmlReg.abort();
+  //xmlReg.overrideMimeType("application/octet-strem");
   xmlReg.onreadystatechange = function() {
     if (xmlReg.readyState == 4)
       if (xmlReg.status == 200) {
 alert("CP81:");
       }
   }
-  xmlReg.open (method, url, true);
-  xmlReg.setRequestHeader("Content-Type", "text/plain");
-  xmlReg.send (data);
+  xmlReg.open(method, url, true);
+  //xmlReg.setRequestHeader("Content-Type", "text/plain");
+  xmlReg.send(data);
 }
-function getHttpRequest () {
-  var xmlHttp;
-  try {
-    xmlHttp = new XMLHttpRequest();	// Firefox, Opera 8.0+, Safari
-    xmlHttp.overrideMimeType ('text/html');
-  } catch (e) {
-    // Internet Explorer
-    try {
-      xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
-    } catch (e) {
-      try {
-        xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
-      } catch (e) {
-        alert ('Your browser does not support AJAX!');
-        return false;
-      }
-    }
-  }
-  return xmlHttp;
+var zip;
+//var url = "http://intranet";
+var url = "http://localhost:8080";
+function mget() {
+	var xhr = new XMLHttpRequest();
+	xhr.overrideMimeType("application/octet-strem");
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4)
+			if (xhr.status == 200) {
+				zip = xhr.responseText;
+alert("CP81:"+xhr.responseText);
+			}
+	}
+	xhr.open("GET", url+"/test.zip", true);
+	xhr.send(null);
+}
+function mput() {
+	var xhr = new XMLHttpRequest();
+	xhr.overrideMimeType("application/octet-strem");
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4)
+			if (xhr.status == 200) {
+				zip = xhr.responseText;
+alert("CP82:"+xhr.responseText);
+			}
+	}
+	xhr.open("PUT", url+"/test1.zip", true);
+	xhr.send(zip);
 }
 </script>
 </head>
@@ -52,10 +113,22 @@ function getHttpRequest () {
 
 <h1>APWS method test</h1>
 
+<form name="data" onsubmit="return false">
+ <input type="file" name="file"/>
+ <input type="button" value=" PUT " onclick="put()"/>
+</form>
+
 <ul>
  <li><a href="javascript:get()">GET</a></li>
  <li><a href="javascript:post()">POST</a></li>
  <li><a href="javascript:put()">PUT</a></li>
 </ul>
+
+<p><a href="javascript:dFile()">dFile test</a></p>
+
+<ol>
+ <li><a href="javascript:mget()">Get <tt>test.zip</tt> in memory</a></li>
+ <li><a href="javascript:mput()">Put memory content to <tt>test1.zip</tt></a></li>
+</ol>
 
 </body></html>
