@@ -72,35 +72,32 @@ public class Logger {
 		}
 	}
 
-	public void get(Socket socket, char c) {
+	public String get(char c) {
 						// We save timestamp in the log (to save space).
 						// For display, format it properly.
-		String ts, a[], line, log = fname(), m = c + "/";
+		String ts, a[], line, log = fname(), m = c + "/", result = "";
 		File f = new File(log);
 		try {
-			PrintWriter out = new PrintWriter (socket.getOutputStream(), true);
-			out.print("HTTP/1.1 200\nContent-Type: text/plain\nConnection: close\n\n");
 			BufferedReader in = new BufferedReader(new FileReader(f), 8192);
 			while ((line = in.readLine()) != null) {
 				a = line.split("\t");
 				if (c != '?')	// Filter
 					if (!a[1].startsWith(m)) continue;
 				ts = formatTime(a[0]);
-				//out.println(line);
-				out.println(ts + "\t" + a[1]);
+				result += ts + "\t" + a[1] + "\n";
 			}
 			in.close();
-			out.flush();
-			out.close();
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
+			result = e.getMessage();
 		}
+		if (result.length() == 0) result = "Nothing to display";
+		return result;
 	}
 
 	private String formatTime(String timestamp) {
 		String sdf;
 		try {
-			// FIXME Better way?! (every cycle 'new')
 			sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(Long.valueOf(timestamp)));
 		} catch (Exception e) {
 			sdf = timestamp;

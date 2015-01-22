@@ -26,24 +26,25 @@ function form() {
 <form enctype="multipart/form-data" method="post">
  <input type="file" name="file"/>
  <input type="submit" value=" PUT "/><br/>
- Host: <input name="host" value="192.168.1.12:8080"/>
+ Destination: <input name="dst" title="host:port[/path]" value="192.168.1.12:8080"/>
 </form>
 
 </body></html>
 HTML;
 }
 
-function process($aFile, $host) {
-	$a = explode(':', $host);
-	$port = $a[1] ? $a[1] : 80;
-	$host = $a[0];
-	$header	= 'PUT /'.$aFile['name'].' HTTP/1.1'.CRLF.
-		'Content-Type: application/octet-stream; charset=UTF-8'.CRLF. //.$aFile['type'].CRLF.
-		//'Content-Transfer-Encoding: binary'.CRLF.
+function process($aFile, $dst) {
+	if (!preg_match('|/$|', $dst)) $dst .= '/';
+	preg_match_all('|(.*):(\d+)/(.*)|', $dst, $a);
+	$host = $a[1][0]; $port = $a[2][0]; $file = $a[3][0].$aFile['name'];
+	if (!($host & $port))
+		exit('<p>Bad request<br/>connect '.$host.':'.$port.'<br/>target /'.$file.'</p>');
+	$header	= 'PUT /'.$file.' HTTP/1.1'.CRLF.
+		'Content-Type: application/octet-stream'.CRLF. 		//.$aFile['type'].CRLF.
 		'Content-Length: '.$aFile['size'].CRLF.
 		CRLF;
 	$content = join('', file($aFile['tmp_name']));
-echo $host.':'.$port.'<pre>'.$header.'</pre>';
+	echo $host.':'.$port.'<pre>'.$header.'</pre>';
 //adump($aFile);
 
 	$fp = fsockopen($host, $port, $errno, $errstr, 30) or die($errstr);
@@ -54,7 +55,7 @@ echo $host.':'.$port.'<pre>'.$header.'</pre>';
 }
 
 	if($_FILES['file']['name'])
-		process($_FILES['file'], $_POST['host']);
+		process($_FILES['file'], $_POST['dst']);
 	else
 		form();
 ?>

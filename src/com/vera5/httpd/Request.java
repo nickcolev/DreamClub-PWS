@@ -15,17 +15,17 @@ public class Request {
 	public String AcceptEncoding;
 	public String IfModifiedSince;
 	public String IfNoneMatch;
-	public boolean cache = true;
-	public static byte[] data;			// PUT/POST
-	public String log;					// For Logger
-	public String err;
+	public byte[] data;			// PUT/POST
+	public String log;			// For Logger
+	public String err;			// Last error
 	// Methods
-	public String[] aMethod = { "", "GET", "HEAD", "OPTIONS", "TRACE", "POST", "PUT", "DELETE" };
-	public int method = 99;
+	public int method = 0;
+	private String[] aMethod = { "", "GET", "HEAD", "OPTIONS", "TRACE", "POST", "PUT", "DELETE" };
+	private boolean debug = false;
 
 	private String readLine(DataInputStream in) {
 		int c = -1, i=0;
-		char[] buf = new char[256];
+		char[] buf = new char[256];		// Enough?!
 		try {
 			while ((c = in.read()) != -1) {
 				if (c == 10) continue;
@@ -47,7 +47,7 @@ public class Request {
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
 			while ((s = readLine(in)) != null) {
-Log.d(TAG, "s="+s);
+				if (this.debug) Log.d(TAG, "s="+s);
 				a = s.split(" ");
 				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')
 				if (i == 0) {		// The first line
@@ -64,24 +64,21 @@ Log.d(TAG, "s="+s);
 					this.IfModifiedSince = a[1];
 				} else if (a[0].equals("If-None-Match:")) {
 					this.IfNoneMatch = a[1];
-				} else if (a[0].equals("Pragma:") || a[0].equals("Cache-Control:")) {
-					// Probably not necessary as on [Refresh] the browser sends these
-					// but otherwise may send "If-Modified-Since:"
-					if (a[1].equals("no-cache")) this.cache = false;
 				}
+				// Other headers parsing here
 				i++;
 				// Note: 'this.' is not necessary (mandatory). Used for clarity.
 			}
 			if (len > 0) {		// PUT/POST data?
-				in.read();	// left-over LF (10) from the header
+				in.read();		// left-over LF (10) from the header
 				this.data = new byte[len];
 				int c;
 				i = 0;
 				while ((c = in.read()) != -1) {
-//logS("c="+c+" "+(c < 10 ? "0" : "")+Integer.toHexString(c));
-					//if (++this.ContentLength > len) break;	// Actual length might be less than declared
-					this.data[this.ContentLength++] = (byte)c;
+					if (this.debug) logS("c="+c+" "+(c < 10 ? "0" : "")+Integer.toHexString(c));
+					this.data[i++] = (byte)c;
 				}
+				this.ContentLength = i;
 			}
 			this.log = client.getInetAddress().toString() + " " + method + " ";
 			for (i=1; i<this.aMethod.length; i++)
@@ -90,6 +87,9 @@ Log.d(TAG, "s="+s);
 			err = e.getMessage();
 		}
 	}
+
+	// Helpers below
+	public String getMethod() { return this.aMethod[this.method]; }
 	private void logV(String s) { ServerService.log.v(s); }
 	private void logS(String s) { ServerService.log.s(s); }
 }

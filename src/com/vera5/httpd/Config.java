@@ -16,7 +16,7 @@ public class Config {
 	public void configure(SharedPreferences p) {
 		try {
 			this.root = sanify(p.getString("root", defaultDocRoot()));
-			this.index = p.getString("index", null);	// FIXME Can't we get it from 'strings'?
+			this.index = p.getString("index", null);
 			this.footer = sanify(p.getString("footer", ""));
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());

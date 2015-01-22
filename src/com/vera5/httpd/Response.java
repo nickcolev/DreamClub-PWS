@@ -19,12 +19,11 @@ public class Response {
   private OutputStream out;
   private Config cfg;
   private Request request;
-  public String lastError;
 
 	public Response(Config cfg, Socket client) {
 		this.cfg = cfg;
 		this.client = client;
-		try {	// FIXME Wouldn't be better to do this at later stage?
+		try {
 			out = client.getOutputStream();
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
@@ -56,15 +55,16 @@ public class Response {
 				if (put(request)) {
 					plainResponse("201", request.uri+" OK");
 				} else {
-					logV("PUT not implemented yet "+this.lastError);
-					plainResponse("500", this.lastError);
+					logV("PUT failed with "+this.err);
+					logE("PUT failed with "+this.err);
+					plainResponse("500", this.err);
 				}
 				break;
 			// other methods
 			default:
-				String err = request.aMethod[request.method]+" Not Implemented";
-				plainResponse("501", err);
-				logS(err);
+				this.err = request.getMethod()+" Not Implemented";
+				plainResponse("501", this.err);
+				logS(this.err);
 		}
 	}
 
@@ -72,15 +72,14 @@ public class Response {
 		boolean ok = false;
 String msg = "PUT "+request.uri+", len="+request.ContentLength+", data="+request.data;
 logI(msg);
-logV(msg);
 		try {
 			FileOutputStream fd = new FileOutputStream(this.cfg.root+request.uri, false);
 			fd.write(request.data);
 			fd.close();
 			ok = true;
 		} catch (IOException e) {
-logS(e.getMessage());
-			this.lastError = e.getMessage();
+			logS(e.getMessage());
+			this.err = e.getMessage();
 		}
 		return ok;
 	}
@@ -90,7 +89,7 @@ logS(e.getMessage());
 		char c = request.uri.length() == 4 ? '?' : request.uri.charAt(4);
 		switch(c) {
 			case 'c':
-				///ServerService.log.clean();
+				ServerService.log.clean();
 				plainResponse("200 OK", "log reset!");
 				break;
 			case 'd':	// Debug
@@ -98,10 +97,9 @@ logS(e.getMessage());
 			case 'e':
 			case 'i':
 			case 's':
-				ServerService.log.get(this.client, Character.toUpperCase(c));
-				break;
 			case '?':
-				ServerService.log.get(this.client, c);
+				plainResponse("200 OK",
+					ServerService.log.get(Character.toUpperCase(c)));
 				break;
 			default:
 				isLog = false;
@@ -151,7 +149,6 @@ logS(e.getMessage());
 			"text/" + (msg.startsWith("<") ? "html" : "plain");
 		String response = header(code, ContentType, msg.length())
 			+ "\n\n" + msg;
-Log.d(TAG, "pr: "+response);
 		try {
 			out.write(response.getBytes(), 0, response.length());
 			out.flush();
@@ -166,7 +163,7 @@ Log.d(TAG, "pr: "+response);
 			+ (ContentType.equals("") ? "" : "\nContent-Type: "+ContentType)
 			+ (length > 0 ? "\nContent-Length: "+length : "")
 			+ "\nServer: PWS/" + cfg.version
-			+ "\nAccess-Control-Allow-Origin: *"	// FIXME restrict cross-domain requests
+			+ "\nAccess-Control-Allow-Origin: 192.168.*"	// FIXME restrict cross-domain requests
 			+ "\nConnection: close";
 	}
 

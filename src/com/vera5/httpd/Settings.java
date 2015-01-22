@@ -14,7 +14,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import java.util.Map;
-import android.widget.Toast;
 
 public class Settings extends PreferenceActivity {
 
@@ -75,14 +74,9 @@ public class Settings extends PreferenceActivity {
 		}	
 	}
 
-	private void Tooltip(String s) {
-		Toast.makeText(Settings.this, s, Toast.LENGTH_SHORT).show();
-	}
-
 	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 			mBoundService = ((ServerService.LocalBinder)service).getService();
-			Tooltip("Service connected");
 	    }
 		public void onServiceDisconnected(ComponentName className) {
 			mBoundService = null;

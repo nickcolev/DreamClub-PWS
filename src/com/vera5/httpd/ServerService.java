@@ -1,12 +1,9 @@
 package com.vera5.httpd;
 
-import android.app.AlertDialog;
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -24,8 +21,6 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -52,6 +47,7 @@ public class ServerService extends Service {
 
     @Override
     public void onCreate() {
+		log = new Logger(getFilesDir().getPath());
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
@@ -59,7 +55,6 @@ public class ServerService extends Service {
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
 		configure();
-		log = new Logger(getFilesDir().getPath());
     }
 
 	public void configure() {
@@ -139,8 +134,8 @@ public class ServerService extends Service {
 		String fname = prefs.getString("footer", "");
 		fname = cfg.sanify(prefs.getString("root", "/sdcard/htdocs")) + cfg.sanify(fname);
 		footer = new PlainFile(fname);
-		if (footer.length > 0) {	// FIXME Add check if it's text/html?
-			log.v("Setting "+fname);
+		if (footer.length > 0) {
+			Tooltip("Setting "+fname);
 			footer.get();
 		}
 	}
