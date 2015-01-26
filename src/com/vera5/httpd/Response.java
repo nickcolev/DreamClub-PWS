@@ -21,7 +21,6 @@ public class Response {
   private OutputStream out;
   private Config cfg;
   private Request request;
-  private final boolean debug = true;
 
 	public Response(Config cfg, Socket client) {
 		this.cfg = cfg;
@@ -41,7 +40,6 @@ public class Response {
 		this.request = request;
 		String dokument = getDokument(request.uri);
 		String path = cfg.root + dokument;
-		if(this.debug) Log.d(TAG, "method: "+request.method);
 		switch(request.method) {
 			case 1:		// GET
 			case 2:		// HEAD
@@ -57,13 +55,11 @@ public class Response {
 			case 3:		// OPTIONS
 				options(request);
 				break;
-/*
 			case 4:		// TRACE
-			// see https://www.owasp.org/index.php/Test_HTTP_Methods_(OTG-CONFIG-006)
-				trace(request);
+				// see https://www.owasp.org/index.php/Test_HTTP_Methods_(OTG-CONFIG-006)
+				plainResponse("200", request.headers());
 				break;
-*/
-			case 6:		// PUT
+			case 5:		// PUT
 				if (put(request)) {
 					plainResponse("201", request.uri+" OK");
 				} else {
@@ -93,10 +89,6 @@ public class Response {
 		}
 	}
 
-	private void trace(Request request) {
-		plainResponse("501", "TRACE Not implemented yet");
-	}
-
 	private boolean put(Request request) {
 		boolean ok = false;
 		String msg = "PUT "+request.uri+", len="+request.ContentLength+", data="+request.data;
@@ -121,8 +113,6 @@ public class Response {
 				ServerService.log.clean();
 				plainResponse("200 OK", "log reset!");
 				break;
-			case 'd':	// Debug
-				plainResponse("200 OK", "debug");
 			case 'e':
 			case 'i':
 			case 's':
@@ -185,7 +175,6 @@ public class Response {
 
 	private boolean reply(String data) {
 		boolean ok = false;
-		if(this.debug) Log.d(TAG, data);
 		try {
 			out.write(data.getBytes(), 0, data.length());
 			out.flush();
