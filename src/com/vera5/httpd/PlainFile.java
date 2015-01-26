@@ -68,4 +68,7 @@ public class PlainFile {
 		return type;
 	}
 
+	public boolean canRead() { return this.f.canRead(); }
+	public boolean canWrite() { return this.f.canWrite(); }
+	public boolean isDir() { return this.f.isDirectory(); }
 }

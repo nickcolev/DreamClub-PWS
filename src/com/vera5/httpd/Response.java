@@ -47,9 +47,16 @@ public class Response {
 				if (request.uri.startsWith("/log") && request.uri.length() < 6)
 					if (putLog(request)) return;
 				PlainFile doc = new PlainFile(path);
-				if (doc.exists)
-					fileResponse(doc);
-				else
+				if (doc.exists) {
+					if (doc.isDir()) {
+						PlainFile index = new PlainFile(addIndex(path));
+						if (index.exists)
+							fileResponse(index);
+						else
+							plainResponse("403", "Forbidden");	// FIXME if dir listing disabled
+					} else
+						fileResponse(doc);
+				} else
 					notExists(doc);
 				break;
 			case 3:		// OPTIONS
@@ -61,12 +68,15 @@ public class Response {
 				break;
 			case 5:		// PUT
 				if (put(request)) {
-					plainResponse("201", request.uri+" OK");
+					hOut("201");
 				} else {
 					logV("PUT failed with "+this.err);
 					logE("PUT failed with "+this.err);
 					plainResponse("500", this.err);
 				}
+				break;
+			case 7:		// DELETE
+				delete(request);
 				break;
 			// other methods
 			default:
@@ -76,15 +86,33 @@ public class Response {
 		}
 	}
 
+	private void delete(Request request) {
+		File f = new File(cfg.root+request.uri);
+		if (!f.exists())
+			hOut("404 Not Found");
+		else if (!f.canWrite())
+			hOut("403 Forbidden");
+		else if (f.delete())
+			hOut("200 OK");
+		else
+			hOut("405 Not Allowed");
+	}
+
 	private void options(Request request) {
 		if (request.uri.endsWith("*")) {	// General, a.k.a. ping
-			reply(header("200", "", 0)+"\nAllow: "+request.getMethods()+"\n\n");
+			hOut("200", new String[]{
+				"Allow: "+request.getMethods()
+			});
 		} else {	// Particular resource
 			PlainFile doc = new PlainFile(cfg.root+request.uri);
 			if (doc.exists) {
-				reply(header("200", doc.type, 0)+"\nAllow: GET\n\n");
+				hOut("200", new String[]{
+					"Allow: GET"
+				});
 			} else {
-				reply(header("200", "", 0)+"\nAllow: None\n\n");
+				hOut("200", new String[]{
+					"Allow: None"
+				});
 			}
 		}
 	}
@@ -132,7 +160,6 @@ public class Response {
 			if (request.IfNoneMatch.equals(doc.ETag)) {
 				reply(header("304", doc.type, 0)
 					+ "\nDate: "+now()+"\n\n");
-				//plainResponse("304", "");
 				return true;
 			}
 		}
@@ -173,8 +200,17 @@ public class Response {
 		reply(response);
 	}
 
+	private boolean hOut(String code) {	// Header-only Out
+		return reply(header(code, "", 0)+"\n\n");
+	}
+
+	private boolean hOut(String code, String[] a) {	// Overloaded
+		return reply(header(code, a));
+	}
+
 	private boolean reply(String data) {
 		boolean ok = false;
+Log.d("***CP34***", data);
 		try {
 			out.write(data.getBytes(), 0, data.length());
 			out.flush();
@@ -195,23 +231,9 @@ public class Response {
 			+ "\nConnection: close";
 	}
 
-	private String getDokument (String fname) {
-		if (fname == null) fname = "/";
-		if (fname.equals("/")) return "/"+cfg.index;
-		String s = fname.replaceFirst ("[\\?#](.*)","");	// Strip after ? or #
-		try {
-			s = URLDecoder.decode (s);
-		} catch (Exception e) {
-			s = fname;
-		}
-		// Folder? -- add default document index name
-		try {
-			File f = new File(cfg.root + s);
-			if (f.exists())
-				if (f.isDirectory())
-					s += (s.endsWith("/") ? "" : "/")	+ cfg.index;
-		} catch (Exception e) {}
-		return s;
+	// Overloaded
+	private String header(String code, String[] header) {
+		return header(code, "", 0) + a2h(header) + "\n\n";
 	}
 
 	private boolean notExists(PlainFile doc) {
@@ -219,8 +241,6 @@ public class Response {
 		logE(this.request.log + this.request.uri + "--not found");
 		if (this.request.uri.equals("/")) {
 			plainResponse("200", cfg.defaultIndex.toString());
-		} else if (doc.isDir) {
-			plainResponse("403", "Forbidden");
 		} else {
 			plainResponse("404", this.request.uri+" not found");
 		}
@@ -228,9 +248,25 @@ public class Response {
 		return false;
 	}
 
+	// Helpers
+	private String a2h(String[] a) {
+		String s = "";
+		for(int i=0; i<a.length; i++) s += "\n" + a[i];
+		return s;
+	}
 	private String now() {
 		SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
 		return sdf.format(new Date());
+	}
+	private String addIndex(String name) { return name + (name.endsWith("/") ? "" : "/") + cfg.index; }
+	private String getDokument (String fname) {
+		String s = fname.replaceFirst ("[\\?#](.*)","");	// Strip after ? or #
+		try {
+			s = URLDecoder.decode (s);
+		} catch (Exception e) {
+			s = fname;
+		}
+		return s;
 	}
 
 	// Aliases

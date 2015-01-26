@@ -20,8 +20,8 @@ function post() {
 function put() {
 	xhr("PUT", "/put.txt", "PUTÀÁÂ\n");
 }
-function del() {
-	xhr("DELETE", "/tmp/test.htm", null);
+function del(url) {
+	xhr("DELETE", url, null);
 }
 function xhr(method, resource, data) {
   if (!xmlReg) xmlReg = new XMLHttpRequest();
@@ -52,7 +52,7 @@ console.log("CP83:", document.getElementById("host").value+resource);
  <li><a href="javascript:trace()">TRACE</a></li>
  <li><a href="javascript:post()">POST</a></li>
  <li><a href="javascript:put()">PUT</a></li>
- <li><a href="javascript:del()">DELETE</a></li>
+ <li><a href="javascript:del('/tmp/test.htm')">DELETE</a></li>
 </ul>
 
 <form name="data" onsubmit="return false">

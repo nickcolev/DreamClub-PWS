@@ -22,8 +22,7 @@ public class Request {
 	// Methods
 	public int method = 0;
 	private static final String[] aMethod = {"",
-		"GET","HEAD","OPTIONS","TRACE","PUT"
-		//"POST", "DELETE"
+		"GET","HEAD","OPTIONS","TRACE","PUT","POST","DELETE"
 	};
 	private ArrayList<String> aHeader = new ArrayList<String>();
 
