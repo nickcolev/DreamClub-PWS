@@ -20,8 +20,14 @@ public class Request {
 	public String err;			// Last error
 	// Methods
 	public int method = 0;
-	private String[] aMethod = { "", "GET", "HEAD", "OPTIONS", "TRACE", "POST", "PUT", "DELETE" };
-	private boolean debug = false;
+	private String[] aMethod = {
+		"",
+		"GET", "HEAD",
+		"OPTIONS", "TRACE",
+		"POST", "PUT",
+		"DELETE"
+	};
+	private final boolean debug = true;
 
 	private String readLine(DataInputStream in) {
 		int c = -1, i=0;
@@ -47,7 +53,7 @@ public class Request {
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
 			while ((s = readLine(in)) != null) {
-				if (this.debug) Log.d(TAG, "s="+s);
+				if (this.debug) Log.d(TAG, s);
 				a = s.split(" ");
 				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')
 				if (i == 0) {		// The first line
@@ -90,6 +96,11 @@ public class Request {
 
 	// Helpers below
 	public String getMethod() { return this.aMethod[this.method]; }
+	public String getMethods() {
+		String s = "";
+		for (int i=1; i<this.aMethod.length; i++) s += (i==1 ? "" : ",") + this.aMethod[i];
+		return s;
+	}
 	private void logV(String s) { ServerService.log.v(s); }
 	private void logS(String s) { ServerService.log.s(s); }
 }

@@ -67,7 +67,7 @@ public class ServerService extends Service {
 
 	public void ReStart() {
 		Intent intent = new Intent(getApplicationContext(), ServerService.class);
-		closeSocket();
+		closeSocket(null);
 		stopService(intent);
 		startService(intent);
 	}
@@ -118,7 +118,7 @@ public class ServerService extends Service {
 					}
 				} catch (Exception ie) {
 					log.s("Shutdown");
-					closeSocket();
+					closeSocket(client);
 					serviceThread = null;
 					stopSelf();
 				}
@@ -150,9 +150,10 @@ public class ServerService extends Service {
 		super.onDestroy();
 	}
 
-	public void closeSocket() {
+	public void closeSocket(Socket client) {
 		try {
 			serverSocket.close();
+			if (client != null) client.close();
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
 		}

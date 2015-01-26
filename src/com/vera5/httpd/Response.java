@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import android.util.Log;
 
 public class Response {
@@ -19,6 +21,7 @@ public class Response {
   private OutputStream out;
   private Config cfg;
   private Request request;
+  private final boolean debug = true;
 
 	public Response(Config cfg, Socket client) {
 		this.cfg = cfg;
@@ -31,26 +34,35 @@ public class Response {
 	}
 
 	public void send(Request request) {
+		if (request.uri == null) {		// Investigate why/when this happens
+			logE("(null) requested");
+			return;
+		}
 		this.request = request;
 		String dokument = getDokument(request.uri);
 		String path = cfg.root + dokument;
+		if(this.debug) Log.d(TAG, "method: "+request.method);
 		switch(request.method) {
 			case 1:		// GET
 			case 2:		// HEAD
-				if (request.uri == null) {
-					logE("(null) requested");
-					return;
-				}
 				// log, loge, logi, logs
 				if (request.uri.startsWith("/log") && request.uri.length() < 6)
 					if (putLog(request)) return;
-				// Process
 				PlainFile doc = new PlainFile(path);
 				if (doc.exists)
 					fileResponse(doc);
 				else
 					notExists(doc);
 				break;
+			case 3:		// OPTIONS
+				options(request);
+				break;
+/*
+			case 4:		// TRACE
+			// see https://www.owasp.org/index.php/Test_HTTP_Methods_(OTG-CONFIG-006)
+				trace(request);
+				break;
+*/
 			case 6:		// PUT
 				if (put(request)) {
 					plainResponse("201", request.uri+" OK");
@@ -68,17 +80,34 @@ public class Response {
 		}
 	}
 
+	private void options(Request request) {
+		if (request.uri.endsWith("*")) {	// General, a.k.a. ping
+			reply(header("200", "", 0)+"\nAllow: "+request.getMethods()+"\n\n");
+		} else {	// Particular resource
+			PlainFile doc = new PlainFile(cfg.root+request.uri);
+			if (doc.exists) {
+				reply(header("200", doc.type, 0)+"\nAllow: GET\n\n");
+			} else {
+				reply(header("200", "", 0)+"\nAllow: None\n\n");
+			}
+		}
+	}
+
+	private void trace(Request request) {
+		plainResponse("501", "TRACE Not implemented yet");
+	}
+
 	private boolean put(Request request) {
 		boolean ok = false;
-String msg = "PUT "+request.uri+", len="+request.ContentLength+", data="+request.data;
-logI(msg);
+		String msg = "PUT "+request.uri+", len="+request.ContentLength+", data="+request.data;
+		logI(msg);
 		try {
 			FileOutputStream fd = new FileOutputStream(this.cfg.root+request.uri, false);
 			fd.write(request.data);
 			fd.close();
 			ok = true;
 		} catch (IOException e) {
-			logS(e.getMessage());
+			logE(e.getMessage());
 			this.err = e.getMessage();
 		}
 		return ok;
@@ -111,7 +140,9 @@ logI(msg);
 		// Caching
 		if (null != request.IfNoneMatch) {
 			if (request.IfNoneMatch.equals(doc.ETag)) {
-				plainResponse("304", "");
+				reply(header("304", doc.type, 0)
+					+ "\nDate: "+now()+"\n\n");
+				//plainResponse("304", "");
 				return true;
 			}
 		}
@@ -149,21 +180,29 @@ logI(msg);
 			"text/" + (msg.startsWith("<") ? "html" : "plain");
 		String response = header(code, ContentType, msg.length())
 			+ "\n\n" + msg;
+		reply(response);
+	}
+
+	private boolean reply(String data) {
+		boolean ok = false;
+		if(this.debug) Log.d(TAG, data);
 		try {
-			out.write(response.getBytes(), 0, response.length());
+			out.write(data.getBytes(), 0, data.length());
 			out.flush();
 			out.close();
+			ok = true;
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
 		}
+		return ok;
 	}
 
 	private String header(String code, String ContentType, int length) {
 		return	"HTTP/1.1 " + code
 			+ (ContentType.equals("") ? "" : "\nContent-Type: "+ContentType)
-			+ (length > 0 ? "\nContent-Length: "+length : "")
+			+ (length == -1 ? "" : "\nContent-Length: "+length)
 			+ "\nServer: PWS/" + cfg.version
-			+ "\nAccess-Control-Allow-Origin: 192.168.*"	// FIXME restrict cross-domain requests
+			+ "\nAccess-Control-Allow-Origin: *"	// FIXME restrict cross-domain requests
 			+ "\nConnection: close";
 	}
 
@@ -191,7 +230,7 @@ logI(msg);
 		logE(this.request.log + this.request.uri + "--not found");
 		if (this.request.uri.equals("/")) {
 			plainResponse("200", cfg.defaultIndex.toString());
-		} else if (isDir()) {
+		} else if (doc.isDir) {
 			plainResponse("403", "Forbidden");
 		} else {
 			plainResponse("404", this.request.uri+" not found");
@@ -200,10 +239,9 @@ logI(msg);
 		return false;
 	}
 
-	private boolean isDir() {
-		File f = new File(cfg.root + this.request.uri);
-		if (!f.exists()) return false;
-		return f.isDirectory();
+	private String now() {
+		SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
+		return sdf.format(new Date());
 	}
 
 	// Aliases

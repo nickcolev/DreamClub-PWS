@@ -15,23 +15,28 @@ public class PlainFile {
 	public byte[] content;
 	public String type;
 	public String ETag = "";
-	public boolean exists = false;
 	public String fname;
+	public boolean exists = false;
+	public boolean isDir = false;
 	public String err;
 	private File f;
 
 	public PlainFile(String fname) {
 		f = new File(fname);
-		if (f.exists())
+		if (f.exists()) {
+			this.exists = true;
+			this.fname = fname;
 			if (f.isFile()) {
-				this.fname = fname;
 				SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
 				this.time = sdf.format(f.lastModified());
 				this.ETag = ETag(f);
 				this.length = (int)f.length();
 				this.type = guessContentType(fname);
-				this.exists = true;
+			} else if (f.isDirectory()) {
+				this.type = "text/directory";
+				this.isDir = true;
 			}
+		}
 	}
 
 	public void get() {
