@@ -23,10 +23,12 @@ class ServerHandler extends Thread {
 		request.get(toClient);
 		Response response = new Response(cfg, toClient);
 		response.send(request);
+		/*
 		if (request.header("Connection").equals("close")) {
 			try { toClient.close(); }
 			catch (IOException e) { }
 		}
+		*/
 	}
 
 }

@@ -81,7 +81,8 @@ public class Response {
 			// other methods
 			default:
 				this.err = request.getMethod()+" Not Implemented";
-				plainResponse("501", this.err);
+				//plainResponse("501", this.err);
+				hOut("501");
 				logS(this.err);
 		}
 	}
@@ -210,7 +211,7 @@ public class Response {
 
 	private boolean reply(String data) {
 		boolean ok = false;
-Log.d("***CP34***", data);
+Log.d(TAG, data);
 		try {
 			out.write(data.getBytes(), 0, data.length());
 			out.flush();
