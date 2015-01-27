@@ -156,18 +156,18 @@ public class Response {
 
 	private boolean fileResponse(PlainFile doc) {
 		// Caching
+		boolean isHTML = doc.type.equals("text/html");
+		String ETag = doc.ETag + (isHTML ? ServerService.footer.ETag : "");
 		if (null != request.IfNoneMatch) {
-			if (request.IfNoneMatch.equals(doc.ETag)) {
+			if (request.IfNoneMatch.equals(ETag)) {
 				reply(header("304", doc.type, 0)
 					+ "\nDate: "+now()+"\n\n");
 				return true;
 			}
 		}
-		String ETag = doc.ETag + ServerService.footer.ETag;
-		boolean isHTML = doc.type.equals("text/html");
 		int l = isHTML ? ServerService.footer.length : 0;
 		String header = header("200 OK", doc.type, l + doc.length)
-			+ "\nETag: " + doc.ETag
+			+ "\nETag: " + ETag
 			+ "\nModified: " + doc.time
 			+ "\n\n";
 		boolean r = true;
@@ -228,6 +228,7 @@ Log.d("***CP34***", data);
 			+ (length == -1 ? "" : "\nContent-Length: "+length)
 			+ "\nServer: PWS/" + cfg.version
 			+ "\nAccess-Control-Allow-Origin: *"	// FIXME restrict cross-domain requests
+			+ "\nAccess-Control-Allow-Methods: " + request.getMethods()
 			+ "\nConnection: close";
 	}
 

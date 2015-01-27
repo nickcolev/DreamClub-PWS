@@ -65,6 +65,8 @@ public class PlainFile {
 		if (null == type) type = "application/octet-stream";
 		// My env doesn't recognize SVG
 		if(fname.endsWith(".svg")) type = "text/xml";
+		// For some reason, .js is not recognized properly
+		if(fname.endsWith(".js")) type = "text/javascript";
 		return type;
 	}
 
