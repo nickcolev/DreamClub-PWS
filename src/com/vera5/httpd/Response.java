@@ -38,6 +38,7 @@ public class Response {
 			return;
 		}
 		this.request = request;
+		PlainFile doc;
 		String dokument = getDokument(request.uri);
 		String path = cfg.root + dokument;
 		switch(request.method) {
@@ -46,9 +47,9 @@ public class Response {
 				// log, loge, logi, logs
 				if (request.uri.startsWith("/log") && request.uri.length() < 6)
 					if (putLog(request)) return;
-				PlainFile doc = new PlainFile(path);
+				doc = new PlainFile(path);
 				if (doc.exists) {
-					if (doc.isDir()) {
+					if (doc.f.isDirectory()) {
 						PlainFile index = new PlainFile(addIndex(path));
 						if (index.exists)
 							fileResponse(index);
@@ -74,6 +75,15 @@ public class Response {
 					logE("PUT failed with "+this.err);
 					plainResponse("500", this.err);
 				}
+				break;
+			case 6:		// POST
+				doc = new PlainFile(path);
+				if (doc.f.exists()) {
+					String result = CGI.exec("sh "+path, this.request.data);
+Log.d("***CGI***", " "+result);
+					plainResponse("200", "under development");
+				} else
+					plainResponse("404", this.request.uri+" not found");
 				break;
 			case 7:		// DELETE
 				delete(request);

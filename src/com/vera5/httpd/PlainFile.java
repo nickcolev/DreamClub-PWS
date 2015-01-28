@@ -19,7 +19,7 @@ public class PlainFile {
 	public boolean exists = false;
 	public boolean isDir = false;
 	public String err;
-	private File f;
+	public File f;
 
 	public PlainFile(String fname) {
 		f = new File(fname);

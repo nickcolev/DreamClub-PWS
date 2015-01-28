@@ -3,14 +3,14 @@
 </head>
 <body>
 
-<h1>APWS method test</h1>
+<h1>APWS <a href="test.htm">method test</a></h1>
 
-<form action="/post.txt" method="post">
-	Data<br/><input name="data" value="ABC"/><br/>
-	<input type="submit" value=" POST "/> <tt>/post.txt</tt>
+<form action="/tmp/shell.cgi" method="post">
+	<input name="data" value="ABC"/>
+	<input type="submit" value=" POST "/>
 </form>
 
-<form enctype="multipart/form-data" method="post">
+<form action="/tmp/shell.cgi" enctype="multipart/form-data" method="post">
 	<input name="file" type="file"/>
 	<input type="submit" value=" POST ">
 </form>

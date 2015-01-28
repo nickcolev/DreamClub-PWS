@@ -6,6 +6,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import android.util.Log;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+
 public class Request {
 
   private static final String TAG = "PWS.Request";
@@ -25,14 +28,15 @@ public class Request {
 		"GET","HEAD","OPTIONS","TRACE","PUT","POST","DELETE"
 	};
 	private ArrayList<String> aHeader = new ArrayList<String>();
+	private byte[] raw;
 
 	private String readLine(DataInputStream in) {
 		int c = -1, i=0;
 		char[] buf = new char[512];
 		try {
 			while ((c = in.read()) != -1) {
-				if (c == 10) continue;
-				if (c == 13) break;
+				if (c == 13) continue;
+				if (c == 10) break;
 				buf[i++] = (char)c;
 			}
 		} catch (IOException e) {
@@ -45,11 +49,12 @@ public class Request {
 
 	public void get(Socket client) {
 		String s, a[], method = "GET";
-		int i = 0, len = 0;
 		try {
+			int i = 0, c;
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
 			while ((s = readLine(in)) != null) {
+Log.d(TAG, s);
 				this.aHeader.add(s);
 				a = s.split(" ");
 				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')
@@ -62,7 +67,7 @@ public class Request {
 				} else if (a[0].equals("Content-Type:")) {
 					this.ContentType = a[1];
 				} else if (a[0].equals("Content-Length:")) {
-					len = Integer.parseInt(a[1]);
+					this.ContentLength = Integer.parseInt(a[1]);
 				} else if (a[0].equals("If-Modified-Since:")) {
 					this.IfModifiedSince = a[1];
 				} else if (a[0].equals("If-None-Match:")) {
@@ -72,20 +77,19 @@ public class Request {
 				i++;
 				// Note: 'this.' is not necessary (mandatory). Used for clarity.
 			}
-			if (len > 0) {		// PUT/POST data?
-				in.read();		// left-over LF (10) from the header
-				this.data = new byte[len];
-				int c;
-				i = 0;
-				while ((c = in.read()) != -1)
-					this.data[i++] = (byte)c;
-				this.ContentLength = i;
+			if(this.ContentLength > 0){	// PUT/POST data?
+				this.data = new byte[this.ContentLength];
+				for(i=0; i<this.ContentLength; i++) {
+					if((c = in.read()) == -1) break;
+					this.data[i] = (byte)c;
+				}
 			}
 			this.log = client.getInetAddress().toString() + " " + method + " ";
 			for (i=1; i<this.aMethod.length; i++)
-				if (aMethod[i].equals(method)) this.method = i;
+				if (this.aMethod[i].equals(method)) this.method = i;
 		} catch (Exception e) {
-			err = e.getMessage();
+			this.err = e.getMessage();
+			Log.e(TAG, err);
 		}
 	}
 
@@ -95,6 +99,20 @@ public class Request {
 		String s = "";
 		for (int i=1; i<this.aMethod.length; i++)
 			s += (i==1 ? "" : ",") + this.aMethod[i];
+		return s;
+	}
+	public CharBuffer cbData() {
+		ByteBuffer cs = ByteBuffer.allocate(this.ContentLength);
+		for(int i=0; i<this.ContentLength; i++) {
+			cs.put(this.data[i]);
+		}
+		return cs.asCharBuffer();
+	}
+	public String csData() {
+		char cs[] = new char[this.ContentLength];
+		for(int i=0; i<this.ContentLength; i++)
+			cs[i] = (char)this.data[i];
+		String s = new String(cs);
 		return s;
 	}
 	public String header(String key) {
