@@ -84,6 +84,11 @@ it <tt>build.xml</tt></p>
 
 <p><b>Java Buffer <q>bug</q></b><br/>
 If an input/output stream is wrapped in <tt>Buffered</tt>-something &mdash; the bytes are decoded <small>(depending of the stream's character set/encoding)</small>, which skew binary input/output. Found this while wondering while working on the <tt>PUT</tt> method implementation.</p>
+
+<p><b><a class="kw" href="http://developer.android.com/reference/java/lang/Runtime.html#exec(java.lang.String, java.lang.String[])">Runtime.exec</a> <q>envp</q> issue</b></p>
+<pre class="cp"><del>Runtime.getRuntime().exec(&quot;sh <i>cmd</i> ...)</del>
+Runtime.getRuntime().exec(&quot;/system/bin/sh <i>cmd</i> ...)</pre>
+
 </div>
 
 </body></html>

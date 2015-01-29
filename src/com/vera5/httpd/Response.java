@@ -38,23 +38,24 @@ public class Response {
 			return;
 		}
 		this.request = request;
-		PlainFile doc;
-		String dokument = getDokument(request.uri);
-		String path = cfg.root + dokument;
 		switch(request.method) {
 			case 1:		// GET
 			case 2:		// HEAD
 				// log, loge, logi, logs
 				if (request.uri.startsWith("/log") && request.uri.length() < 6)
 					if (putLog(request)) return;
-				doc = new PlainFile(path);
-				if (doc.exists) {
+				String uri = getDokument(request.uri);
+				String path = cfg.root + uri;
+				PlainFile doc = new PlainFile(path);
+				if (doc.f.exists()) {
 					if (doc.f.isDirectory()) {
 						PlainFile index = new PlainFile(addIndex(path));
-						if (index.exists)
+						if (index.f.exists()) {
 							fileResponse(index);
-						else
+						} else {
+							// FIXME if (request.uri.equals("/")) defaultIndex
 							plainResponse("403", "Forbidden");	// FIXME if dir listing disabled
+						}
 					} else
 						fileResponse(doc);
 				} else
@@ -64,7 +65,6 @@ public class Response {
 				options(request);
 				break;
 			case 4:		// TRACE
-				// see https://www.owasp.org/index.php/Test_HTTP_Methods_(OTG-CONFIG-006)
 				plainResponse("200", request.headers());
 				break;
 			case 5:		// PUT
@@ -77,13 +77,7 @@ public class Response {
 				}
 				break;
 			case 6:		// POST
-				doc = new PlainFile(path);
-				if (doc.f.exists()) {
-					String result = CGI.exec("sh "+path, this.request.data);
-Log.d("***CGI***", " "+result);
-					plainResponse("200", "under development");
-				} else
-					plainResponse("404", this.request.uri+" not found");
+				post(request);
 				break;
 			case 7:		// DELETE
 				delete(request);
@@ -91,8 +85,7 @@ Log.d("***CGI***", " "+result);
 			// other methods
 			default:
 				this.err = request.getMethod()+" Not Implemented";
-				//plainResponse("501", this.err);
-				hOut("501");
+				plainResponse("501", this.err);
 				logS(this.err);
 		}
 	}
@@ -126,6 +119,20 @@ Log.d("***CGI***", " "+result);
 				});
 			}
 		}
+	}
+
+	private void post(Request request) {
+		String uri = getDokument(request.uri);
+		String path = cfg.root + uri;
+		PlainFile doc = new PlainFile(path);
+		if (doc.f.exists()) {
+			String output = CGI.exec(request,this.cfg.root);
+			if (output == null)
+				plainResponse("501", "Internal Server Error");
+			else
+				reply("HTTP/1.1 200 OK\r\n"+output);
+		} else
+			plainResponse("404", request.uri+" not found");
 	}
 
 	private boolean put(Request request) {
