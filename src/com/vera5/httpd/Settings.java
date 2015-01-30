@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.util.Log;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ public class Settings extends PreferenceActivity {
 		Map<String,?> keys = prefs.getAll();
 		for(Map.Entry<String,?> entry : keys.entrySet())
 			setSummary(prefs, entry.getKey());
+		//hide("footer"); FIXME Some hidden preferences
 		listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 			public void onSharedPreferenceChanged(SharedPreferences p, String key) {
 				setSummary(p, key);
@@ -51,6 +53,12 @@ public class Settings extends PreferenceActivity {
 		super.onPause();
 		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
 		unbindService(mConnection);
+	}
+
+	private void hide(String key) {
+		EditTextPreference pref = (EditTextPreference) findPreference(key);
+		PreferenceScreen ps = getPreferenceScreen();
+		ps.removePreference(pref);
 	}
 
 	private void setSummary(SharedPreferences p, String key) {

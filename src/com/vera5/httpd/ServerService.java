@@ -59,7 +59,7 @@ public class ServerService extends Service {
 
 	public void configure() {
 		cfg = new Config();
-		cfg.configure(prefs);
+		cfg.configure(this.prefs);
 		cfg.version = version();
 		cfg.defaultIndex = getResources().getText(R.string.defaultIndex);
 		getFooter();

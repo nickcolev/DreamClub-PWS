@@ -80,7 +80,8 @@ class ServerHandler extends Thread {
 				response.plainResponse("501", this.err);
 				logS(this.err);
 		}
-		/*
+		
+		/* FIXME Implement after 10" timeout, like Timer.schedule(test, 1000);
 		if (request.header("Connection").equals("close")) {
 			try { toClient.close(); }
 			catch (IOException e) { }

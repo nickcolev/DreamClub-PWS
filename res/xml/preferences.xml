@@ -16,5 +16,6 @@
 			android:title="Directory Index" />
 		<EditTextPreference
 			android:key="footer"
+			android:defaultValue="footer"
 			android:title="Footer" />
 </PreferenceScreen>
