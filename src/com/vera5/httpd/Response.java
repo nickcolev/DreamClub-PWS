@@ -39,7 +39,7 @@ public class Response {
 		else
 			hOut("405 Not Allowed");
 	}
-
+	
 	public void ls(Request request) {
 		File dir = new File(this.cfg.root+request.uri);
 		String s = "<html><head><title>"+request.uri+"</title></head><body><p>Content of "+request.uri+"</p><table>";
@@ -224,7 +224,8 @@ public class Response {
 		return false;
 	}
 
-	// Aliases
+	// Aliases & Helpers
+	public void Forbidden() { plainResponse("403", "Forbidden"); }
 	private void logE(String s) { ServerService.log.e(s); }
 	private void logI(String s) { ServerService.log.i(s); }
 	private void logS(String s) { ServerService.log.s(s); }

@@ -46,7 +46,8 @@ class ServerHandler extends Thread {
 							if (request.uri.equals("/"))
 								response.plainResponse("200", this.cfg.defaultIndex.toString());
 							else
-								response.ls(request);	// FIXME Is allowed
+								//response.ls(request);	// FIXME Is allowed
+								response.Forbidden();	// FIXME Implement preference
 						}
 					} else
 						response.fileResponse(doc);
