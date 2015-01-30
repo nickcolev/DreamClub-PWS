@@ -40,6 +40,9 @@ public class Response {
 			hOut("405 Not Allowed");
 	}
 
+	public void list(Request request) {
+	}
+
 	public void options(Request request) {
 		if (request.uri.endsWith("*")) {	// General, a.k.a. ping
 			hOut("200", new String[]{
