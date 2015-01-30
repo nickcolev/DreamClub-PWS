@@ -175,19 +175,12 @@ public class ServerService extends Service {
 		try {
 			WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
 			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-			IP = intToIp(wifiInfo.getIpAddress());
+			IP = Lib.intToIp(wifiInfo.getIpAddress());
 			if (IP.equals("0.0.0.0")) IP = "localhost";
 		} catch (Exception e) {
 			IP = "localhost";
 		}
 		return IP;
-	}
-
-	public static String intToIp(int i) {
-		return	((i       ) & 0xFF) + "." +
-				((i >>  8 ) & 0xFF) + "." +
-				((i >> 16 ) & 0xFF) + "." +
-				( i >> 24   & 0xFF);
 	}
 
     @Override

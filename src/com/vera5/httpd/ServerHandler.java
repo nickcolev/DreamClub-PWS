@@ -7,9 +7,11 @@ import java.net.Socket;
 
 class ServerHandler extends Thread {
 
-  private Socket toClient;
+  public Socket toClient;
+  public Config cfg;
+  public Request request;
   private Handler handler;
-  private Config cfg;
+  private String err;
 
 	public ServerHandler(Socket s, Handler handler, Config cfg) {
 		this.toClient = s;
@@ -19,10 +21,64 @@ class ServerHandler extends Thread {
 
 	public void run() {
 
-		Request request = new Request();
+		request = new Request();
 		request.get(toClient);
-		Response response = new Response(cfg, toClient);
-		response.send(request);
+		if (request.uri == null) {		// FIXME Investigate why/when this happens
+			logE("(null) requested");
+			return;
+		}
+		Response response = new Response(this);
+		switch(request.method) {
+			case 1:		// GET
+			case 2:		// HEAD
+				// log, loge, logi, logs
+				if (request.uri.startsWith("/log") && request.uri.length() < 6)
+					if (response.putLog(request)) return;
+				String uri = Lib.getDokument(request.uri);
+				String path = cfg.root + uri;
+				PlainFile doc = new PlainFile(path);
+				if (doc.f.exists()) {
+					if (doc.f.isDirectory()) {
+						PlainFile index = new PlainFile(addIndex(path));
+						if (index.f.exists()) {
+							response.fileResponse(index);
+						} else {
+							if (request.uri.equals("/"))
+								response.plainResponse("200", this.cfg.defaultIndex.toString());
+							else
+								response.plainResponse("403", "Forbidden");	// FIXME if dir listing disabled
+						}
+					} else
+						response.fileResponse(doc);
+				} else
+					response.notExists(doc);
+				break;
+			case 3:		// OPTIONS
+				response.options(request);
+				break;
+			case 4:		// TRACE
+				response.plainResponse("200", request.headers());
+				break;
+			case 5:		// PUT
+				if (response.put(request)) {
+					response.hOut("201");
+				} else {
+					logV("PUT failed with "+this.err);
+					logE("PUT failed with "+this.err);
+					response.plainResponse("500", this.err);
+				}
+				break;
+			case 6:		// POST
+				response.post(request);
+				break;
+			case 7:		// DELETE
+				response.delete(request);
+				break;
+			default:
+				this.err = request.getMethod()+" Not Implemented";
+				response.plainResponse("501", this.err);
+				logS(this.err);
+		}
 		/*
 		if (request.header("Connection").equals("close")) {
 			try { toClient.close(); }
@@ -31,4 +87,11 @@ class ServerHandler extends Thread {
 		*/
 	}
 
+	private String addIndex(String name) { return name + (name.endsWith("/") ? "" : "/") + cfg.index; }
+
+	// Aliases
+	private void logE(String s) { ServerService.log.e(s); }
+	private void logI(String s) { ServerService.log.i(s); }
+	private void logS(String s) { ServerService.log.s(s); }
+	private void logV(String s) { ServerService.log.v(s); }
 }

@@ -17,7 +17,6 @@ public class PlainFile {
 	public String ETag = "";
 	public String fname;
 	public boolean exists = false;
-	public boolean isDir = false;
 	public String err;
 	public File f;
 
@@ -34,7 +33,6 @@ public class PlainFile {
 				this.type = guessContentType(fname);
 			} else if (f.isDirectory()) {
 				this.type = "text/directory";
-				this.isDir = true;
 			}
 		}
 	}
@@ -70,7 +68,4 @@ public class PlainFile {
 		return type;
 	}
 
-	public boolean canRead() { return this.f.canRead(); }
-	public boolean canWrite() { return this.f.canWrite(); }
-	public boolean isDir() { return this.f.isDirectory(); }
 }

@@ -1,30 +1,26 @@
 package com.vera5.httpd;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.URLDecoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import android.util.Log;
 
 public class Response {
 
+  private final Config cfg;
   private final Socket client;
+  private final Request request;
   private static final String TAG = "PWS.Response";
   private String err;
   private OutputStream out;
-  private Config cfg;
-  private Request request;
 
-	public Response(Config cfg, Socket client) {
-		this.cfg = cfg;
-		this.client = client;
+	public Response(ServerHandler parent) {
+		this.cfg = parent.cfg;
+		this.client = parent.toClient;
+		this.request = parent.request;
 		try {
 			out = client.getOutputStream();
 		} catch (IOException e) {
@@ -32,67 +28,7 @@ public class Response {
 		}
 	}
 
-	public void send(Request request) {
-		if (request.uri == null) {		// Investigate why/when this happens
-			logE("(null) requested");
-			return;
-		}
-		this.request = request;
-		switch(request.method) {
-			case 1:		// GET
-			case 2:		// HEAD
-				// log, loge, logi, logs
-				if (request.uri.startsWith("/log") && request.uri.length() < 6)
-					if (putLog(request)) return;
-				String uri = getDokument(request.uri);
-				String path = cfg.root + uri;
-				PlainFile doc = new PlainFile(path);
-				if (doc.f.exists()) {
-					if (doc.f.isDirectory()) {
-						PlainFile index = new PlainFile(addIndex(path));
-						if (index.f.exists()) {
-							fileResponse(index);
-						} else {
-							if (request.uri.equals("/"))
-								plainResponse("200", cfg.defaultIndex.toString());
-							else
-								plainResponse("403", "Forbidden");	// FIXME if dir listing disabled
-						}
-					} else
-						fileResponse(doc);
-				} else
-					notExists(doc);
-				break;
-			case 3:		// OPTIONS
-				options(request);
-				break;
-			case 4:		// TRACE
-				plainResponse("200", request.headers());
-				break;
-			case 5:		// PUT
-				if (put(request)) {
-					hOut("201");
-				} else {
-					logV("PUT failed with "+this.err);
-					logE("PUT failed with "+this.err);
-					plainResponse("500", this.err);
-				}
-				break;
-			case 6:		// POST
-				post(request);
-				break;
-			case 7:		// DELETE
-				delete(request);
-				break;
-			// other methods
-			default:
-				this.err = request.getMethod()+" Not Implemented";
-				plainResponse("501", this.err);
-				logS(this.err);
-		}
-	}
-
-	private void delete(Request request) {
+	public void delete(Request request) {
 		File f = new File(cfg.root+request.uri);
 		if (!f.exists())
 			hOut("404 Not Found");
@@ -104,13 +40,13 @@ public class Response {
 			hOut("405 Not Allowed");
 	}
 
-	private void options(Request request) {
+	public void options(Request request) {
 		if (request.uri.endsWith("*")) {	// General, a.k.a. ping
 			hOut("200", new String[]{
 				"Allow: "+request.getMethods()
 			});
 		} else {	// Particular resource
-			PlainFile doc = new PlainFile(cfg.root+request.uri);
+			PlainFile doc = new PlainFile(this.cfg.root+request.uri);
 			if (doc.exists) {
 				hOut("200", new String[]{
 					"Allow: GET"
@@ -123,8 +59,8 @@ public class Response {
 		}
 	}
 
-	private void post(Request request) {
-		String uri = getDokument(request.uri);
+	public void post(Request request) {
+		String uri = Lib.getDokument(request.uri);
 		String path = cfg.root + uri;
 		PlainFile doc = new PlainFile(path);
 		if (doc.f.exists()) {
@@ -137,7 +73,7 @@ public class Response {
 			plainResponse("404", request.uri+" not found");
 	}
 
-	private boolean put(Request request) {
+	public boolean put(Request request) {
 		boolean ok = false;
 		String msg = "PUT "+request.uri+", len="+request.ContentLength+", data="+request.data;
 		logI(msg);
@@ -153,7 +89,7 @@ public class Response {
 		return ok;
 	}
 
-	private boolean putLog(Request request) {
+	public boolean putLog(Request request) {
 		boolean isLog = true;
 		char c = request.uri.length() == 4 ? '?' : request.uri.charAt(4);
 		switch(c) {
@@ -174,14 +110,14 @@ public class Response {
 		return isLog;
 	}
 
-	private boolean fileResponse(PlainFile doc) {
+	public boolean fileResponse(PlainFile doc) {
 		// Caching
 		boolean isHTML = doc.type.equals("text/html");
 		String ETag = doc.ETag + (isHTML ? ServerService.footer.ETag : "");
 		if (null != request.IfNoneMatch) {
 			if (request.IfNoneMatch.equals(ETag)) {
 				reply(header("304", doc.type, 0)
-					+ "\nDate: "+now()+"\n\n");
+					+ "\nDate: "+Lib.now()+"\n\n");
 				return true;
 			}
 		}
@@ -212,7 +148,7 @@ public class Response {
 		return r;
 	}
 
-	private void plainResponse(String code, String msg) {
+	public void plainResponse(String code, String msg) {
 		String ContentType = msg.length() == 0 ? "" :
 			"text/" + (msg.startsWith("<") ? "html" : "plain");
 		String response = header(code, ContentType, msg.length())
@@ -220,15 +156,15 @@ public class Response {
 		reply(response);
 	}
 
-	private boolean hOut(String code) {	// Header-only Out
+	public boolean hOut(String code) {	// Header-only Out
 		return reply(header(code, "", 0)+"\n\n");
 	}
 
-	private boolean hOut(String code, String[] a) {	// Overloaded
+	public boolean hOut(String code, String[] a) {	// Overloaded
 		return reply(header(code, a));
 	}
 
-	private boolean reply(String data) {
+	public boolean reply(String data) {
 		boolean ok = false;
 Log.d(TAG, data);
 		try {
@@ -252,12 +188,11 @@ Log.d(TAG, data);
 			+ "\nConnection: close";
 	}
 
-	// Overloaded
-	private String header(String code, String[] header) {
-		return header(code, "", 0) + a2h(header) + "\n\n";
+	private String header(String code, String[] header) {	// Overloaded
+		return header(code, "", 0) + Lib.a2h(header) + "\n\n";
 	}
 
-	private boolean notExists(PlainFile doc) {
+	public boolean notExists(PlainFile doc) {
 		logV(this.request.uri+" not found");
 		logE(this.request.log + this.request.uri + "--not found");
 		if (this.request.uri.equals("/")) {
@@ -267,27 +202,6 @@ Log.d(TAG, data);
 		}
 		this.err = "not exists";
 		return false;
-	}
-
-	// Helpers
-	private String a2h(String[] a) {
-		String s = "";
-		for(int i=0; i<a.length; i++) s += "\n" + a[i];
-		return s;
-	}
-	private String now() {
-		SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
-		return sdf.format(new Date());
-	}
-	private String addIndex(String name) { return name + (name.endsWith("/") ? "" : "/") + cfg.index; }
-	private String getDokument (String fname) {
-		String s = fname.replaceFirst ("[\\?#](.*)","");	// Strip after ? or #
-		try {
-			s = URLDecoder.decode (s);
-		} catch (Exception e) {
-			s = fname;
-		}
-		return s;
 	}
 
 	// Aliases

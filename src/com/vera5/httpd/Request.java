@@ -6,9 +6,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import android.util.Log;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-
 public class Request {
 
   private static final String TAG = "PWS.Request";
@@ -28,7 +25,6 @@ public class Request {
 		"GET","HEAD","OPTIONS","TRACE","PUT","POST","DELETE"
 	};
 	private ArrayList<String> aHeader = new ArrayList<String>();
-	private byte[] raw;
 
 	private String readLine(DataInputStream in) {
 		int c = -1, i=0;
@@ -75,7 +71,6 @@ Log.d(TAG, s);
 				}
 				// Other headers parsing here
 				i++;
-				// Note: 'this.' is not necessary (mandatory). Used for clarity.
 			}
 			if(this.ContentLength > 0){	// PUT/POST data?
 				this.data = new byte[this.ContentLength];
@@ -99,20 +94,6 @@ Log.d(TAG, s);
 		String s = "";
 		for (int i=1; i<this.aMethod.length; i++)
 			s += (i==1 ? "" : ",") + this.aMethod[i];
-		return s;
-	}
-	public CharBuffer cbData() {
-		ByteBuffer cs = ByteBuffer.allocate(this.ContentLength);
-		for(int i=0; i<this.ContentLength; i++) {
-			cs.put(this.data[i]);
-		}
-		return cs.asCharBuffer();
-	}
-	public String csData() {
-		char cs[] = new char[this.ContentLength];
-		for(int i=0; i<this.ContentLength; i++)
-			cs[i] = (char)this.data[i];
-		String s = new String(cs);
 		return s;
 	}
 	public String header(String key) {
