@@ -53,8 +53,10 @@ public class Response {
 						if (index.f.exists()) {
 							fileResponse(index);
 						} else {
-							// FIXME if (request.uri.equals("/")) defaultIndex
-							plainResponse("403", "Forbidden");	// FIXME if dir listing disabled
+							if (request.uri.equals("/"))
+								plainResponse("200", cfg.defaultIndex.toString());
+							else
+								plainResponse("403", "Forbidden");	// FIXME if dir listing disabled
 						}
 					} else
 						fileResponse(doc);

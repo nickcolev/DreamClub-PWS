@@ -15,6 +15,17 @@
 
 <div id="briefs">
 
+<p><b><a class="cal" onclick="pCal(this)">29-Jan-15</a> 18:18, Sign key:</b>
+Generated private key to sign the app as described <a href="http://developer.android.com/tools/publishing/app-signing.html#signing-manually">here</a>.</p>
+<pre class="cp">keytool -genkey -v -keystore <span class="hlp" title="Renkata69">PWS.keystore</span> -alias PWS -keyalg RSA -keysize 2048 -validity <span class="hlp" title="5 yrs">1825</span></pre>
+<p>Before build release, added to <tt>ant.properties</tt></p>
+<pre class="cp">key.store=PWS.keystore
+key.alias=PWS</pre>
+<p>Added <tt>ant.properties</tt> to the git. Successfuly built <tt>pws.apk</tt>. The technology was:</p>
+<pre class="cp">ant release							<fn>Internally calls 'jarsigner' (prompt for password). Creates 'bin/pws-release.apk'</fn>
+jarsigner -verify -verbose -certs bin/pws-release-unaligned.apk	<fn>Verify the apk is signed</fn>
+<span class="hlp" title="part of ASDK 'build-tools'">zipalign</span> -v 4 bin/pws-release-unaligned.apk bin/pws.apk		<fn>Final apk for distribution</fn></pre>
+
 <p class="ul"><b><a class="cal" onclick="pCal(this)">23-Jan-15</a> 17:55, Stable release:</b> Tagged version 0.4alpha</p>
 <div class="m3em">
 <p class="ul">Features:
