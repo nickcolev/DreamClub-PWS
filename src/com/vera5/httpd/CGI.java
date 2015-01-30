@@ -42,29 +42,4 @@ public class CGI {
 		if (err != 0) output = null;
 		return output;
 	}
-
-	public static String ls(String path) {
-		String cmd = "ls "+path, output = "Content of "+path+"\r\n\r\n";
-		int err = 0;
-		try {
-			String row;
-			Process p = Runtime.getRuntime().exec(cmd);
-			err = p.waitFor();
-			BufferedReader in = new BufferedReader(
-				new InputStreamReader(p.getInputStream()),8192);
-			while ((row = in.readLine()) != null) {
-				output += row + "\r\n";
-			}
-			in.close();
-		} catch (IOException e) {
-			output = null;
-			e.printStackTrace();
-		} catch (InterruptedException ie) {
-			output = null;
-			ie.printStackTrace();
-		}
-		return output;
-	}
-
-
 }

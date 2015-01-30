@@ -50,7 +50,7 @@ public class Request {
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
 			while ((s = readLine(in)) != null) {
-Log.d(TAG, s);
+//Log.d(TAG, s);
 				this.aHeader.add(s);
 				a = s.split(" ");
 				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')

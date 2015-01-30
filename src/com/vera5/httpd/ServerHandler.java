@@ -45,11 +45,8 @@ class ServerHandler extends Thread {
 						} else {
 							if (request.uri.equals("/"))
 								response.plainResponse("200", this.cfg.defaultIndex.toString());
-							else {
-								//response.plainResponse("403", "Forbidden");	// FIXME if dir listing disabled
-								String ls = CGI.ls(this.cfg.root+request.uri);
-								if (ls != null) response.plainResponse("200", ls);
-							}
+							else
+								response.ls(request);	// FIXME Is allowed
 						}
 					} else
 						response.fileResponse(doc);

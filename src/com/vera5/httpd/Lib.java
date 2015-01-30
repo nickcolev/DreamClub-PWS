@@ -1,5 +1,7 @@
 package com.vera5.httpd;
 
+import java.io.File;
+import java.lang.NoSuchMethodError;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -34,4 +36,16 @@ class Lib {
 				( i >> 24   & 0xFF);
 	}
 
+	public static String fileAttr(File f) {
+		String exec = "?";
+		try {
+			exec = f.canExecute() ? "x" : " ";
+		} catch (NoSuchMethodError e) {
+			exec = "?";
+		}
+		return	(f.isDirectory() ? "d" : " ") +
+			(f.canRead() ? "r" : "-") +
+			(f.canWrite() ? "w" : "-") +
+			exec;
+	}
 }

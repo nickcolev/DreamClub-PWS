@@ -40,7 +40,24 @@ public class Response {
 			hOut("405 Not Allowed");
 	}
 
-	public void list(Request request) {
+	public void ls(Request request) {
+		File dir = new File(this.cfg.root+request.uri);
+		String s = "<html><head><title>"+request.uri+"</title></head><body><p>Content of "+request.uri+"</p><table>";
+		if (dir.isDirectory()) {
+			long bytes = 0;
+			File[] files = dir.listFiles();
+			for (File f : files) {
+				bytes += f.length();
+				s += "<tr>" +
+					"<td align=\"right\">" + Lib.fileAttr(f) + "</td>" +
+					"<td align=\"right\">" + f.length() + "</td>" +
+					"<td>" + f.getName() + "</td>" +
+					"</tr>";
+			}
+			s += "</table><p><small>"+bytes+" bytes in "+files.length+" files</small></p></body></html>";
+			plainResponse("200", s);
+		} else
+			plainResponse("403", "Forbidden");
 	}
 
 	public void options(Request request) {
@@ -169,7 +186,7 @@ public class Response {
 
 	public boolean reply(String data) {
 		boolean ok = false;
-Log.d(TAG, data);
+//Log.d(TAG, data);
 		try {
 			out.write(data.getBytes(), 0, data.length());
 			out.flush();
