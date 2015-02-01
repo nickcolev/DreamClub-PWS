@@ -1,30 +1,42 @@
 package com.vera5.httpd;
 
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.lang.Thread;
 import java.net.Socket;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import android.util.Log;
 
 public class Request {
 
   private static final String TAG = "PWS.Request";
-	public String uri;
-	public String version;
-	public String ContentType;
-	public int ContentLength = 0;
-	public String AcceptEncoding;
-	public String IfModifiedSince;
-	public String IfNoneMatch;
-	public byte[] data;			// PUT/POST
-	public String log;			// For Logger
-	public String err;			// Last error
-	// Methods
-	public int method = 0;
-	private static final String[] aMethod = {"",
-		"GET","HEAD","OPTIONS","TRACE","PUT","POST","DELETE"
-	};
-	private ArrayList<String> aHeader = new ArrayList<String>();
+  public String uri;			// Normalized url
+  public String url;
+  public String args;			// after ? in the url
+  public String version;
+  public String ContentType;
+  public int ContentLength = 0;
+  public String AcceptEncoding;
+  public String IfNoneMatch;
+  public byte[] data;			// PUT/POST
+  public String log;			// For Logger
+  public String err;			// Last error
+  // Methods
+  public int method = 0;
+  private static final String[] aMethod = {"",
+	"GET","HEAD","OPTIONS","TRACE","PUT","POST","DELETE"
+  };
+  private ArrayList<String> aHeader = new ArrayList<String>();
+  public Config cfg;
+  public ServerHandler parent;
+
+
+	public Request(ServerHandler parent) {
+		this.parent = parent;
+		this.cfg = parent.cfg;
+	}
 
 	private String readLine(DataInputStream in) {
 		int c = -1, i=0;
@@ -53,26 +65,30 @@ public class Request {
 //Log.d(TAG, s);
 				this.aHeader.add(s);
 				a = s.split(" ");
-				// The first line is the request method, resourse, and version (like 'GET / HTTP/1.0')
+				// The first line is: method resourse HTTP/version (like 'GET / HTTP/1.0')
 				if (i == 0) {		// The first line
 					method = a[0];
-					this.uri = a[1].replace("/~", "/usr/");
+					this.url = a[1];
 					this.version = a[2];
+					parseUri(a[1]);
+					if (method.equals("GET")) {
+						DocumentCache cache = new DocumentCache(this);
+						new Thread(cache).start();
+					}
+					logI(s);
 				} else if (a[0].equals("Accept-Encoding:")) {
 					this.AcceptEncoding = a[1];
 				} else if (a[0].equals("Content-Type:")) {
 					this.ContentType = a[1];
 				} else if (a[0].equals("Content-Length:")) {
 					this.ContentLength = Integer.parseInt(a[1]);
-				} else if (a[0].equals("If-Modified-Since:")) {
-					this.IfModifiedSince = a[1];
 				} else if (a[0].equals("If-None-Match:")) {
 					this.IfNoneMatch = a[1];
 				}
 				// Other headers parsing here
 				i++;
 			}
-			if(this.ContentLength > 0){	// PUT/POST data?
+			if(this.ContentLength > 0) {	// PUT/POST data?
 				this.data = new byte[this.ContentLength];
 				for(i=0; i<this.ContentLength; i++) {
 					if((c = in.read()) == -1) break;
@@ -110,6 +126,22 @@ public class Request {
 		for (String h : this.aHeader) s += h + "\n";
 		return s;
 	}
+	private void logI(String s) { ServerService.log.i(s); }
 	private void logV(String s) { ServerService.log.v(s); }
 	private void logS(String s) { ServerService.log.s(s); }
+	private void parseUri(String uri) {
+		String s = uri;
+		try {
+			s = URLDecoder.decode(s);
+		} catch (Exception e) {
+		}
+		int p = s.indexOf('?');
+		if (p == -1)
+			this.uri = s;
+		else {
+			this.uri = s.substring(0, p);
+			this.args = s.substring(++p);
+		}
+	}
+
 }

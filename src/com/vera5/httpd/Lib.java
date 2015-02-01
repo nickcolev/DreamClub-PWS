@@ -2,20 +2,22 @@ package com.vera5.httpd;
 
 import java.io.File;
 import java.lang.NoSuchMethodError;
-import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 class Lib {
 
-	public static String getDokument (String fname) {
-		String s = fname.replaceFirst ("[\\?#](.*)","");	// Strip after ? or #
-		try {
-			s = URLDecoder.decode (s);
-		} catch (Exception e) {
-			s = fname;
-		}
+	public static String baseuri(String s) {
+		int p = s.indexOf('?');
+		if (p != -1) s = s.substring(0, p);
 		return s;
+	}
+
+	public static String addIndex(String fname, String index) {
+		if (fname.endsWith("/")) return fname+index;
+		File f = new File(fname);
+		if (f.isDirectory()) fname += "/" + index;
+		return fname;
 	}
 
 	public static String a2h(String[] a) {

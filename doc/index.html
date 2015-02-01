@@ -15,6 +15,28 @@
 
 <div id="briefs">
 
+<p><b><a class="cal" onclick="pCal(this)">01-Feb-15</a> 09:24, Release candidate:</b> Tagged v0.4.8
+<div class="m3em">
+<p class="ul">Features:
+<ul>
+ <li>GET, HEAD, OPTIONS, TRACE, POST, PUT, DELETE methods</li>
+ <li>File log</li>
+ <li>Preferences &mdash; port, document root, document index, footer</li>
+</ul></p>
+<p class="ul">To do:
+<ul>
+ <li>Art work &mdash; icon</li>
+ <li>If in settings user touch [Home] &mdash; return to settings</li>
+</ul></p>
+<p class="ul">Nice to have:
+<ul>
+ <li>Authentication</li>
+ <li>Cookies</li>
+ <li>Directory listing instead of Forbidden <small>(settable)</small></li>
+ <li>Broadcast receivers <small>(on boot for autostart and <a href="http://developer.android.com/reference/android/net/wifi/WifiManager.WifiLock.html">WiFi lock</a> &amp; state change track)</small></li>
+</ul></p>
+</div>
+
 <p><b><a class="cal" onclick="pCal(this)">29-Jan-15</a> 18:18, Sign key:</b>
 Generated private key to sign the app as described <a href="http://developer.android.com/tools/publishing/app-signing.html#signing-manually">here</a>.</p>
 <pre class="cp">keytool -genkey -v -keystore <span class="hlp" title="Renkata69">PWS.keystore</span> -alias PWS -keyalg RSA -keysize 2048 -validity <span class="hlp" title="5 yrs">1825</span></pre>
@@ -39,7 +61,6 @@ jarsigner -verify -verbose -certs bin/pws-release-unaligned.apk	<fn>Verify the a
  <li>Implement <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">OPTIONS</a> <small><a class="fa fa-external-link" href="http://zacstewart.com/2012/04/14/http-options-method.html" title="practical article"></a></small> and TRACE <a class="fa fa-external-link" href="https://www.owasp.org/index.php/Test_HTTP_Methods_(OTG-CONFIG-006)" title="Test HTTP Methods"></a> methods</li>
  <li>Art work &mdash; icon</li>
  <li>If in settings user touch [Home] &mdash; return to settings</li>
- <li>Test &amp; debug</li>
 </ul></p>
 <p class="ul">Nice to have:
 <ul>

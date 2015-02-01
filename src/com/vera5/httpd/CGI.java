@@ -10,14 +10,20 @@ public class CGI {
 
   private static final String TAG = "PWS.CGI";
 
-	public static String exec(Request request, String root) {
+	public static String exec(final Request request) {
 		String s = "";
-		for(int i=0; i<request.data.length; i++) s += (char)request.data[i];
-		String cmd = "/system/bin/sh "+root+request.uri;
+		if (request.ContentLength == 0) {	// GET
+			s = request.args == null ? "" : request.args;
+		} else {
+			for(int i=0; i<request.data.length; i++)
+				s += (char)request.data[i];
+		}
+		int len = request.ContentLength == 0 ? s.length() : request.ContentLength;
+		String cmd = "/system/bin/sh "+request.cfg.root+request.uri;
 		String[] aEnv = {
-			"REQUEST_METHOD="+request.getMethod(),
+			"REQUEST_METHOD="+(request.method == 0 ? "GET" : request.getMethod()),
+			"CONTENT_LENGTH="+len,
 			"CONTENT_TYPE="+request.ContentType,
-			"CONTENT_LENGTH="+request.ContentLength,
 			"CONTENT="+s
 		};	// FIXME utilize stdin?! (as CGI requires)
 		int err = 0;

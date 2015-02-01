@@ -10,6 +10,7 @@ import android.util.Log;
 
 public class Response {
 
+  private final ServerHandler parent;
   private final Config cfg;
   private final Socket client;
   private final Request request;
@@ -18,6 +19,7 @@ public class Response {
   private OutputStream out;
 
 	public Response(ServerHandler parent) {
+		this.parent = parent;
 		this.cfg = parent.cfg;
 		this.client = parent.toClient;
 		this.request = parent.request;
@@ -29,7 +31,7 @@ public class Response {
 	}
 
 	public void delete(Request request) {
-		File f = new File(cfg.root+request.uri);
+		File f = new File(this.cfg.root+request.uri);
 		if (!f.exists())
 			hOut("404 Not Found");
 		else if (!f.canWrite())
@@ -39,7 +41,30 @@ public class Response {
 		else
 			hOut("405 Not Allowed");
 	}
-	
+
+	public void get(Request request) {
+		String path = this.cfg.root + request.uri;
+		PlainFile doc = new PlainFile(path);
+		if (doc.f.exists()) {
+			if (doc.f.isDirectory()) {
+				PlainFile index = new PlainFile(Lib.addIndex(path, this.cfg.index));
+				if (index.f.exists()) {
+					fileResponse(index);
+				} else {
+					if (request.uri.equals("/"))
+						plainResponse("200", this.cfg.defaultIndex.toString());
+					else
+						ls(request);	// FIXME Is allowed
+						//Forbidden();	// FIXME Implement preference
+				}
+			} else {
+				fileResponse(doc);
+			}
+		} else {
+			notExists(doc);
+		}
+	}
+
 	public void ls(Request request) {
 		File dir = new File(this.cfg.root+request.uri);
 		String s = "<html><head><title>"+request.uri+"</title></head><body><p>Content of "+request.uri+"</p><table>";
@@ -80,11 +105,9 @@ public class Response {
 	}
 
 	public void post(Request request) {
-		String uri = Lib.getDokument(request.uri);
-		String path = cfg.root + uri;
-		PlainFile doc = new PlainFile(path);
+		PlainFile doc = new PlainFile(this.cfg.root+request.uri);
 		if (doc.f.exists()) {
-			String output = CGI.exec(request,this.cfg.root);
+			String output = CGI.exec(request);
 			if (output == null)
 				plainResponse("501", "Internal Server Error");
 			else
@@ -95,7 +118,7 @@ public class Response {
 
 	public boolean put(Request request) {
 		boolean ok = false;
-		String msg = "PUT "+request.uri+", len="+request.ContentLength+", data="+request.data;
+		String msg = "PUT "+request.uri+", len="+request.ContentLength;
 		logI(msg);
 		try {
 			FileOutputStream fd = new FileOutputStream(this.cfg.root+request.uri, false);
@@ -131,6 +154,17 @@ public class Response {
 	}
 
 	public boolean fileResponse(PlainFile doc) {
+		if (this.parent.cache.fname != null)
+			if (this.parent.cache.isCGI) {
+				String output = CGI.exec(this.request);
+				if (output == null)
+					plainResponse("500", "Internal Server Error");
+				else {
+					if (!output.startsWith("HTTP"))
+						output = baseHeader("200") + output;
+					return reply(output);
+				}
+			}
 		// Caching
 		boolean isHTML = doc.type.equals("text/html");
 		String ETag = doc.ETag + (isHTML ? ServerService.footer.ETag : "");
@@ -150,7 +184,7 @@ public class Response {
 		try {
 			out.write(header.getBytes());
 			if(request.method != 2) {		// HEAD
-				doc.get();
+				doc.get(this.request);
 				out.write(doc.content, 0, doc.length);
 				// Footer -- maybe better to insert it before </body>
 				if (ServerService.footer.length > 0 && isHTML)
@@ -184,11 +218,16 @@ public class Response {
 		return reply(header(code, a));
 	}
 
-	public boolean reply(String data) {
+	public void hOut(String code, byte[] b) {	// Overloaded
+		String s = "";
+		for (int i=0; i<b.length; i++) s += (char)b[i];
+		plainResponse("200", s);
+	}
+
+	public boolean reply(byte[] data) {
 		boolean ok = false;
-//Log.d(TAG, data);
 		try {
-			out.write(data.getBytes(), 0, data.length());
+			out.write(data, 0, data.length);
 			out.flush();
 			out.close();
 			ok = true;
@@ -198,14 +237,22 @@ public class Response {
 		return ok;
 	}
 
-	private String header(String code, String ContentType, int length) {
-		return	"HTTP/1.1 " + code
-			+ (ContentType.equals("") ? "" : "\nContent-Type: "+ContentType)
-			+ (length == -1 ? "" : "\nContent-Length: "+length)
-			+ "\nServer: PWS/" + cfg.version
+	public boolean reply(String data) {		// Overloaded
+		return reply(data.getBytes());
+	}
+
+	private String baseHeader(String code) {
+		return "HTTP/1.1 " + code
+			+ "\nServer: PWS/" + this.cfg.version
 			+ "\nAccess-Control-Allow-Origin: *"	// FIXME restrict cross-domain requests
-			+ "\nAccess-Control-Allow-Methods: " + request.getMethods()
-			+ "\nConnection: close";
+			+ "\nAccess-Control-Allow-Methods: " + this.request.getMethods()
+			+ "\nConnection: close";			
+	}
+
+	private String header(String code, String ContentType, int length) {
+		return baseHeader(code)
+			+ (ContentType.length()==0 ? "" : "\nContent-Type: "+ContentType)
+			+ (length == -1 ? "" : "\nContent-Length: "+length);
 	}
 
 	private String header(String code, String[] header) {	// Overloaded
@@ -218,7 +265,8 @@ public class Response {
 		if (this.request.uri.equals("/")) {
 			plainResponse("200", cfg.defaultIndex.toString());
 		} else {
-			plainResponse("404", this.request.uri+" not found");
+			hOut("404 Not Found");
+			//plainResponse("404", Lib.baseuri(this.request.url)+" not found");
 		}
 		this.err = "not exists";
 		return false;

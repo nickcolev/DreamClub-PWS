@@ -9,6 +9,7 @@ class ServerHandler extends Thread {
 
   public Socket toClient;
   public Config cfg;
+  public PlainFile cache;
   public Request request;
   private Handler handler;
   private String err;
@@ -21,7 +22,7 @@ class ServerHandler extends Thread {
 
 	public void run() {
 
-		request = new Request();
+		request = new Request(this);
 		request.get(toClient);
 		if (request.uri == null) {		// FIXME Investigate why/when this happens
 			logE("(null) requested");
@@ -34,25 +35,7 @@ class ServerHandler extends Thread {
 				// log, loge, logi, logs
 				if (request.uri.startsWith("/log") && request.uri.length() < 6)
 					if (response.putLog(request)) return;
-				String uri = Lib.getDokument(request.uri);
-				String path = cfg.root + uri;
-				PlainFile doc = new PlainFile(path);
-				if (doc.f.exists()) {
-					if (doc.f.isDirectory()) {
-						PlainFile index = new PlainFile(addIndex(path));
-						if (index.f.exists()) {
-							response.fileResponse(index);
-						} else {
-							if (request.uri.equals("/"))
-								response.plainResponse("200", this.cfg.defaultIndex.toString());
-							else
-								//response.ls(request);	// FIXME Is allowed
-								response.Forbidden();	// FIXME Implement preference
-						}
-					} else
-						response.fileResponse(doc);
-				} else
-					response.notExists(doc);
+				response.get(request);
 				break;
 			case 3:		// OPTIONS
 				response.options(request);
@@ -82,14 +65,17 @@ class ServerHandler extends Thread {
 		}
 		
 		/* FIXME Implement after 10" timeout, like Timer.schedule(test, 1000);
+		* For Timer()/TimerTask() implementation, see
+		* http://www.java2s.com/Code/Java/Development-Class/UsejavautilTimertoscheduleatasktoexecuteonce5secondshavepassed.htm
+		* http://docs.oracle.com/javase/7/docs/api/java/util/Timer.html
+		* http://www.gamedev.net/topic/303695-setting-up-an-ontimer-/
+		* http://stackoverflow.com/questions/4044726/how-to-set-a-timer-in-java
 		if (request.header("Connection").equals("close")) {
 			try { toClient.close(); }
 			catch (IOException e) { }
 		}
 		*/
 	}
-
-	private String addIndex(String name) { return name + (name.endsWith("/") ? "" : "/") + cfg.index; }
 
 	// Aliases
 	private void logE(String s) { ServerService.log.e(s); }

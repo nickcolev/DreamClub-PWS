@@ -136,7 +136,7 @@ public class ServerService extends Service {
 		footer = new PlainFile(fname);
 		if (footer.length > 0) {
 			Tooltip("Setting "+fname);
-			footer.get();
+			footer.get(null);
 		}
 	}
 
