@@ -7,19 +7,6 @@ import java.util.Date;
 
 class Lib {
 
-	public static String baseuri(String s) {
-		int p = s.indexOf('?');
-		if (p != -1) s = s.substring(0, p);
-		return s;
-	}
-
-	public static String addIndex(String fname, String index) {
-		if (fname.endsWith("/")) return fname+index;
-		File f = new File(fname);
-		if (f.isDirectory()) fname += "/" + index;
-		return fname;
-	}
-
 	public static String a2h(String[] a) {
 		String s = "";
 		for(int i=0; i<a.length; i++) s += "\n" + a[i];
@@ -50,4 +37,5 @@ class Lib {
 			(f.canWrite() ? "w" : "-") +
 			exec;
 	}
+
 }

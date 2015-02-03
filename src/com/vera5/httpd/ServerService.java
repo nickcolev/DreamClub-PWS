@@ -21,6 +21,8 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -41,7 +43,7 @@ public class ServerService extends Service {
 	private SharedPreferences prefs;
 	public Config cfg;
 	public Handler handler;
-	public static PlainFile footer;
+	public static byte[] footer;
 	public static Logger log;
 
 
@@ -133,11 +135,18 @@ public class ServerService extends Service {
 	public void getFooter() {
 		String fname = prefs.getString("footer", "");
 		fname = cfg.sanify(prefs.getString("root", "/sdcard/htdocs")) + cfg.sanify(fname);
-		footer = new PlainFile(fname);
-		if (footer.length > 0) {
-			Tooltip("Setting "+fname);
-			footer.get(null);
-		}
+		File f = new File(fname);
+		if (f.exists() && f.isFile())
+			try {
+				FileInputStream in = new FileInputStream(f);
+				int l = (int)f.length();
+				this.footer = new byte[l];
+				l = in.read(this.footer, 0, l);
+				in.close();
+				// FIXME What if it is not a text/html?!
+				Tooltip("Setting "+fname);
+			} catch (IOException e) {
+			}
 	}
 
 	private int getPort() {

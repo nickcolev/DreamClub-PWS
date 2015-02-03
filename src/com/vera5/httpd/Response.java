@@ -43,19 +43,25 @@ public class Response {
 	}
 
 	public void get(Request request) {
-		String path = this.cfg.root + request.uri;
-		PlainFile doc = new PlainFile(path);
+		PlainFile doc;
+		if (request.parent.cache.content == null) {	// No cache
+			doc = new PlainFile(request);
+		} else {
+			doc = request.parent.cache;
+Log.d("***CP63***", doc.fname+" from cache");
+		}
 		if (doc.f.exists()) {
 			if (doc.f.isDirectory()) {
-				PlainFile index = new PlainFile(Lib.addIndex(path, this.cfg.index));
+				PlainFile index = new PlainFile(request, request.cfg.index);
 				if (index.f.exists()) {
 					fileResponse(index);
 				} else {
-					if (request.uri.equals("/"))
+					if (request.uri.equals("/")) {
 						plainResponse("200", this.cfg.defaultIndex.toString());
-					else
+					} else {
 						ls(request);	// FIXME Is allowed
 						//Forbidden();	// FIXME Implement preference
+					}
 				}
 			} else {
 				fileResponse(doc);
@@ -91,7 +97,7 @@ public class Response {
 				"Allow: "+request.getMethods()
 			});
 		} else {	// Particular resource
-			PlainFile doc = new PlainFile(this.cfg.root+request.uri);
+			PlainFile doc = new PlainFile(request);
 			if (doc.exists) {
 				hOut("200", new String[]{
 					"Allow: GET"
@@ -105,7 +111,7 @@ public class Response {
 	}
 
 	public void post(Request request) {
-		PlainFile doc = new PlainFile(this.cfg.root+request.uri);
+		PlainFile doc = new PlainFile(request);
 		if (doc.f.exists()) {
 			String output = CGI.exec(request);
 			if (output == null)
@@ -154,29 +160,17 @@ public class Response {
 	}
 
 	public boolean fileResponse(PlainFile doc) {
-		if (this.parent.cache.fname != null)
-			if (this.parent.cache.isCGI) {
-				String output = CGI.exec(this.request);
-				if (output == null)
-					plainResponse("500", "Internal Server Error");
-				else {
-					if (!output.startsWith("HTTP"))
-						output = baseHeader("200") + output;
-					return reply(output);
-				}
-			}
 		// Caching
 		boolean isHTML = doc.type.equals("text/html");
-		String ETag = doc.ETag + (isHTML ? ServerService.footer.ETag : "");
+		int fl = ServerService.footer == null ? 0 : ServerService.footer.length;
+		String ETag = doc.ETag + (isHTML ? fl : "");
 		if (null != request.IfNoneMatch) {
 			if (request.IfNoneMatch.equals(ETag)) {
-				reply(header("304", doc.type, 0)
+				return reply(header("304", doc.type, 0)
 					+ "\nDate: "+Lib.now()+"\n\n");
-				return true;
 			}
 		}
-		int l = isHTML ? ServerService.footer.length : 0;
-		String header = header("200 OK", doc.type, l + doc.length)
+		String header = header("200 OK", doc.type, fl + doc.length)
 			+ "\nETag: " + ETag
 			+ "\nModified: " + doc.time
 			+ "\n\n";
@@ -184,11 +178,11 @@ public class Response {
 		try {
 			out.write(header.getBytes());
 			if(request.method != 2) {		// HEAD
-				doc.get(this.request);
+				if (doc.content.length < doc.length) doc.get();
 				out.write(doc.content, 0, doc.length);
 				// Footer -- maybe better to insert it before </body>
-				if (ServerService.footer.length > 0 && isHTML)
-					out.write(ServerService.footer.content, 0, ServerService.footer.length);
+				if (fl > 0 && isHTML)
+					out.write(ServerService.footer, 0, ServerService.footer.length);
 			}
 			out.flush();
 			logI(this.request.log + this.request.uri);
@@ -202,12 +196,12 @@ public class Response {
 		return r;
 	}
 
-	public void plainResponse(String code, String msg) {
+	public boolean plainResponse(String code, String msg) {
 		String ContentType = msg.length() == 0 ? "" :
 			"text/" + (msg.startsWith("<") ? "html" : "plain");
 		String response = header(code, ContentType, msg.length())
 			+ "\n\n" + msg;
-		reply(response);
+		return reply(response);
 	}
 
 	public boolean hOut(String code) {	// Header-only Out
@@ -262,12 +256,8 @@ public class Response {
 	public boolean notExists(PlainFile doc) {
 		logV(this.request.uri+" not found");
 		logE(this.request.log + this.request.uri + "--not found");
-		if (this.request.uri.equals("/")) {
-			plainResponse("200", cfg.defaultIndex.toString());
-		} else {
-			hOut("404 Not Found");
-			//plainResponse("404", Lib.baseuri(this.request.url)+" not found");
-		}
+		///hOut("404 Not Found");
+		plainResponse("404", this.request.uri+" not found");
 		this.err = "not exists";
 		return false;
 	}
