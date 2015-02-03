@@ -30,11 +30,10 @@ public class Request {
   };
   private ArrayList<String> aHeader = new ArrayList<String>();
   public Config cfg;
-  public ServerHandler parent;
+  public PlainFile cache;
 
 
 	public Request(ServerHandler parent) {
-		this.parent = parent;
 		this.cfg = parent.cfg;
 	}
 
@@ -100,6 +99,7 @@ public class Request {
 				if (this.aMethod[i].equals(method)) this.method = i;
 		} catch (Exception e) {
 			this.err = e.getMessage();
+			logE(TAG+": "+this.err);
 			Log.e(TAG, err);
 		}
 	}
@@ -126,6 +126,7 @@ public class Request {
 		for (String h : this.aHeader) s += h + "\n";
 		return s;
 	}
+	public void logE(String s) { ServerService.log.e(s); }
 	private void logI(String s) { ServerService.log.i(s); }
 	private void logV(String s) { ServerService.log.v(s); }
 	private void logS(String s) { ServerService.log.s(s); }

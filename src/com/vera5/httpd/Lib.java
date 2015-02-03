@@ -7,6 +7,10 @@ import java.util.Date;
 
 class Lib {
 
+	public static void logE(String msg) {
+		ServerService.log.e(msg);
+	}
+
 	public static String a2h(String[] a) {
 		String s = "";
 		for(int i=0; i<a.length; i++) s += "\n" + a[i];

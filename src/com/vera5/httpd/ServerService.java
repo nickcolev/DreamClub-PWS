@@ -126,6 +126,17 @@ public class ServerService extends Service {
 				}
 			}
 		};
+		/* FIXME Implement after 10" timeout, like Timer.schedule(test, 1000);
+		* For Timer()/TimerTask() implementation, see
+		* http://www.java2s.com/Code/Java/Development-Class/UsejavautilTimertoscheduleatasktoexecuteonce5secondshavepassed.htm
+		* http://docs.oracle.com/javase/7/docs/api/java/util/Timer.html
+		* http://www.gamedev.net/topic/303695-setting-up-an-ontimer-/
+		* http://stackoverflow.com/questions/4044726/how-to-set-a-timer-in-java
+		if (request.header("Connection").equals("close")) {
+			try { toClient.close(); }
+			catch (IOException e) { }
+		}
+		*/
 
 		serviceThread = new Thread(r);
 		serviceThread.start();

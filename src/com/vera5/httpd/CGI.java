@@ -53,10 +53,10 @@ Log.d("***CGI***", "cmd="+cmd);
 	}
 
 	private static boolean isShell(final Request request) {
-		if (request.parent.cache.content == null)	// no cache
+		if (request.cache.content == null)	// no cache
 			return false;
 		// Get the first line
-		String s = new String(request.parent.cache.content);
+		String s = new String(request.cache.content);
 		int p = s.indexOf("\n");
 		if (p != -1) s = s.substring(0, p);
 		// Check if it's a shell script

@@ -60,7 +60,8 @@ public class PlainFile {
 				this.length = 0;
 				this.content = null;
 				this.err = e.getMessage();
-				Log.e("PWS.PlainFile", e.getMessage());
+				//Log.e(TAG, e.getMessage());
+				this.request.logE(TAG+": "+this.request.uri+" "+e.getMessage());
 			}
 		}
 	}

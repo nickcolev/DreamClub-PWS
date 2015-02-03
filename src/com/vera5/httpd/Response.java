@@ -10,7 +10,6 @@ import android.util.Log;
 
 public class Response {
 
-  private final ServerHandler parent;
   private final Config cfg;
   private final Socket client;
   private final Request request;
@@ -19,7 +18,6 @@ public class Response {
   private OutputStream out;
 
 	public Response(ServerHandler parent) {
-		this.parent = parent;
 		this.cfg = parent.cfg;
 		this.client = parent.toClient;
 		this.request = parent.request;
@@ -59,11 +57,16 @@ public class Response {
 
 	public void get(Request request) {
 		PlainFile doc;
-		if (request.parent.cache.content == null) {	// No cache
+		if (request.cache == null) {	// No cache
+logI(request.uri+" not cached");
+			doc = new PlainFile(request);
+		} else if (request.cache.content == null) {	// No cache
+logI(request.uri+" not cached (2)");
 			doc = new PlainFile(request);
 		} else {
-			doc = request.parent.cache;
-Log.d("***cache***", doc.fname+" from cache");
+			PlainFile cache = request.cache;
+logI("***cache*** "+cache.fname+" from cache, "+cache.length+" =? "+cache.content.length);
+			doc = request.cache;
 		}
 		if (doc.f.exists()) {
 			if (doc.f.isDirectory()) {
@@ -179,6 +182,7 @@ Log.d("***cache***", doc.fname+" from cache");
 
 	public boolean fileResponse(PlainFile doc) {
 		// Caching
+//logI("CP01: "+doc.fname);
 		boolean isHTML = doc.type.equals("text/html");
 		int fl = ServerService.footer == null ? 0 : ServerService.footer.length;
 		String ETag = doc.ETag + (isHTML ? fl : "");
@@ -188,15 +192,18 @@ Log.d("***cache***", doc.fname+" from cache");
 					+ "\nDate: "+Lib.now()+"\n\n");
 			}
 		}
+//logI("CP02: "+doc.fname);
 		String header = header("200 OK", doc.type, fl + doc.length)
 			+ "\nETag: " + ETag
 			+ "\nModified: " + doc.time
 			+ "\n\n";
 		boolean r = true;
+logI("CP03: "+doc.fname+" method="+request.method);
 		try {
 			out.write(header.getBytes());
-			if(request.method != 2) {		// HEAD
-				if (doc.content.length < doc.length) doc.get();
+			if(request.method == 1) {		// GET
+				if (doc.content == null) doc.get();
+				else if (doc.content.length < doc.length) doc.get();
 				out.write(doc.content, 0, doc.length);
 				// Footer -- maybe better to insert it before </body>
 				if (fl > 0 && isHTML)

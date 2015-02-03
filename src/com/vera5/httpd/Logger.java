@@ -23,6 +23,7 @@ public class Logger {
 	private boolean enable = true;	// Logging enabled by default
 
 	public Logger(String path) {
+		// FIXME Can we get the path?!
 		this.path = path;
 	}
 

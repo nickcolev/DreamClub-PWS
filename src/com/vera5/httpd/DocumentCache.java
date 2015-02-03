@@ -24,12 +24,11 @@ class DocumentCache extends Thread {
 
 	public void run() {
 		if (this.request.uri != null) {
-			this.request.parent.cache = new PlainFile(this.request, this.uri);
-			if (this.request.parent.cache.f.exists())
-				if (this.request.parent.cache.f.isFile())
-					this.request.parent.cache.get();
+			this.request.cache = new PlainFile(this.request, this.uri);
+			if (this.request.cache.f.exists())
+				if (this.request.cache.f.isFile())
+					this.request.cache.get();
 		}
-		this.interrupt();
 	}
 
 }

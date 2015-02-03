@@ -1,3 +1,12 @@
 #!/bin/sh
-printf "POST /tmp/shell.cgi HTTP/1.1\r\nConnection: close\r\n\r\n" | nc 192.168.1.12 8080
+if [ ! $2 ]
+then
+	echo "usage: $0 method uri"
+	echo "sample: $0 GET /test.htm"
+	exit 1
+fi
+CMD="$1 $2 HTTP/1.1\r\n\r\n"
+echo $CMD
+echo "--------------------------------------------------"
+printf $CMD | nc 192.168.1.12 8080
 echo
