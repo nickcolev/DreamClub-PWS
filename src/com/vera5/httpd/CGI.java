@@ -19,9 +19,12 @@ public class CGI {
 				s += (char)request.data[i];
 		}
 		int len = request.ContentLength == 0 ? s.length() : request.ContentLength;
+		// Keep-it-simple: Just shell scripts
+		if (!isShell(request)) return null;
 		String cmd = "/system/bin/sh "+request.cfg.root+request.uri;
+Log.d("***CGI***", "cmd="+cmd);
 		String[] aEnv = {
-			"REQUEST_METHOD="+(request.method == 0 ? "GET" : request.getMethod()),
+			"REQUEST_METHOD="+request.getMethod(),
 			"CONTENT_LENGTH="+len,
 			"CONTENT_TYPE="+request.ContentType,
 			"CONTENT="+s
@@ -35,7 +38,7 @@ public class CGI {
 			BufferedReader in = new BufferedReader(
 				new InputStreamReader(p.getInputStream()),8192);
 			while ((row = in.readLine()) != null) {
-				output += row + "\r\n";
+				output += row + "\n";
 			}
 			in.close();
 		} catch (IOException e) {
@@ -47,5 +50,20 @@ public class CGI {
 		}
 		if (err != 0) output = null;
 		return output;
+	}
+
+	private static boolean isShell(final Request request) {
+		if (request.parent.cache.content == null)	// no cache
+			return false;
+		// Get the first line
+		String s = new String(request.parent.cache.content);
+		int p = s.indexOf("\n");
+		if (p != -1) s = s.substring(0, p);
+		// Check if it's a shell script
+		if (!s.startsWith("#!"))	// Should start with '#!'
+			return false;
+		if (!s.endsWith("sh"))		// and should end with 'sh' ('#!/bin/sh' or '#!/bin/bash')
+			return false;
+		return true;
 	}
 }

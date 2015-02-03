@@ -30,6 +30,21 @@ public class Response {
 		}
 	}
 
+	private void cgiResponse(Request request) {
+		if (request.ContentType == null)
+			request.ContentType = "application/octet-stream";
+		String output = CGI.exec(request);
+		String err = "Internal Server Error";
+		if (output == null)
+			plainResponse("500", err);
+		else {
+			if (output.startsWith("Content-Type:"))
+				reply((baseHeader("200")+output).getBytes());
+			else
+				plainResponse("500", err);
+		}
+	}
+
 	public void delete(Request request) {
 		File f = new File(this.cfg.root+request.uri);
 		if (!f.exists())
@@ -48,7 +63,7 @@ public class Response {
 			doc = new PlainFile(request);
 		} else {
 			doc = request.parent.cache;
-Log.d("***CP63***", doc.fname+" from cache");
+Log.d("***cache***", doc.fname+" from cache");
 		}
 		if (doc.f.exists()) {
 			if (doc.f.isDirectory()) {
@@ -63,8 +78,11 @@ Log.d("***CP63***", doc.fname+" from cache");
 						//Forbidden();	// FIXME Implement preference
 					}
 				}
-			} else {
-				fileResponse(doc);
+			} else {	// file exists
+				if (doc.isCGI)
+					cgiResponse(request);
+				else
+					fileResponse(doc);
 			}
 		} else {
 			notExists(doc);

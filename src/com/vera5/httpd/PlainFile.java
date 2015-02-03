@@ -19,6 +19,7 @@ public class PlainFile {
   public String type;
   public String ETag = "";
   public String fname;
+  public String ext;
   public boolean exists = false;
   public boolean isCGI = false;
   public String err;
@@ -55,15 +56,6 @@ public class PlainFile {
 				this.content = new byte[this.length];
 				this.length = in.read(this.content, 0, this.length);
 				if (!this.isCGI) this.isCGI = isCGI();
-				if (this.request != null)
-					if (this.isCGI) {
-Log.d("***CP75***", "request "+(this.request == null ? "NOT defined" : "defined"));
-						/*
-						String output = CGI.exec(request);
-						this.content = new byte[output.length()];
-						this.content = output.getBytes();
-						*/
-					}
 			} catch (IOException e) {
 				this.length = 0;
 				this.content = null;
@@ -91,11 +83,11 @@ Log.d("***CP75***", "request "+(this.request == null ? "NOT defined" : "defined"
 		boolean isCGI = false;
 		int p = fname.lastIndexOf('.');
 		if (p != -1) {
-			String ext = fname.substring(p + 1);
+			this.ext = fname.substring(p + 1);
 			final String[] cgi = {
 				"asp", "cfm", "cgi", "jsp", "php", "pl", "py", "sh", "vbs"
 			};
-			isCGI = Arrays.asList(cgi).contains(ext);
+			isCGI = Arrays.asList(cgi).contains(this.ext);
 		}
 		return isCGI;
 	}
