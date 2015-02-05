@@ -58,14 +58,14 @@ public class Response {
 	public void get(Request request) {
 		PlainFile doc;
 		if (request.cache == null) {	// No cache
-logI(request.uri+" not cached");
+Lib.dbg("***CP01***", request.uri+" not cached");
 			doc = new PlainFile(request);
 		} else if (request.cache.content == null) {	// No cache
-logI(request.uri+" not cached (2)");
+Lib.dbg("***CP02***", request.uri+" not cached (2)");
 			doc = new PlainFile(request);
 		} else {
 			PlainFile cache = request.cache;
-logI("***cache*** "+cache.fname+" from cache, "+cache.length+" =? "+cache.content.length);
+//Lib.logI("***cache*** "+cache.fname+" from cache, "+cache.length+" =? "+cache.content.length);
 			doc = request.cache;
 		}
 		if (doc.f.exists()) {
@@ -146,14 +146,14 @@ logI("***cache*** "+cache.fname+" from cache, "+cache.length+" =? "+cache.conten
 	public boolean put(Request request) {
 		boolean ok = false;
 		String msg = "PUT "+request.uri+", len="+request.ContentLength;
-		logI(msg);
+		Lib.logI(msg);
 		try {
 			FileOutputStream fd = new FileOutputStream(this.cfg.root+request.uri, false);
 			fd.write(request.data);
 			fd.close();
 			ok = true;
 		} catch (IOException e) {
-			logE(e.getMessage());
+			Lib.logE(e.getMessage());
 			this.err = e.getMessage();
 		}
 		return ok;
@@ -182,7 +182,7 @@ logI("***cache*** "+cache.fname+" from cache, "+cache.length+" =? "+cache.conten
 
 	public boolean fileResponse(PlainFile doc) {
 		// Caching
-//logI("CP01: "+doc.fname);
+//Lib.dbg("***CP04***", this.request.uri+" "+doc.type+" "+(doc.f.exists() ? "" : "NOT")+" exists");
 		boolean isHTML = doc.type.equals("text/html");
 		int fl = ServerService.footer == null ? 0 : ServerService.footer.length;
 		String ETag = doc.ETag + (isHTML ? fl : "");
@@ -192,29 +192,36 @@ logI("***cache*** "+cache.fname+" from cache, "+cache.length+" =? "+cache.conten
 					+ "\nDate: "+Lib.now()+"\n\n");
 			}
 		}
-//logI("CP02: "+doc.fname);
-		String header = header("200 OK", doc.type, fl + doc.length)
+		if (request.method == 1 && doc.content == null) {
+Lib.dbg("***CP06***", doc.fname+", not cached");
+			doc.get();
+Lib.dbg("***CP07***", "status="+doc.status);
+		}
+		String header = header("200 OK", doc.type, fl + doc.content.length)
 			+ "\nETag: " + ETag
 			+ "\nModified: " + doc.time
+			+ (doc.status == 2 ? "\nContent-Encoding: gzip" : "")
 			+ "\n\n";
+//dbg("***CP08***", doc.fname+", fl="+fl);
 		boolean r = true;
-logI("CP03: "+doc.fname+" method="+request.method);
 		try {
 			out.write(header.getBytes());
 			if(request.method == 1) {		// GET
-				if (doc.content == null) doc.get();
-				else if (doc.content.length < doc.length) doc.get();
-				out.write(doc.content, 0, doc.length);
+				if (doc.content == null) {
+Lib.dbg("***CP10***", doc.fname+" not cached");
+					doc.get();
+				}
+				out.write(doc.content, 0, doc.content.length);
 				// Footer -- maybe better to insert it before </body>
 				if (fl > 0 && isHTML)
 					out.write(ServerService.footer, 0, ServerService.footer.length);
 			}
 			out.flush();
-			logI(this.request.log + this.request.uri);
+			Lib.logI(this.request.log + this.request.uri);
 		} catch (Exception e) {
 			String err = e.getMessage();
-			logV(err);
-			logE(err);
+			Lib.logV(err);
+			Lib.logE(err);
 			this.err = err;
 			r = false;
 		}
@@ -279,8 +286,8 @@ logI("CP03: "+doc.fname+" method="+request.method);
 	}
 
 	public boolean notExists(PlainFile doc) {
-		logV(this.request.uri+" not found");
-		logE(this.request.log + this.request.uri + "--not found");
+		Lib.logV(this.request.uri+" not found");
+		Lib.logE(this.request.log + this.request.uri + "--not found");
 		///hOut("404 Not Found");
 		plainResponse("404", this.request.uri+" not found");
 		this.err = "not exists";
@@ -289,8 +296,4 @@ logI("CP03: "+doc.fname+" method="+request.method);
 
 	// Aliases & Helpers
 	public void Forbidden() { plainResponse("403", "Forbidden"); }
-	private void logE(String s) { ServerService.log.e(s); }
-	private void logI(String s) { ServerService.log.i(s); }
-	private void logS(String s) { ServerService.log.s(s); }
-	private void logV(String s) { ServerService.log.v(s); }
 }

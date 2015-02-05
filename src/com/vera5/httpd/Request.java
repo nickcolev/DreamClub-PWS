@@ -47,7 +47,7 @@ public class Request {
 				buf[i++] = (char)c;
 			}
 		} catch (IOException e) {
-			logV(e.getMessage());
+			Lib.logV(e.getMessage());
 		}
 		if (c == -1 || i == 0) return null;
 		String s = new String(buf);
@@ -55,6 +55,7 @@ public class Request {
 	}
 
 	public void get(Socket client) {
+		long begin = System.currentTimeMillis();
 		String s, a[], method = "GET";
 		try {
 			int i = 0, c;
@@ -74,7 +75,7 @@ public class Request {
 						DocumentCache cache = new DocumentCache(this);
 						new Thread(cache).start();
 					}
-					logI(s);
+					Lib.logI(s);
 				} else if (a[0].equals("Accept-Encoding:")) {
 					this.AcceptEncoding = a[1];
 				} else if (a[0].equals("Content-Type:")) {
@@ -99,9 +100,10 @@ public class Request {
 				if (this.aMethod[i].equals(method)) this.method = i;
 		} catch (Exception e) {
 			this.err = e.getMessage();
-			logE(TAG+": "+this.err);
+			Lib.logE(TAG+": "+this.err);
 			Log.e(TAG, err);
 		}
+		Lib.dbg("***REQ*** ", this.uri+" complete in "+(System.currentTimeMillis() - begin)+"ms");
 	}
 
 	// Helpers below
@@ -126,10 +128,6 @@ public class Request {
 		for (String h : this.aHeader) s += h + "\n";
 		return s;
 	}
-	public void logE(String s) { ServerService.log.e(s); }
-	private void logI(String s) { ServerService.log.i(s); }
-	private void logV(String s) { ServerService.log.v(s); }
-	private void logS(String s) { ServerService.log.s(s); }
 	private void parseUri(String uri) {
 		String s = uri;
 		try {

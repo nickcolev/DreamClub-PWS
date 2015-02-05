@@ -25,7 +25,7 @@ class ServerHandler extends Thread {
 		request = new Request(this);
 		request.get(toClient);
 		if (request.uri == null) {		// FIXME Investigate why/when this happens
-			logE("(null) requested");
+			Lib.logE("(null) requested");
 			return;
 		}
 		Response response = new Response(this);
@@ -47,8 +47,8 @@ class ServerHandler extends Thread {
 				if (response.put(request)) {
 					response.hOut("201");
 				} else {
-					logV("PUT failed with "+this.err);
-					logE("PUT failed with "+this.err);
+					Lib.logV("PUT failed with "+this.err);
+					Lib.logE("PUT failed with "+this.err);
 					response.plainResponse("500", this.err);
 				}
 				break;
@@ -61,14 +61,9 @@ class ServerHandler extends Thread {
 			default:
 				this.err = request.getMethod()+" Not Implemented";
 				response.plainResponse("501", this.err);
-				logS(this.err);
+				Lib.logS(this.err);
 		}
 		
 	}
 
-	// Aliases
-	private void logE(String s) { ServerService.log.e(s); }
-	private void logI(String s) { ServerService.log.i(s); }
-	private void logS(String s) { ServerService.log.s(s); }
-	private void logV(String s) { ServerService.log.v(s); }
 }

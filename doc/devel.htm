@@ -93,6 +93,11 @@ Runtime.getRuntime().exec(&quot;/system/bin/sh <i>cmd</i> ...)</pre>
 Even <a href="http://docs.oracle.com/javase/tutorial/java/IandI/multipleinheritance.html">they say so</a>, one can't do</p>
 <pre class="cp"><b>class</b> <var>SomeClass</var> <b>extends</b> <var>Class1</var> <b>extends</b> <var>Class2</var></pre>
 
+<p><b>Measure method run time</b> <a class="fa fa-external-link" href="http://stackoverflow.com/questions/3382954/measure-execution-time-for-a-java-method" title="src"></a></p>
+<pre class="cp"><b>long</b> <var>begin</var> = System.currentTimeMillis();
+<i class="comment">// Do something</i>
+System.out.println(System.currentTimeMillis() - <var>begin</var>);</pre>
+
 </div>
 
 </body></html>

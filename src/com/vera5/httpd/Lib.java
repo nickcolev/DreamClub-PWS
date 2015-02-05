@@ -1,5 +1,6 @@
 package com.vera5.httpd;
 
+import android.util.Log;
 import java.io.File;
 import java.lang.NoSuchMethodError;
 import java.text.SimpleDateFormat;
@@ -7,8 +8,9 @@ import java.util.Date;
 
 class Lib {
 
-	public static void logE(String msg) {
-		ServerService.log.e(msg);
+	public static void dbg(String tag, String msg) {
+		Log.d(tag, msg);
+		ServerService.log.s(tag+" "+msg);
 	}
 
 	public static String a2h(String[] a) {
@@ -41,5 +43,11 @@ class Lib {
 			(f.canWrite() ? "w" : "-") +
 			exec;
 	}
+
+	// Aliases
+	public static void logE(String s) { ServerService.log.e(s); }
+	public static void logI(String s) { ServerService.log.i(s); }
+	public static void logS(String s) { ServerService.log.s(s); }
+	public static void logV(String s) { ServerService.log.v(s); }
 
 }
