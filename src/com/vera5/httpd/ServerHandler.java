@@ -34,8 +34,9 @@ class ServerHandler extends Thread {
 			case 2:		// HEAD
 				// log, loge, logi, logs
 				if (request.uri.startsWith("/log") && request.uri.length() < 6)
-					if (response.putLog(request)) return;
-				response.get(request);
+					response.putLog(request);
+				else
+					response.get(request);
 				break;
 			case 3:		// OPTIONS
 				response.options(request);
@@ -63,7 +64,7 @@ class ServerHandler extends Thread {
 				response.plainResponse("501", this.err);
 				Lib.logS(this.err);
 		}
-		
+
 	}
 
 }

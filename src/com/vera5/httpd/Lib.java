@@ -1,22 +1,47 @@
 package com.vera5.httpd;
 
 import android.util.Log;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.lang.NoSuchMethodError;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.zip.GZIPOutputStream;
 
 class Lib {
 
+	public static long rtime(long begin) {
+		return (System.currentTimeMillis() - begin);
+	}
+
 	public static void dbg(String tag, String msg) {
 		Log.d(tag, msg);
-		ServerService.log.s(tag+" "+msg);
+		ServerService.log.d(tag+" "+msg);
 	}
 
 	public static String a2h(String[] a) {
 		String s = "";
 		for(int i=0; i<a.length; i++) s += "\n" + a[i];
 		return s;
+	}
+
+	public static byte[] gzip(byte[] in) {
+		long begin = System.currentTimeMillis();
+		byte[] gzip;
+		try {
+			ByteArrayOutputStream os = new ByteArrayOutputStream(in.length);
+			GZIPOutputStream gos = new GZIPOutputStream(os);
+			gos.write(in);
+			gos.close();
+			gzip = os.toByteArray();
+			os.close();
+dbg("GZIP", ""+in.length+" bytes gzipped in "+(System.currentTimeMillis()-begin)+"ms");
+		} catch (IOException e) {
+			gzip = null;
+			Log.e("GZIP", e.getMessage());
+		}
+		return gzip;
 	}
 
 	public static String now() {

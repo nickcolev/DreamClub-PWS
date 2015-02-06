@@ -56,18 +56,8 @@ public class Response {
 	}
 
 	public void get(Request request) {
-		PlainFile doc;
-		if (request.cache == null) {	// No cache
-Lib.dbg("***CP01***", request.uri+" not cached");
-			doc = new PlainFile(request);
-		} else if (request.cache.content == null) {	// No cache
-Lib.dbg("***CP02***", request.uri+" not cached (2)");
-			doc = new PlainFile(request);
-		} else {
-			PlainFile cache = request.cache;
-//Lib.logI("***cache*** "+cache.fname+" from cache, "+cache.length+" =? "+cache.content.length);
-			doc = request.cache;
-		}
+		PlainFile doc = new PlainFile(request);
+//Lib.dbg("***GET***", request.uri+" => "+doc.fname+" "+(doc.f.exists() ? "" : "NOT")+" exists");
 		if (doc.f.exists()) {
 			if (doc.f.isDirectory()) {
 				PlainFile index = new PlainFile(request, request.cfg.index);
@@ -167,6 +157,7 @@ Lib.dbg("***CP02***", request.uri+" not cached (2)");
 				ServerService.log.clean();
 				plainResponse("200 OK", "log reset!");
 				break;
+			case 'd':
 			case 'e':
 			case 'i':
 			case 's':
@@ -182,41 +173,38 @@ Lib.dbg("***CP02***", request.uri+" not cached (2)");
 
 	public boolean fileResponse(PlainFile doc) {
 		// Caching
-//Lib.dbg("***CP04***", this.request.uri+" "+doc.type+" "+(doc.f.exists() ? "" : "NOT")+" exists");
 		boolean isHTML = doc.type.equals("text/html");
 		int fl = ServerService.footer == null ? 0 : ServerService.footer.length;
 		String ETag = doc.ETag + (isHTML ? fl : "");
-		if (null != request.IfNoneMatch) {
-			if (request.IfNoneMatch.equals(ETag)) {
-				return reply(header("304", doc.type, 0)
-					+ "\nDate: "+Lib.now()+"\n\n");
-			}
-		}
-		if (request.method == 1 && doc.content == null) {
-Lib.dbg("***CP06***", doc.fname+", not cached");
+		if (request.IfNoneMatch != null)
+			if (request.IfNoneMatch.equals(ETag))
+				return NotModified(doc.type);
+		if (this.request.method == 1) {
 			doc.get();
-Lib.dbg("***CP07***", "status="+doc.status);
+			// We may gzip conents here
 		}
 		String header = header("200 OK", doc.type, fl + doc.content.length)
 			+ "\nETag: " + ETag
 			+ "\nModified: " + doc.time
 			+ (doc.status == 2 ? "\nContent-Encoding: gzip" : "")
 			+ "\n\n";
-//dbg("***CP08***", doc.fname+", fl="+fl);
+		Lib.dbg("***FR***", this.request.uri+" ETag="+ETag+", length()="+doc.f.length()+", data length="+doc.content.length);
 		boolean r = true;
 		try {
 			out.write(header.getBytes());
+			out.flush();
 			if(request.method == 1) {		// GET
-				if (doc.content == null) {
-Lib.dbg("***CP10***", doc.fname+" not cached");
-					doc.get();
-				}
+				// FIXME Test on the real MB511 fail to send all data (mainly, when long enough)
+				// Probably to be wrapped in 'DataOutputStream'?!
+				// http://developer.android.com/reference/java/io/DataOutputStream.html
 				out.write(doc.content, 0, doc.content.length);
+				out.flush();
 				// Footer -- maybe better to insert it before </body>
 				if (fl > 0 && isHTML)
 					out.write(ServerService.footer, 0, ServerService.footer.length);
 			}
 			out.flush();
+			out.close();
 			Lib.logI(this.request.log + this.request.uri);
 		} catch (Exception e) {
 			String err = e.getMessage();
@@ -227,6 +215,8 @@ Lib.dbg("***CP10***", doc.fname+" not cached");
 		}
 		return r;
 	}
+
+	///private int writeFully
 
 	public boolean plainResponse(String code, String msg) {
 		String ContentType = msg.length() == 0 ? "" :
@@ -244,10 +234,10 @@ Lib.dbg("***CP10***", doc.fname+" not cached");
 		return reply(header(code, a));
 	}
 
-	public void hOut(String code, byte[] b) {	// Overloaded
+	public boolean hOut(String code, byte[] b) {	// Overloaded
 		String s = "";
 		for (int i=0; i<b.length; i++) s += (char)b[i];
-		plainResponse("200", s);
+		return plainResponse("200", s);
 	}
 
 	public boolean reply(byte[] data) {
@@ -286,14 +276,15 @@ Lib.dbg("***CP10***", doc.fname+" not cached");
 	}
 
 	public boolean notExists(PlainFile doc) {
-		Lib.logV(this.request.uri+" not found");
-		Lib.logE(this.request.log + this.request.uri + "--not found");
-		///hOut("404 Not Found");
-		plainResponse("404", this.request.uri+" not found");
+		Lib.dbg("***404***", this.request.log + this.request.uri + "--not found");
 		this.err = "not exists";
-		return false;
+		///return hOut("404 Not Found");
+		return plainResponse("404", this.request.uri+" not found");
 	}
 
 	// Aliases & Helpers
-	public void Forbidden() { plainResponse("403", "Forbidden"); }
+	public boolean Forbidden() { return plainResponse("403", "Forbidden"); }
+	public boolean NotModified(String ContentType) {
+		return reply(header("304", ContentType, 0)+"\nDate: "+Lib.now()+"\n\n");
+	}
 }

@@ -2,7 +2,6 @@ package com.vera5.httpd;
 
 import android.util.Log;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,7 +9,6 @@ import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.zip.GZIPOutputStream;
 
 public class PlainFile {
 
@@ -55,23 +53,20 @@ public class PlainFile {
 
 	public void get() {
 		if (this.f.exists()) {
+			long begin = System.currentTimeMillis();
 			try {
 				FileInputStream in = new FileInputStream(this.f);
 				this.content = new byte[this.length];
 				this.length = in.read(this.content, 0, this.length);
 				this.status = 1;
-Lib.dbg("***CP38***", this.request.uri+" Accept-Encoding: "+this.request.AcceptEncoding);
 				if (!this.isCGI) this.isCGI = isCGI();
-				if (this.request.AcceptEncoding != null)	// Optimization -- gzip before send
-					if (this.request.AcceptEncoding.contains("gzip"))
-						gzip(this.content);
 			} catch (IOException e) {
 				this.length = 0;
 				this.content = null;
 				this.err = e.getMessage();
-				//Log.e(TAG, e.getMessage());
-				this.request.logE(TAG+": "+this.request.uri+" "+e.getMessage());
+				Lib.logE(TAG+": "+this.request.uri+" "+e.getMessage());
 			}
+			Lib.dbg("***get***", this.request.uri+" read in "+Lib.rtime(begin)+"ms");
 		}
 	}
 
@@ -122,24 +117,6 @@ Lib.dbg("***CP38***", this.request.uri+" Accept-Encoding: "+this.request.AcceptE
 		}
 		if (null == type) type = "application/octet-stream";
 		return type;
-	}
-
-	private void gzip(byte[] in) {
-		long begin = System.currentTimeMillis();
-		int length = this.length;
-		try {
-			ByteArrayOutputStream os = new ByteArrayOutputStream(in.length);
-			GZIPOutputStream gos = new GZIPOutputStream(os);
-			gos.write(in);
-			gos.close();
-			byte[] gzip = os.toByteArray();
-			os.close();
-			this.content = gzip.clone();
-			this.status = 2;
-Lib.dbg("***gzip*** ", this.request.uri+" -> "+length+" bytes gzipped in "+(System.currentTimeMillis()-begin)+"ms");
-		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
-		}
 	}
 
 }

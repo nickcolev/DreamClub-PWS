@@ -91,10 +91,10 @@ public class ServerService extends Service {
 	private void tuneClient(Socket s) {
 		// http://developer.android.com/reference/java/net/Socket.html
 		try {
-			s.setKeepAlive(true);
+			//s.setKeepAlive(true);
 			s.setTcpNoDelay(true);
-			s.setSendBufferSize(sockBufSize);
-			s.setReceiveBufferSize(sockBufSize);
+			//s.setSendBufferSize(sockBufSize);
+			//s.setReceiveBufferSize(sockBufSize);
 			s.setSoTimeout(11000);
 		} catch (SocketException e) {
 			Lib.dbg("tuneClient()", e.getMessage());
@@ -105,8 +105,7 @@ public class ServerService extends Service {
 		// http://developer.android.com/reference/java/net/Socket.html
 		// http://www.onlamp.com/pub/a/onlamp/2005/11/17/tcp_tuning.html -- theory
 		try {
-			//s.setSendBufferSize(sockBufSize);
-			s.setReceiveBufferSize(sockBufSize);
+			//s.setReceiveBufferSize(sockBufSize);
 			s.setReuseAddress(true);
 		} catch (SocketException e) {
 			Lib.dbg("tuneServer()", e.getMessage());
@@ -127,8 +126,8 @@ public class ServerService extends Service {
 				try {
 					InetAddress localhost = InetAddress.getByName(ip);;
 					serverSocket = new ServerSocket(port, 0, localhost);
-Log.d("***Sock***", "ReceiveBufferSize="+serverSocket.getReceiveBufferSize());
-					tuneServer(serverSocket);
+//Log.d("***Sock***", "ReceiveBufferSize="+serverSocket.getReceiveBufferSize());
+					//tuneServer(serverSocket);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
 					log.e(e.getMessage());
@@ -141,7 +140,7 @@ Log.d("***Sock***", "ReceiveBufferSize="+serverSocket.getReceiveBufferSize());
 				try {
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
-						tuneClient(client);
+						//tuneClient(client);
 						s = "request  from " + client.getInetAddress().toString();
 						log.v(s);
 						ServerHandler h = new ServerHandler(client, handler, cfg);

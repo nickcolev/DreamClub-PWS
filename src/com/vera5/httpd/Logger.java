@@ -58,8 +58,9 @@ public class Logger {
 	public void enable() { enable = true; }
 	public void disable() { enable = false; }
 	public void setHandler(Handler handler) { this.handler = handler; }
-	public void i(String s) { put("I", s); }
+	public void d(String s) { put("D", s); }
 	public void e(String s) { put("E", s); }
+	public void i(String s) { put("I", s); }
 	public void s(String s) { put("S", s); }
 	private String fname() { return this.path + "/log.txt"; }
 

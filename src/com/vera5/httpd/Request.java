@@ -1,7 +1,9 @@
 package com.vera5.httpd;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.lang.Thread;
 import java.net.Socket;
@@ -37,46 +39,38 @@ public class Request {
 		this.cfg = parent.cfg;
 	}
 
-	private String readLine(DataInputStream in) {
-		int c = -1, i=0;
-		char[] buf = new char[512];
-		try {
-			while ((c = in.read()) != -1) {
-				if (c == 13) continue;
-				if (c == 10) break;
-				buf[i++] = (char)c;
-			}
-		} catch (IOException e) {
-			Lib.logV(e.getMessage());
-		}
-		if (c == -1 || i == 0) return null;
-		String s = new String(buf);
-		return s.substring(0, i);
-	}
-
 	public void get(Socket client) {
 		long begin = System.currentTimeMillis();
-		String s, a[], method = "GET";
+		String s, a[], method = null;
 		try {
-			int i = 0, c;
+			int i = 0, p;
+			//BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()),8192);
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
-			while ((s = readLine(in)) != null) {
-//Log.d(TAG, s);
+			while ((s = in.readLine()) != null) {
+//Lib.dbg("REQ", s);
+				if (s.length() == 0) break;
 				this.aHeader.add(s);
 				a = s.split(" ");
+				if (method == null) {
+					p = s.indexOf("HTTP/");
+					if (p != -1) {
+						//a = s.split(" ");
+						method = a[0];
+						this.url = a[1];
+						this.version = a[2];
+						parseUri(a[1]);
+					}
+				}
+				/*
 				// The first line is: method resourse HTTP/version (like 'GET / HTTP/1.0')
-				if (i == 0) {		// The first line
+				if (a[2] != null)i == 0) {		// The first line
 					method = a[0];
 					this.url = a[1];
 					this.version = a[2];
 					parseUri(a[1]);
-					if (method.equals("GET")) {
-						DocumentCache cache = new DocumentCache(this);
-						new Thread(cache).start();
-					}
-					Lib.logI(s);
-				} else if (a[0].equals("Accept-Encoding:")) {
+				}*/
+				if (a[0].equals("Accept-Encoding:")) {
 					this.AcceptEncoding = a[1];
 				} else if (a[0].equals("Content-Type:")) {
 					this.ContentType = a[1];
@@ -88,22 +82,35 @@ public class Request {
 				// Other headers parsing here
 				i++;
 			}
+			if (method == null)
+				Lib.dbg("***MER***", headers());
 			if(this.ContentLength > 0) {	// PUT/POST data?
-				this.data = new byte[this.ContentLength];
-				for(i=0; i<this.ContentLength; i++) {
-					if((c = in.read()) == -1) break;
-					this.data[i] = (byte)c;
-				}
+				getdata(in);
 			}
 			this.log = client.getInetAddress().toString() + " " + method + " ";
 			for (i=1; i<this.aMethod.length; i++)
 				if (this.aMethod[i].equals(method)) this.method = i;
 		} catch (Exception e) {
 			this.err = e.getMessage();
-			Lib.logE(TAG+": "+this.err);
-			Log.e(TAG, err);
+			Lib.dbg(TAG, this.err);
 		}
-		Lib.dbg("***REQ*** ", this.uri+" complete in "+(System.currentTimeMillis() - begin)+"ms");
+		//Lib.dbg("***REQ*** ", this.uri+" complete in "+(System.currentTimeMillis() - begin)+"ms");
+	}
+
+	private void getdata(DataInputStream in) {
+		long beg = System.currentTimeMillis();
+//Lib.dbg("***PU0***", "about to read "+this.ContentLength+" bytes");
+		try {
+			this.data = new byte[this.ContentLength];
+			in.readFully(this.data);
+		} catch (IOException ie) {
+			this.data = null;
+			Log.e("***PUERR***", ie.getMessage());
+			Lib.dbg(TAG, ie.getMessage());
+		} catch (Exception e) {
+			Log.e("***PUER2***", e.getMessage());
+		}
+//Lib.dbg("LEN", "Content-Length: "+this.ContentLength+", read "+this.data.length+" bytes in "+Lib.rtime(beg)+"ms");
 	}
 
 	// Helpers below
