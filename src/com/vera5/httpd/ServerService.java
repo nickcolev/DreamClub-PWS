@@ -45,7 +45,7 @@ public class ServerService extends Service {
 	public Handler handler;
 	public static byte[] footer;
 	public static Logger log;
-	private static final int sockBufSize = 8192;
+	private static final int sockBufSize = 2048;
 
 
     @Override

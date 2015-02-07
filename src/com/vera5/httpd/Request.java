@@ -44,7 +44,6 @@ public class Request {
 		String s, a[], method = null;
 		try {
 			int i = 0, p;
-			//BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()),8192);
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
 			while ((s = in.readLine()) != null) {
@@ -55,21 +54,12 @@ public class Request {
 				if (method == null) {
 					p = s.indexOf("HTTP/");
 					if (p != -1) {
-						//a = s.split(" ");
 						method = a[0];
 						this.url = a[1];
 						this.version = a[2];
 						parseUri(a[1]);
 					}
 				}
-				/*
-				// The first line is: method resourse HTTP/version (like 'GET / HTTP/1.0')
-				if (a[2] != null)i == 0) {		// The first line
-					method = a[0];
-					this.url = a[1];
-					this.version = a[2];
-					parseUri(a[1]);
-				}*/
 				if (a[0].equals("Accept-Encoding:")) {
 					this.AcceptEncoding = a[1];
 				} else if (a[0].equals("Content-Type:")) {
@@ -94,12 +84,10 @@ public class Request {
 			this.err = e.getMessage();
 			Lib.dbg(TAG, this.err);
 		}
-		//Lib.dbg("***REQ*** ", this.uri+" complete in "+(System.currentTimeMillis() - begin)+"ms");
 	}
 
 	private void getdata(DataInputStream in) {
 		long beg = System.currentTimeMillis();
-//Lib.dbg("***PU0***", "about to read "+this.ContentLength+" bytes");
 		try {
 			this.data = new byte[this.ContentLength];
 			in.readFully(this.data);
@@ -110,7 +98,6 @@ public class Request {
 		} catch (Exception e) {
 			Log.e("***PUER2***", e.getMessage());
 		}
-//Lib.dbg("LEN", "Content-Length: "+this.ContentLength+", read "+this.data.length+" bytes in "+Lib.rtime(beg)+"ms");
 	}
 
 	// Helpers below

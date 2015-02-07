@@ -2,6 +2,7 @@ package com.vera5.httpd;
 
 import android.util.Log;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,9 +57,21 @@ public class PlainFile {
 			long begin = System.currentTimeMillis();
 			try {
 				FileInputStream in = new FileInputStream(this.f);
-				this.content = new byte[this.length];
-				this.length = in.read(this.content, 0, this.length);
+				ByteArrayOutputStream content = getFileBytes(this.f);
+				// Add the footer
+				if (ServerService.footer != null)
+					if (this.type.equals("text/html")) {
+						content.write(ServerService.footer, 0, ServerService.footer.length);
+					}
 				this.status = 1;
+				if (gzipAccept()) {
+					// gzip contents (if client supports it)
+					byte[] cmp = Lib.gzip(content.toByteArray());
+					content.reset();
+					content.write(cmp, 0, cmp.length);
+					this.status = 2;
+				}
+				this.content = content.toByteArray();
 				if (!this.isCGI) this.isCGI = isCGI();
 			} catch (IOException e) {
 				this.length = 0;
@@ -68,6 +81,24 @@ public class PlainFile {
 			}
 			Lib.dbg("***get***", this.request.uri+" read in "+Lib.rtime(begin)+"ms");
 		}
+	}
+
+	private boolean gzipAccept() {
+		if (this.request.AcceptEncoding == null) return false;
+		return this.request.AcceptEncoding.contains("gzip");
+	}
+
+	private ByteArrayOutputStream getFileBytes(File f) throws IOException {
+		long begin = System.currentTimeMillis();
+		ByteArrayOutputStream ret = new ByteArrayOutputStream();
+		FileInputStream in = new FileInputStream(f);
+		byte[] buf = new byte[4096];
+		int cnt = 0;
+		while ((cnt = in.read(buf, 0, 4096)) != -1) {
+			ret.write(buf, 0, cnt);
+		}
+		Lib.dbg(TAG, "Got "+ret.size()+" bytes of "+this.request.uri+" in "+Lib.rtime(begin)+"ms");
+		return ret;
 	}
 
 	private boolean isCGI() {

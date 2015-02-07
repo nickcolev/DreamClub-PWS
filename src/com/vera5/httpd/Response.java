@@ -181,14 +181,13 @@ public class Response {
 				return NotModified(doc.type);
 		if (this.request.method == 1) {
 			doc.get();
-			// We may gzip conents here
 		}
 		String header = header("200 OK", doc.type, fl + doc.content.length)
 			+ "\nETag: " + ETag
 			+ "\nModified: " + doc.time
 			+ (doc.status == 2 ? "\nContent-Encoding: gzip" : "")
 			+ "\n\n";
-		Lib.dbg("***FR***", this.request.uri+" ETag="+ETag+", length()="+doc.f.length()+", data length="+doc.content.length);
+Lib.dbg("***FR***", this.request.uri+" length()="+doc.f.length()+", data length="+doc.content.length);
 		boolean r = true;
 		try {
 			out.write(header.getBytes());

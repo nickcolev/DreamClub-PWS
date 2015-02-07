@@ -36,7 +36,7 @@ class Lib {
 			gos.close();
 			gzip = os.toByteArray();
 			os.close();
-dbg("GZIP", ""+in.length+" bytes gzipped in "+(System.currentTimeMillis()-begin)+"ms");
+			dbg("GZIP", ""+in.length+" bytes gzipped to "+gzip.length+" bytes in "+(System.currentTimeMillis()-begin)+"ms");
 		} catch (IOException e) {
 			gzip = null;
 			Log.e("GZIP", e.getMessage());
