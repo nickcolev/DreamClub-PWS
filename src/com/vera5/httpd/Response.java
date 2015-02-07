@@ -1,5 +1,6 @@
 package com.vera5.httpd;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
@@ -15,14 +16,14 @@ public class Response {
   private final Request request;
   private static final String TAG = "PWS.Response";
   private String err;
-  private OutputStream out;
+  private DataOutputStream out;
 
 	public Response(ServerHandler parent) {
 		this.cfg = parent.cfg;
 		this.client = parent.toClient;
 		this.request = parent.request;
 		try {
-			out = client.getOutputStream();
+			out = new DataOutputStream(client.getOutputStream());
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
 		}
@@ -162,6 +163,7 @@ public class Response {
 			case 'i':
 			case 's':
 			case '?':
+				// TODO gzip log before send to the client
 				plainResponse("200 OK",
 					ServerService.log.get(Character.toUpperCase(c)));
 				break;
@@ -175,7 +177,8 @@ public class Response {
 		// Caching
 		boolean isHTML = doc.type.equals("text/html");
 		int fl = ServerService.footer == null ? 0 : ServerService.footer.length;
-		String ETag = doc.ETag + (isHTML ? fl : "");
+		if (!isHTML) fl = 0;
+		String ETag = doc.ETag + (isHTML ? "F" : "");
 		if (request.IfNoneMatch != null)
 			if (request.IfNoneMatch.equals(ETag))
 				return NotModified(doc.type);
@@ -191,13 +194,8 @@ Lib.dbg("***FR***", this.request.uri+" length()="+doc.f.length()+", data length=
 		boolean r = true;
 		try {
 			out.write(header.getBytes());
-			out.flush();
 			if(request.method == 1) {		// GET
-				// FIXME Test on the real MB511 fail to send all data (mainly, when long enough)
-				// Probably to be wrapped in 'DataOutputStream'?!
-				// http://developer.android.com/reference/java/io/DataOutputStream.html
 				out.write(doc.content, 0, doc.content.length);
-				out.flush();
 				// Footer -- maybe better to insert it before </body>
 				if (fl > 0 && isHTML)
 					out.write(ServerService.footer, 0, ServerService.footer.length);
@@ -215,14 +213,12 @@ Lib.dbg("***FR***", this.request.uri+" length()="+doc.f.length()+", data length=
 		return r;
 	}
 
-	///private int writeFully
-
 	public boolean plainResponse(String code, String msg) {
 		String ContentType = msg.length() == 0 ? "" :
 			"text/" + (msg.startsWith("<") ? "html" : "plain");
 		String response = header(code, ContentType, msg.length())
 			+ "\n\n" + msg;
-		return reply(response);
+		return reply(response.getBytes());
 	}
 
 	public boolean hOut(String code) {	// Header-only Out

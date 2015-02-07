@@ -60,9 +60,8 @@ public class PlainFile {
 				ByteArrayOutputStream content = getFileBytes(this.f);
 				// Add the footer
 				if (ServerService.footer != null)
-					if (this.type.equals("text/html")) {
+					if (this.type.equals("text/html"))
 						content.write(ServerService.footer, 0, ServerService.footer.length);
-					}
 				this.status = 1;
 				if (gzipAccept()) {
 					// gzip contents (if client supports it)
@@ -85,7 +84,8 @@ public class PlainFile {
 
 	private boolean gzipAccept() {
 		if (this.request.AcceptEncoding == null) return false;
-		return this.request.AcceptEncoding.contains("gzip");
+		//return this.request.AcceptEncoding.contains("gzip");
+		return false;
 	}
 
 	private ByteArrayOutputStream getFileBytes(File f) throws IOException {

@@ -83,6 +83,8 @@ public class Logger {
 			BufferedReader in = new BufferedReader(new FileReader(f), 8192);
 			while ((line = in.readLine()) != null) {
 				a = line.split("\t");
+				// FIXME \n in the log leads to exception (investigate)
+				if (a[1] == null) continue;
 				if (c != '?')	// Filter
 					if (!a[1].startsWith(m)) continue;
 				ts = formatTime(a[0]);
