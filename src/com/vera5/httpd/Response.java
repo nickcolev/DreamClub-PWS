@@ -58,11 +58,9 @@ public class Response {
 
 	public void get(Request request) {
 		PlainFile doc = new PlainFile(request);
-Lib.dbg("***GET***", request.uri+" => "+doc.fname+" "+(doc.f.exists() ? "" : "NOT")+" exists");
 		if (doc.f.exists()) {
 			if (doc.f.isDirectory()) {
 				PlainFile index = new PlainFile(request, Lib.addIndex(request.uri, request.cfg.index));
-Lib.dbg("***DIR***", index.fname+" => "+doc.fname+" "+(index.f.exists() ? "" : "NOT")+" exists");
 				if (index.f.exists()) {
 					fileResponse(index);
 				} else {
