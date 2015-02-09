@@ -18,4 +18,8 @@
 			android:key="footer"
 			android:defaultValue="footer"
 			android:title="Footer" />
+		<CheckBoxPreference
+			android:key="dir_list"
+			android:defaultValue="false"
+			android:title="Directory Listing" />
 </PreferenceScreen>

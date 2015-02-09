@@ -67,8 +67,10 @@ public class Response {
 					if (request.uri.equals("/")) {
 						plainResponse("200", this.cfg.defaultIndex.toString());
 					} else {
-						ls(request);	// FIXME Is allowed
-						//Forbidden();	// FIXME Implement preference
+						if (this.cfg.dir_list)
+							ls(request);
+						else
+							Forbidden();
 					}
 				}
 			} else {	// file exists

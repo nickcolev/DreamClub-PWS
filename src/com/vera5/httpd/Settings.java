@@ -9,7 +9,9 @@ import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
+import android.preference.Preference;	///
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
@@ -29,12 +31,21 @@ public class Settings extends PreferenceActivity {
 		prefs.edit().clear();
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
 		Map<String,?> keys = prefs.getAll();
-		for(Map.Entry<String,?> entry : keys.entrySet())
-			setSummary(prefs, entry.getKey());
+		for(Map.Entry<String,?> entry : keys.entrySet()) {
+			Preference p = findPreference(entry.getKey());
+			if (p instanceof EditTextPreference)
+				setSummary(prefs, entry.getKey());
+			else if (p instanceof CheckBoxPreference)
+				setBoolean(prefs, entry.getKey());
+		}
 		//hide("footer"); FIXME Some hidden preferences
 		listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-			public void onSharedPreferenceChanged(SharedPreferences p, String key) {
-				setSummary(p, key);
+			public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
+				Preference p = findPreference(key);
+				if (p instanceof EditTextPreference)
+					setSummary(sp, key);
+				else
+					setBoolean(sp, key);
 			}
 		};
 	}
@@ -61,17 +72,28 @@ public class Settings extends PreferenceActivity {
 		ps.removePreference(pref);
 	}
 
-	private void setSummary(SharedPreferences p, String key) {
+	private void setBoolean(SharedPreferences sp, String key) {
+		try {
+			CheckBoxPreference cbp = (CheckBoxPreference) findPreference(key);
+			if (mBoundService != null) {
+				if (key.equals("dir_list"))
+					mBoundService.cfg.dir_list = sp.getBoolean(key, false);
+			}
+		} catch (Exception e) {
+		}
+	}
+
+	private void setSummary(SharedPreferences sp, String key) {
 		try {
 			EditTextPreference pref = (EditTextPreference) findPreference(key);
-			pref.setSummary(p.getString(key, ""));
+			pref.setSummary(sp.getString(key, ""));
 			if (mBoundService != null) {
 				// Not necessary to restart but for port change
 				if (key.equals("port")) {
 					mBoundService.ReStart();
 				}
 				if (key.equals("index")) {
-					mBoundService.cfg.index = p.getString(key, "");
+					mBoundService.cfg.index = sp.getString(key, "");
 				}
 				if (key.equals("footer")) {
 					mBoundService.getFooter();

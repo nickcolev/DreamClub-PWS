@@ -272,15 +272,11 @@ public class ServerService extends Service {
 		final WifiLock wifiLock = getWifiLock();
 		wifiLock.setReferenceCounted(false);
 		wifiLock.acquire();
-		Lib.dbg("WIFI", "acquired WifiLock");
 	}
 
 	private void WifiUnlock() {
 		final WifiLock wifiLock = getWifiLock();
-		if (wifiLock.isHeld()) {
+		if (wifiLock.isHeld())
 			wifiLock.release();
-			Lib.dbg("WIFI", "released WifiLock");
-		} else
-			Lib.dbg("WIFI", "Wifi lock is not held");
 	}
 }
