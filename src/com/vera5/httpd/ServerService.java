@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.WifiLock;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -138,6 +139,7 @@ public class ServerService extends Service {
 				updateNotifiction(s);
 				log.v("Waiting for connections on " + s);
 				try {
+					WifiLock();
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
 						//tuneClient(client);
@@ -146,8 +148,9 @@ public class ServerService extends Service {
 						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();
 					}
-				} catch (Exception ie) {
+				} catch (Exception e) {
 					log.s("Shutdown");
+					WifiUnlock();
 					closeSocket(client);
 					serviceThread = null;
 					stopSelf();
@@ -221,7 +224,7 @@ public class ServerService extends Service {
 	private String getIP() {
 		String IP;
 		try {
-			WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+			final WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
 			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 			IP = Lib.intToIp(wifiInfo.getIpAddress());
 			if (IP.equals("0.0.0.0")) IP = "localhost";
@@ -259,4 +262,25 @@ public class ServerService extends Service {
 		}
 	}
 
+	private WifiLock getWifiLock() {
+		final WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+		final WifiLock wifiLock = wm.createWifiLock("PWS");
+		return wifiLock;
+	}
+		
+	private void WifiLock() {
+		final WifiLock wifiLock = getWifiLock();
+		wifiLock.setReferenceCounted(false);
+		wifiLock.acquire();
+		Lib.dbg("WIFI", "acquired WifiLock");
+	}
+
+	private void WifiUnlock() {
+		final WifiLock wifiLock = getWifiLock();
+		if (wifiLock.isHeld()) {
+			wifiLock.release();
+			Lib.dbg("WIFI", "released WifiLock");
+		} else
+			Lib.dbg("WIFI", "Wifi lock is not held");
+	}
 }
