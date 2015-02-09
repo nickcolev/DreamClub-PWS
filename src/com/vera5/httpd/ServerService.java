@@ -47,7 +47,7 @@ public class ServerService extends Service {
 	public Handler handler;
 	public static byte[] footer;
 	public static Logger log;
-	private static final int sockBufSize = 2048;
+	private static final int sockBufSize = 4096;
 
 
     @Override
@@ -90,30 +90,6 @@ public class ServerService extends Service {
         return true;	// allow rebind
 	}
 
-	private void tuneClient(Socket s) {
-		// http://developer.android.com/reference/java/net/Socket.html
-		try {
-			//s.setKeepAlive(true);
-			s.setTcpNoDelay(true);
-			//s.setSendBufferSize(sockBufSize);
-			//s.setReceiveBufferSize(sockBufSize);
-			s.setSoTimeout(11000);
-		} catch (SocketException e) {
-			Lib.dbg("tuneClient()", e.getMessage());
-		}
-	}
-
-	private void tuneServer(ServerSocket s) {
-		// http://developer.android.com/reference/java/net/Socket.html
-		// http://www.onlamp.com/pub/a/onlamp/2005/11/17/tcp_tuning.html -- theory
-		try {
-			//s.setReceiveBufferSize(sockBufSize);
-			s.setReuseAddress(true);
-		} catch (SocketException e) {
-			Lib.dbg("tuneServer()", e.getMessage());
-		}
-	}
-
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		this.intent = intent;
@@ -128,8 +104,6 @@ public class ServerService extends Service {
 				try {
 					InetAddress localhost = InetAddress.getByName(ip);;
 					serverSocket = new ServerSocket(port, 0, localhost);
-//Log.d("***Sock***", "ReceiveBufferSize="+serverSocket.getReceiveBufferSize());
-					//tuneServer(serverSocket);
 				} catch (IOException e) {
 					updateNotifiction(e.getMessage());
 					log.e(e.getMessage());
@@ -143,13 +117,11 @@ public class ServerService extends Service {
 					WifiLock();
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
-						//tuneClient(client);
 						s = "request  from " + client.getInetAddress().toString();
 						log.v(s);
 						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();
 					}
-				//} catch (SocketTimeoutException et) {	FIXME
 				} catch (Exception e) {
 					log.s("Shutdown");
 					WifiUnlock();

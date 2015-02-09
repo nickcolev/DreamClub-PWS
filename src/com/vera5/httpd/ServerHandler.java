@@ -68,7 +68,8 @@ class ServerHandler extends Thread {
 				response.plainResponse("501", this.err);
 				Lib.logE(this.err);
 		}
-		Lib.dbg("PERF", request.uri+" served in "+Lib.rtime(begin)+"ms");
+		//if (request.uri.endsWith(".ttf") | request.uri.equals("/nick.css") | request.uri.endsWith(".html"))
+			Lib.dbg("PERF", request.uri+" served in "+Lib.rtime(begin)+"ms");
 	}
 
 }
