@@ -72,11 +72,9 @@ public class Request {
 				// Other headers parsing here
 				i++;
 			}
-			if (method == null)
-				Lib.dbg("***MER***", headers());
-			if(this.ContentLength > 0) {	// PUT/POST data?
+			if (method == null) return;
+			if(this.ContentLength > 0)	// PUT/POST data?
 				getdata(in);
-			}
 			this.log = client.getInetAddress().toString() + " " + method + " ";
 			for (i=1; i<this.aMethod.length; i++)
 				if (this.aMethod[i].equals(method)) this.method = i;

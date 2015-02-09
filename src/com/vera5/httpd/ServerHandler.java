@@ -26,11 +26,13 @@ class ServerHandler extends Thread {
 
 		request = new Request(this);
 		request.get(toClient);
+		Response response = new Response(this);
 		if (request.uri == null) {		// FIXME Investigate why/when this happens
 			Lib.logE("(null) requested");
+			response.plainResponse("400", "Bad request");
 			return;
 		}
-		Response response = new Response(this);
+
 		switch(request.method) {
 			case 1:		// GET
 			case 2:		// HEAD

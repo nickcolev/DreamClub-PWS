@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test
 if [ ! $2 ]
 then
 	echo "usage: $0 method uri"
@@ -11,5 +12,5 @@ Connection: close
 "
 echo $CMD
 echo
-printf $CMD | nc 192.168.1.12 8080
+printf "$CMD" | nc 192.168.1.13 8080
 echo
