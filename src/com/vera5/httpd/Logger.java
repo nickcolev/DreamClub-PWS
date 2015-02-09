@@ -46,7 +46,8 @@ public class Logger {
 		try {
 			if (!f.exists()) f.createNewFile();
 			BufferedWriter b = new BufferedWriter(new FileWriter(log, true), 8192);
-			b.append(now + "\t" + tag + (s.startsWith("/") ? "" : "/") + s + "\n");
+			b.append(now + "\t" + tag + (s.startsWith("/") ? "" : "/") +
+				s.replaceAll("\n", "\\\\n") + "\n");
 			b.flush();
 			b.close();
 		} catch (IOException e) {
@@ -79,15 +80,19 @@ public class Logger {
 						// For display, format it properly.
 		String ts, a[], line, log = fname(), m = c + "/", result = "";
 		File f = new File(log);
+		if (f.length() == 0) return "Nothing to display";	// FIXME Duplication
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(f), 8192);
 			while ((line = in.readLine()) != null) {
 				a = line.split("\t");
-				// FIXME \n in the log leads to exception (investigate)
-				if (a[1] == null) continue;
+				// \n in the log? (avoid exception)
+				if (a[1] == null) {
+					result += "\t" + line + "\n";
+					continue;
+				}
 				if (c != '?')	// Filter
 					if (!a[1].startsWith(m)) continue;
-				ts = formatTime(a[0]);
+				ts = a[0] == null ? "" : formatTime(a[0]);
 				result += ts + "\t" + a[1] + "\n";
 			}
 			in.close();
@@ -104,7 +109,7 @@ public class Logger {
 		try {
 			sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(Long.valueOf(timestamp)));
 		} catch (Exception e) {
-			sdf = timestamp;
+			sdf = "";
 			Log.e(TAG, e.getMessage());
 		}
 		return sdf;

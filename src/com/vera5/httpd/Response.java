@@ -58,10 +58,11 @@ public class Response {
 
 	public void get(Request request) {
 		PlainFile doc = new PlainFile(request);
-//Lib.dbg("***GET***", request.uri+" => "+doc.fname+" "+(doc.f.exists() ? "" : "NOT")+" exists");
+Lib.dbg("***GET***", request.uri+" => "+doc.fname+" "+(doc.f.exists() ? "" : "NOT")+" exists");
 		if (doc.f.exists()) {
 			if (doc.f.isDirectory()) {
-				PlainFile index = new PlainFile(request, request.cfg.index);
+				PlainFile index = new PlainFile(request, Lib.addIndex(request.uri, request.cfg.index));
+Lib.dbg("***DIR***", index.fname+" => "+doc.fname+" "+(index.f.exists() ? "" : "NOT")+" exists");
 				if (index.f.exists()) {
 					fileResponse(index);
 				} else {
@@ -163,9 +164,22 @@ public class Response {
 			case 'i':
 			case 's':
 			case '?':
-				// TODO gzip log before send to the client
-				plainResponse("200 OK",
-					ServerService.log.get(Character.toUpperCase(c)));
+				String slog = ServerService.log.get(Character.toUpperCase(c));
+				int len = slog.length();
+				if (request.AcceptEncoding != null) {	// FIXME duplicated code
+					if (request.AcceptEncoding.contains("gzip")) {
+						byte[] zlog = Lib.gzip(slog.getBytes());
+						String[] aHeader = {
+							"Content-Type: text/plain",
+							"Content-Length: " + zlog.length,
+							"Content-Encoding: gzip"
+						};
+						String header = header("200", aHeader);
+						byte[] buf = Lib.join(header, zlog);
+						reply(buf);
+					}
+				} else
+					plainResponse("200 OK", slog);
 				break;
 			default:
 				isLog = false;
@@ -267,13 +281,13 @@ Lib.dbg("***FR***", this.request.uri+" length()="+doc.f.length()+", data length=
 	}
 
 	private String header(String code, String[] header) {	// Overloaded
-		return header(code, "", 0) + Lib.a2h(header) + "\n\n";
+		return baseHeader(code) + Lib.a2h(header) + "\n\n";
 	}
 
 	public boolean notExists(PlainFile doc) {
-		Lib.dbg("***404***", this.request.log + this.request.uri + "--not found");
-		this.err = "not exists";
-		///return hOut("404 Not Found");
+		this.err = this.request.log + this.request.uri + "--not found";
+		Lib.logE(this.err);
+		Lib.logV(this.err);
 		return plainResponse("404", this.request.uri+" not found");
 	}
 

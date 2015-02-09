@@ -36,6 +36,20 @@
 </ul>
 <p>Manual</p>
 <pre class="cp">printf "TRACE / HTTP/1.1\r\n\r\n" | <a href="http://nc110.sourceforge.net/">nc</a> 192.168.1.12 8080</pre>
+<form>
+<p>Use Case
+<table>
+ <tr><td rowspan=2>&nbsp;</td><th colspan=2>index.html</th></tr>
+ <tr><th width=60>Exists</th><th>Not exists</th></tr>
+ <tr><td><tt>GET /</tt></td><td align="center"><input type="checkbox"/></td><td align="center"><input type="checkbox"/></td></tr>
+ <tr><td><tt>GET /tmp</tt></td><td align="center"><input type="checkbox"/></td><td align="center"><input type="checkbox"/></td></tr>
+ <tr><td><tt>GET /tmp/</tt></td><td align="center"><input type="checkbox"/></td><td align="center"><input type="checkbox"/></td></tr>
+ <tr><td><tt>GET /tmp/test.htm</tt></td><td colspan=2>&nbsp;</td></tr>
+ <tr><td><tt>GET /briefs.html</tt></td><td class="note" colspan=2><i>many internal GETs</i></td></tr>
+</table>
+</form>
+</p>
+<p class="note">Test other methods functionality.</p>
 
 <h3 class="ul" id="todo">To do</h3>
 <ul>

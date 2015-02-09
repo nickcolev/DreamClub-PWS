@@ -84,8 +84,7 @@ public class PlainFile {
 
 	private boolean gzipAccept() {
 		if (this.request.AcceptEncoding == null) return false;
-		//return this.request.AcceptEncoding.contains("gzip");
-		return false;
+		return this.request.AcceptEncoding.contains("gzip");
 	}
 
 	private ByteArrayOutputStream getFileBytes(File f) throws IOException {
