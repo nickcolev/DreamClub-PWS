@@ -204,7 +204,6 @@ public class Response {
 			+ "\nModified: " + doc.time
 			+ (doc.status == 2 ? "\nContent-Encoding: gzip" : "")
 			+ "\n\n";
-Lib.dbg("***FR***", this.request.uri+" length()="+doc.f.length()+", data length="+doc.content.length);
 		boolean r = true;
 		try {
 			out.write(header.getBytes());

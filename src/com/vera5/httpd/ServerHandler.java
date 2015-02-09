@@ -22,6 +22,8 @@ class ServerHandler extends Thread {
 
 	public void run() {
 
+		long begin = System.currentTimeMillis();
+
 		request = new Request(this);
 		request.get(toClient);
 		if (request.uri == null) {		// FIXME Investigate why/when this happens
@@ -62,9 +64,9 @@ class ServerHandler extends Thread {
 			default:
 				this.err = request.getMethod()+" Not Implemented";
 				response.plainResponse("501", this.err);
-				Lib.logS(this.err);
+				Lib.logE(this.err);
 		}
-
+		Lib.dbg("PERF", request.uri+" served in "+Lib.rtime(begin)+"ms");
 	}
 
 }

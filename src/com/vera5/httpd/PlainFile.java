@@ -63,8 +63,8 @@ public class PlainFile {
 					if (this.type.equals("text/html"))
 						content.write(ServerService.footer, 0, ServerService.footer.length);
 				this.status = 1;
+				// gzip (if client supports it)
 				if (gzipAccept()) {
-					// gzip contents (if client supports it)
 					byte[] cmp = Lib.gzip(content.toByteArray());
 					content.reset();
 					content.write(cmp, 0, cmp.length);
@@ -78,7 +78,6 @@ public class PlainFile {
 				this.err = e.getMessage();
 				Lib.logE(TAG+": "+this.request.uri+" "+e.getMessage());
 			}
-			Lib.dbg("***get***", this.request.uri+" read in "+Lib.rtime(begin)+"ms");
 		}
 	}
 
@@ -93,10 +92,8 @@ public class PlainFile {
 		FileInputStream in = new FileInputStream(f);
 		byte[] buf = new byte[4096];
 		int cnt = 0;
-		while ((cnt = in.read(buf, 0, 4096)) != -1) {
+		while ((cnt = in.read(buf, 0, 4096)) != -1)
 			ret.write(buf, 0, cnt);
-		}
-		Lib.dbg(TAG, "Got "+ret.size()+" bytes of "+this.request.uri+" in "+Lib.rtime(begin)+"ms");
 		return ret;
 	}
 
