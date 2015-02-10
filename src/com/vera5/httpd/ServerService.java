@@ -62,6 +62,12 @@ public class ServerService extends Service {
 		configure();
     }
 
+	@Override
+	public void onDestroy() {
+		mNM.cancel(NOTIFICATION_ID);
+		super.onDestroy();
+	}
+
 	public void configure() {
 		cfg = new Config();
 		cfg.configure(this.prefs);
@@ -75,19 +81,6 @@ public class ServerService extends Service {
 		closeSocket(null);
 		stopService(intent);
 		startService(intent);
-	}
-
-	@Override
-	public boolean onUnbind(Intent intent) {
-		try {
-			this.serverSocket.close();
-			stopSelf();
-			isRunning = false;
-		} catch (IOException e) {
-			log.e(e.getMessage());
-			Log.e(TAG, e.getMessage());
-		}
-        return true;	// allow rebind
 	}
 
 	@Override
@@ -114,7 +107,7 @@ public class ServerService extends Service {
 				updateNotifiction(s);
 				log.v("Waiting for connections on " + s);
 				try {
-					WifiLock();
+					WifiLock(true);
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
 						s = "request  from " + client.getInetAddress().toString();
@@ -124,7 +117,7 @@ public class ServerService extends Service {
 					}
 				} catch (Exception e) {
 					log.s("Shutdown");
-					WifiUnlock();
+					WifiLock(false);
 					closeSocket(client);
 					serviceThread = null;
 					stopSelf();
@@ -156,12 +149,6 @@ public class ServerService extends Service {
 
 	private int getPort() {
 		return Integer.parseInt(prefs.getString("port", "8080"));
-	}
-
-	@Override
-	public void onDestroy() {
-		mNM.cancel(NOTIFICATION_ID);
-		super.onDestroy();
 	}
 
 	public void closeSocket(Socket client) {
@@ -197,6 +184,19 @@ public class ServerService extends Service {
 		return IP;
 	}
 
+	@Override
+	public boolean onUnbind(Intent intent) {
+		try {
+			this.serverSocket.close();
+			stopSelf();
+			isRunning = false;
+		} catch (IOException e) {
+			log.e(e.getMessage());
+			Log.e(TAG, e.getMessage());
+		}
+        return true;	// allow rebind
+	}
+
     @Override
 	public IBinder onBind(Intent intent) {
 		return mBinder;
@@ -224,22 +224,16 @@ public class ServerService extends Service {
 			return "?";
 		}
 	}
-
-	private WifiLock getWifiLock() {
+	
+	private void WifiLock(boolean on) {
 		final WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
 		final WifiLock wifiLock = wm.createWifiLock("PWS");
-		return wifiLock;
-	}
-		
-	private void WifiLock() {
-		final WifiLock wifiLock = getWifiLock();
-		wifiLock.setReferenceCounted(false);
-		wifiLock.acquire();
+		if (on) {
+			wifiLock.acquire();
+		} else {
+			if (wifiLock.isHeld())
+				wifiLock.release();
+		}
 	}
 
-	private void WifiUnlock() {
-		final WifiLock wifiLock = getWifiLock();
-		if (wifiLock.isHeld())
-			wifiLock.release();
-	}
 }

@@ -14,8 +14,8 @@ class ServerHandler extends Thread {
   private Handler handler;
   private String err;
 
-	public ServerHandler(Socket s, Handler handler, Config cfg) {
-		this.toClient = s;
+	public ServerHandler(Socket client, Handler handler, Config cfg) {
+		this.toClient = client;
 		this.handler = handler;
 		this.cfg = cfg;
 	}

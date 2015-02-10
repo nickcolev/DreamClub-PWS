@@ -33,6 +33,7 @@ public class Response {
 		if (request.ContentType == null)
 			request.ContentType = "application/octet-stream";
 		String output = CGI.exec(request);
+//Lib.dbg("CGI", request.uri+" "+output);
 		String err = "Internal Server Error";
 		if (output == null)
 			plainResponse("500", err);

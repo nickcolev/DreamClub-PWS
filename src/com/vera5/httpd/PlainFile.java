@@ -134,8 +134,8 @@ public class PlainFile {
 			int p = fname.lastIndexOf('.');
 			if (p != -1) {
 				String ext = fname.substring(p+1);
-				final String[] aExt = { "css", "gif", "jpg", "jpeg", "js", "png", "svg" };
-				final String[] aType = { "text/css", "image/gif", "image/jpeg", "image/jpeg", "application/javascript", "image/png", "image/svg+xml" };
+				final String[] aExt = { "css", "gif", "jpg", "jpeg", "js", "png", "sh", "svg" };
+				final String[] aType = { "text/css", "image/gif", "image/jpeg", "image/jpeg", "application/javascript", "image/png", "text/x-shellscript", "image/svg+xml" };
 				for (int i=0; i<aExt.length; i++)
 					if (aExt[i].equals(ext)) {
 						type = aType[i];

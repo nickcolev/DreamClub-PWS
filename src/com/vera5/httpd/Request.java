@@ -32,11 +32,13 @@ public class Request {
   };
   private ArrayList<String> aHeader = new ArrayList<String>();
   public Config cfg;
+  public final Socket client;
   public PlainFile cache;
 
 
 	public Request(ServerHandler parent) {
 		this.cfg = parent.cfg;
+		this.client = parent.toClient;
 	}
 
 	public void get(Socket client) {
