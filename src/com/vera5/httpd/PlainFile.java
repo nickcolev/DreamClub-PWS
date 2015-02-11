@@ -61,6 +61,7 @@ public class PlainFile {
 				// Add the footer
 				if (ServerService.footer != null)
 					if (this.type.equals("text/html"))
+						// Better to insert it before </body>
 						content.write(ServerService.footer, 0, ServerService.footer.length);
 				this.status = 1;
 				// gzip (if client supports it)

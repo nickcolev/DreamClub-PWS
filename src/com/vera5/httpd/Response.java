@@ -66,7 +66,10 @@ public class Response {
 					fileResponse(index);
 				} else {
 					if (request.uri.equals("/")) {
-						plainResponse("200", this.cfg.defaultIndex.toString());
+						if (request.method == 1)
+							plainResponse("200", this.cfg.defaultIndex.toString());
+						else
+							hOut("404");
 					} else {
 						if (this.cfg.dir_list)
 							ls(request);
@@ -191,16 +194,18 @@ public class Response {
 	public boolean fileResponse(PlainFile doc) {
 		// Caching
 		boolean isHTML = doc.type.equals("text/html");
-		int fl = ServerService.footer == null ? 0 : ServerService.footer.length;
-		if (!isHTML) fl = 0;
-		String ETag = doc.ETag + (isHTML ? "F" : "");
+		String ETag = doc.ETag;		// FIXME if CGI?!
+		if (isHTML && ServerService.footer != null) ETag = "F" + ETag;
 		if (request.IfNoneMatch != null)
 			if (request.IfNoneMatch.equals(ETag))
 				return NotModified(doc.type);
+		int len = 0;
 		if (this.request.method == 1) {
 			doc.get();
+			len = doc.content.length;
 		}
-		String header = header("200 OK", doc.type, fl + doc.content.length)
+//Lib.dbg("***CP82***", this.request.getMethod()+" "+this.request.uri+" "+doc.type+" len="+len);
+		String header = header("200 OK", doc.type, len)
 			+ "\nETag: " + ETag
 			+ "\nModified: " + doc.time
 			+ (doc.status == 2 ? "\nContent-Encoding: gzip" : "")
@@ -208,12 +213,9 @@ public class Response {
 		boolean r = true;
 		try {
 			out.write(header.getBytes());
-			if(request.method == 1) {		// GET
+			out.flush();
+			if(request.method == 1)		// GET
 				out.write(doc.content, 0, doc.content.length);
-				// Footer -- maybe better to insert it before </body>
-				if (fl > 0 && isHTML)
-					out.write(ServerService.footer, 0, ServerService.footer.length);
-			}
 			out.flush();
 			out.close();
 			Lib.logI(this.request.log + this.request.uri);

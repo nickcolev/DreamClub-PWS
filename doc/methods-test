@@ -1,0 +1,42 @@
+#!/bin/sh
+# PWS Methods test
+
+H="HTTP/1.1"
+T="Connection: close\n\n"
+
+clear
+echo "OPTIONS ---------------------------------------------\n"
+
+F="*"
+CMD="OPTIONS $F HTTP/1.1\n$T"
+echo "OPTIONS $F\n"
+printf "$CMD" | nc 192.168.1.12 8080
+
+F="/"
+CMD="OPTIONS $F HTTP/1.1\n$T"
+echo "OPTIONS $F\n"
+printf "$CMD" | nc 192.168.1.12 8080
+
+F="/index.html"
+CMD="OPTIONS $F HTTP/1.1\n$T"
+echo "OPTIONS $F\n"
+printf "$CMD" | nc 192.168.1.12 8080
+
+F="/non-exist-file.html"
+CMD="OPTIONS $F HTTP/1.1\n$T"
+echo "OPTIONS $F\n"
+printf "$CMD" | nc 192.168.1.12 8080
+
+echo "TRACE ---------------------------------------------\n"
+CMD="TRACE /some-uri HTTP/1.1\n$T"
+printf "$CMD" | nc 192.168.1.12 8080
+
+M="HEAD"
+echo "$M ---------------------------------------------\n"
+CMD="$M /some-uri HTTP/1.1\n$T"
+printf "$CMD" | nc 192.168.1.12 8080
+echo ""
+
+CMD="HEAD /index.html HTTP/1.1\n$T"
+printf "$CMD" | nc 192.168.1.12 8080
+echo ""

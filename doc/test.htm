@@ -1,7 +1,6 @@
 <html><head><title>PWS Method test</title>
 <link href="/nick.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">
-var xmlReg = null;		// Global xmlHttpRequest
 function del(url) {
 	xhr("DELETE", url, null);
 }
@@ -9,7 +8,7 @@ function get() {
 	xhr("GET", "/test.htm", null);
 }
 function head() {
-	xhr("HEAD", "/tmp/shell.cgi", null);
+	xhr("HEAD", "/test.htm", null);
 }
 function options(resource) {
 	xhr("OPTIONS", resource, null);
@@ -35,8 +34,7 @@ function put2() {
 console.log(f.name, f.size, "bytes", f.type);
 }
 function xhr(method, resource, data) {
-  if (!xmlReg) xmlReg = new XMLHttpRequest();
-  else if (xmlReg.readyState != 0) xmlReg.abort();
+  var xmlReg = new XMLHttpRequest();
   //xmlReg.overrideMimeType("text/plain");
   xmlReg.onreadystatechange = function() {
     if (xmlReg.readyState == 4) {
@@ -44,7 +42,7 @@ function xhr(method, resource, data) {
 	}
   }
   var url = document.getElementById("host").value.replace(/\/$/, "");
-console.log("CP83:", url+resource);
+  console.log("Request: ", url+resource);
   xmlReg.open(method, url+resource, true);
   if(method === "POST") xmlReg.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   xmlReg.send(data);
@@ -55,7 +53,7 @@ console.log("CP83:", url+resource);
 
 <h1>APWS method test</h1>
 
-<form name="opt"><input id="host" value="http://192.168.1.12:8080"/></form>
+<form name="opt"><input id="host" value="http://192.168.1.13:8080"/></form>
 
 <ul>
  <li><a href="javascript:get()">GET</a></li>

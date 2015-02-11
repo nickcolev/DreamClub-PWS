@@ -50,8 +50,9 @@ function process($aFile, $dst) {
 	$fp = fsockopen($host, $port, $errno, $errstr, 30) or die($errstr);
 	fwrite($fp, $header, strlen($header));
 	fwrite($fp, $content, $aFile['size']);
+	while (!feof($fp)) $s .= fgets($fp,512);
 	fclose($fp);
-	echo '<hr/><p>Done.</p>';
+	echo '<pre>'.$s.'</pre>';
 }
 
 	if($_FILES['file']['name'])

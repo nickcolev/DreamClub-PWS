@@ -56,7 +56,7 @@ public class Request {
 				if (method == null) {
 					p = s.indexOf("HTTP/");
 					if (p != -1) {
-						method = a[0];
+						method = a[0].trim();
 						this.url = a[1];
 						this.version = a[2];
 						parseUri(a[1]);
@@ -77,13 +77,20 @@ public class Request {
 			if (method == null) return;
 			if(this.ContentLength > 0)	// PUT/POST data?
 				getdata(in);
+			setMethod(method);
 			this.log = client.getInetAddress().toString() + " " + method + " ";
-			for (i=1; i<this.aMethod.length; i++)
-				if (this.aMethod[i].equals(method)) this.method = i;
 		} catch (Exception e) {
 			this.err = e.getMessage();
 			Lib.dbg(TAG, this.err);
 		}
+	}
+
+	private void setMethod(String method) {
+		for (int i=1; i<this.aMethod.length; i++)
+			if (this.aMethod[i].equals(method)) {
+				this.method = i;
+				break;
+			}
 	}
 
 	private void getdata(DataInputStream in) {
