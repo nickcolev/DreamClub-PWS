@@ -16,6 +16,8 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
+import android.widget.Toast;
+import java.io.File;
 import java.util.Map;
 
 public class Settings extends PreferenceActivity {
@@ -42,10 +44,11 @@ public class Settings extends PreferenceActivity {
 		listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 			public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
 				Preference p = findPreference(key);
-				if (p instanceof EditTextPreference)
+				if (p instanceof EditTextPreference) {
 					setSummary(sp, key);
-				else
+				} else {
 					setBoolean(sp, key);
+				}
 			}
 		};
 	}
@@ -92,8 +95,15 @@ public class Settings extends PreferenceActivity {
 				if (key.equals("port")) {
 					mBoundService.ReStart();
 				}
+				if (key.equals("root")) {
+					String path = Lib.sanify(pref.getText());
+					if (exists(path))
+						mBoundService.cfg.root = path;
+					else
+						Tooltip(pref.getText()+" not found");
+				}
 				if (key.equals("index")) {
-					mBoundService.cfg.index = sp.getString(key, "");
+					mBoundService.cfg.index = Lib.sanify(pref.getText());
 				}
 				if (key.equals("footer")) {
 					mBoundService.getFooter();
@@ -102,6 +112,15 @@ public class Settings extends PreferenceActivity {
 		} catch (Exception e) {
 			Log.e("httpd.setSummary()", e.getMessage());
 		}	
+	}
+
+	private void Tooltip(String s) {
+		Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+	}
+
+	private boolean exists(String path) {
+		File f = new File(path);
+		return f.exists();
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {

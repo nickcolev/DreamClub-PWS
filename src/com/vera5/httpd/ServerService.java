@@ -59,6 +59,7 @@ public class ServerService extends Service {
 		notification = new Notification(R.drawable.icon24, "Starting", System.currentTimeMillis());
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
+		cfg = new Config();
 		configure();
     }
 
@@ -69,7 +70,6 @@ public class ServerService extends Service {
 	}
 
 	public void configure() {
-		cfg = new Config();
 		cfg.configure(this.prefs);
 		cfg.version = version();
 		cfg.defaultIndex = getResources().getText(R.string.defaultIndex);
@@ -90,7 +90,7 @@ public class ServerService extends Service {
 		final String ip = getIP();
 		final int port = getPort();
 		log.setHandler(this.handler);
-		log.s("Start at "+ip+":"+port+", Root "+cfg.root);
+		log.s("Start at "+ip+":"+port+", Root "+this.cfg.root);
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
@@ -132,7 +132,7 @@ public class ServerService extends Service {
 
 	public void getFooter() {
 		String fname = prefs.getString("footer", "");
-		fname = cfg.sanify(prefs.getString("root", "/sdcard/htdocs")) + cfg.sanify(fname);
+		fname = Lib.sanify(prefs.getString("root", "/sdcard/htdocs")) + Lib.sanify(fname);
 		File f = new File(fname);
 		if (f.exists() && f.isFile())
 			try {
@@ -161,7 +161,7 @@ public class ServerService extends Service {
 	}
 
 	private void Tooltip(String s) {
-		Toast.makeText(ServerService.this, s, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
 	}
 
 	public void updateNotifiction(String message) {

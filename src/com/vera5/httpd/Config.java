@@ -16,9 +16,9 @@ public class Config {
 
 	public void configure(SharedPreferences p) {
 		try {
-			this.root = sanify(p.getString("root", defaultDocRoot()));
-			this.index = sanify(p.getString("index", null));
-			this.footer = sanify(p.getString("footer", ""));
+			this.root = Lib.sanify(p.getString("root", defaultDocRoot()));
+			this.index = Lib.sanify(p.getString("index", null));
+			this.footer = Lib.sanify(p.getString("footer", ""));
 			this.dir_list = p.getBoolean("dir_list", false);
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
@@ -27,14 +27,6 @@ public class Config {
 
 	private String defaultDocRoot() {
 		return Environment.getExternalStorageDirectory().getAbsolutePath() + "/htdocs";
-	}
-
-	public String sanify(String path) {
-		// Remove trailing slash
-		if (path.endsWith("/"))
-			path = path.substring(0, path.length() - 1);
-		// Add leading slash on return
-		return (path.startsWith("/") ? "" : "/") + path;
 	}
 
 }

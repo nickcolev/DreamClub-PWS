@@ -84,6 +84,14 @@ class Lib {
 		return (System.currentTimeMillis() - begin);
 	}
 
+	public static String sanify(String path) {
+		// Remove trailing slash
+		if (path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
+		// Add leading slash on return
+		return (path.startsWith("/") ? "" : "/") + path;
+	}
+
 	// Aliases
 	public static void logE(String s) { ServerService.log.e(s); }
 	public static void logI(String s) { ServerService.log.i(s); }
