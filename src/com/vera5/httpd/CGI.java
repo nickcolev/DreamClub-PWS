@@ -17,6 +17,7 @@ public class CGI {
 		// Keep-it-simple: Just shell scripts
 		if (!isShell(request)) return null;
 		String cmd = "/system/bin/sh "+request.cfg.root+request.uri;
+Log.d("***CGI***", cmd);
 		String sEnv = "REQUEST_METHOD="+request.getMethod()
 			+ "\nCONTENT_LENGTH="+request.ContentLength
 			+ "\nCONTENT_TYPE="+request.ContentType
