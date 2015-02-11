@@ -30,7 +30,7 @@ public class PlainFile {
 
 	public PlainFile(Request request, String uri) {
 		this.request = request;
-		fname = (request.cfg.root+uri).replaceFirst("^/~", "/usr/");
+		fname = request.cfg.root+uri.replaceFirst("^/~", "/usr/");
 		f = new File(fname);
 		if (f.exists()) {
 			this.exists = true;
