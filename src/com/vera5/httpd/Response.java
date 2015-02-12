@@ -195,7 +195,7 @@ public class Response {
 		// Caching
 		boolean isHTML = doc.type.equals("text/html");
 		String ETag = doc.ETag;		// FIXME if CGI?!
-		if (isHTML && ServerService.footer != null) ETag = "F" + ETag;
+		if (isHTML && ServerService.footer != null) ETag = doc.ETag(ServerService.footer.length);
 		if (request.IfNoneMatch != null)
 			if (request.IfNoneMatch.equals(ETag))
 				return NotModified(doc.type);

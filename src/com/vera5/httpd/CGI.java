@@ -17,18 +17,19 @@ public class CGI {
 		// Keep-it-simple: Just shell scripts
 		if (!isShell(request)) return null;
 		String cmd = "/system/bin/sh "+request.cfg.root+request.uri;
-Log.d("***CGI***", cmd);
 		String sEnv = "REQUEST_METHOD="+request.getMethod()
 			+ "\nCONTENT_LENGTH="+request.ContentLength
 			+ "\nCONTENT_TYPE="+request.ContentType
+			+ "\nDOCUMENT_ROOT="+request.cfg.root
 			+ "\nREMOTE_ADDR="+request.client.getInetAddress().getHostAddress();
 		if (request.method == 1)
 			sEnv += "\nQUERY_STRING="+(request.args == null ? "" : request.args);
+		File root = new File(request.cfg.root);
 		int err = 0;
 		String output = "";			// cmd response
 		try {
 			String row;
-			Process p = Runtime.getRuntime().exec(cmd, sEnv.split("\n"));
+			Process p = Runtime.getRuntime().exec(cmd, sEnv.split("\n"), root);
 			if (request.method == 6) {	// POST
 				stdin(p, request.data);
 			}

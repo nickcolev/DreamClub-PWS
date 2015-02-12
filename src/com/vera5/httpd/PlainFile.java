@@ -38,7 +38,7 @@ public class PlainFile {
 			if (f.isFile()) {
 				SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
 				this.time = sdf.format(f.lastModified());
-				this.ETag = ETag(f);
+				this.ETag = ETag(0);
 				this.length = (int)f.length();
 				this.type = guessContentType(fname);
 				this.isCGI = guessCGI(fname);
@@ -108,9 +108,9 @@ public class PlainFile {
 		return s.startsWith("#!/");	// FIXME Enchance the logic
 	}
 
-	private String ETag (File f) {
+	public String ETag (int salt) {
 		// usually MD5, but RFC2616 doesn't say it -- we just use file size and last modified
-		return "" + f.length() + f.lastModified();
+		return Lib.md5("" + (this.f.length() + this.f.lastModified() + salt));
 	}
 
 	private boolean guessCGI(final String fname) {

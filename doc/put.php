@@ -26,7 +26,7 @@ function form() {
 <form enctype="multipart/form-data" method="post">
  <input type="file" name="file"/>
  <input type="submit" value=" PUT "/><br/>
- Destination: <input name="dst" title="host:port[/path]" value="192.168.1.12:8080"/>
+ Destination: <input name="dst" title="host:port[/path]" value="192.168.1.6:8080"/>
 </form>
 
 </body></html>
