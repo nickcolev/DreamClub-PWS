@@ -5,21 +5,25 @@
 		<EditTextPreference
 			android:key="port"
 			android:defaultValue="8080"
-			android:title="Port" />
+			android:title="@string/port" />
 		<EditTextPreference
 			android:key="root"
 			android:defaultValue="/sdcard/htdocs"
-			android:title="Document Root" />
+			android:title="@string/root" />
 		<EditTextPreference
 			android:key="index"
 			android:defaultValue="index.html"
-			android:title="Directory Index" />
+			android:title="@string/index" />
 		<EditTextPreference
 			android:key="footer"
 			android:defaultValue="footer"
-			android:title="Footer" />
+			android:title="@string/footer" />
 		<CheckBoxPreference
 			android:key="dir_list"
 			android:defaultValue="false"
-			android:title="Directory Listing" />
+			android:title="@string/dir_list" />
+		<CheckBoxPreference
+			android:key="wifi_lock"
+			android:defaultValue="false"
+			android:title="@string/wifi_lock" />
 </PreferenceScreen>

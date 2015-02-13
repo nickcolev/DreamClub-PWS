@@ -81,6 +81,10 @@ public class Settings extends PreferenceActivity {
 			if (mBoundService != null) {
 				if (key.equals("dir_list"))
 					mBoundService.cfg.dir_list = sp.getBoolean(key, false);
+				if (key.equals("wifi_lock")) {
+					mBoundService.cfg.wifi_lock = sp.getBoolean(key, false);
+					mBoundService.WifiLock(mBoundService.cfg.wifi_lock);
+				}
 			}
 		} catch (Exception e) {
 		}

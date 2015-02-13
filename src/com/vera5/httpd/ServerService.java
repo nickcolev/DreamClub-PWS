@@ -90,6 +90,7 @@ public class ServerService extends Service {
 		final String ip = getIP();
 		final int port = getPort();
 		log.setHandler(this.handler);
+		if (cfg.wifi_lock) WifiLock(true);
 		log.s("Start at "+ip+":"+port+", Root "+this.cfg.root);
 		Runnable r = new Runnable() {
 			public void run() {
@@ -107,7 +108,6 @@ public class ServerService extends Service {
 				updateNotifiction(s);
 				log.v("Waiting for connections on " + s);
 				try {
-					WifiLock(true);
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
 						s = "request  from " + client.getInetAddress().toString();
@@ -225,7 +225,7 @@ public class ServerService extends Service {
 		}
 	}
 	
-	private void WifiLock(boolean on) {
+	public void WifiLock(boolean on) {
 		final WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
 		final WifiLock wifiLock = wm.createWifiLock("PWS");
 		if (on) {

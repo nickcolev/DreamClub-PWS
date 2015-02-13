@@ -4,6 +4,11 @@
     <string name="settings">Settings</string>
     <string name="exit">Exit</string>
     <string name="port">Port</string>
+    <string name="root">Document Root</string>
+    <string name="index">Directory Index</string>
+    <string name="footer">Footer</string>
+    <string name="dir_list">Directory Listing</string>
+    <string name="wifi_lock">WiFi Lock</string>
     <string name="defaultIndex"><![CDATA[
     <html><head><title>PWS</title></head><body>
     <h1>It works!</h1><p>The web server software is running, but no content has been added yet.</p>

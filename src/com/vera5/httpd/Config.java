@@ -13,6 +13,7 @@ public class Config {
   public static String version;
   public static String footer;
   public static boolean dir_list;
+  public static boolean wifi_lock;
 
 	public void configure(SharedPreferences p) {
 		try {
@@ -20,6 +21,7 @@ public class Config {
 			this.index = Lib.sanify(p.getString("index", null));
 			this.footer = Lib.sanify(p.getString("footer", ""));
 			this.dir_list = p.getBoolean("dir_list", false);
+			this.wifi_lock = p.getBoolean("wifi_lock", false);
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
