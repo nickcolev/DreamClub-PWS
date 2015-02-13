@@ -36,11 +36,7 @@ class ServerHandler extends Thread {
 		switch(request.method) {
 			case 1:		// GET
 			case 2:		// HEAD
-				// log, loge, logi, logs
-				if (request.uri.startsWith("/log") && request.uri.length() < 6)
-					response.putLog(request);
-				else
-					response.get(request);
+				response.get(request);
 				break;
 			case 3:		// OPTIONS
 				response.options(request);

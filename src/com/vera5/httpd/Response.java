@@ -57,7 +57,21 @@ public class Response {
 			hOut("405 Not Allowed");
 	}
 
+	private boolean pws(Request request) {
+		// ?something
+		if (request.uri.equals("/") && request.args != null) {
+			// log, loge, logi, logs
+			if (request.args.startsWith("log") && request.args.length() < 5) {
+				putLog(request);
+				return true;
+			}
+			// web config may be here
+		}
+		return false;
+	}
+
 	public void get(Request request) {
+		if (pws(request)) return;	// PWS command (internal processing)
 		PlainFile doc = new PlainFile(request);
 		if (doc.f.exists()) {
 			if (doc.f.isDirectory()) {
@@ -157,7 +171,7 @@ public class Response {
 
 	public boolean putLog(Request request) {
 		boolean isLog = true;
-		char c = request.uri.length() == 4 ? '?' : request.uri.charAt(4);
+		char c = request.args.length() == 3 ? '?' : request.args.charAt(3);
 		switch(c) {
 			case 'c':
 				ServerService.log.clean();
