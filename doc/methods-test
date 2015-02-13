@@ -1,42 +1,52 @@
 #!/bin/sh
 # PWS Methods test
 
-H="HTTP/1.1"
+HOST="192.168.1.6"
+PORT=8080
 T="Connection: close\n\n"
 
+# alt. `methods-test | grep HTTP`
+
 clear
+M=OPTIONS
 echo "OPTIONS ---------------------------------------------\n"
 
 F="*"
-CMD="OPTIONS $F HTTP/1.1\n$T"
-echo "OPTIONS $F\n"
-printf "$CMD" | nc 192.168.1.12 8080
+CMD="$M $F HTTP/1.1\n$T"
+echo "\n\n\tRequest\n$CMD\n\tResponse"
+printf "$CMD" | nc $HOST $PORT
 
 F="/"
-CMD="OPTIONS $F HTTP/1.1\n$T"
-echo "OPTIONS $F\n"
-printf "$CMD" | nc 192.168.1.12 8080
+CMD="$M $F HTTP/1.1\n$T"
+echo "\n\n\tRequest\n$CMD\n\tResponse"
+printf "$CMD" | nc $HOST $PORT
 
 F="/index.html"
-CMD="OPTIONS $F HTTP/1.1\n$T"
-echo "OPTIONS $F\n"
-printf "$CMD" | nc 192.168.1.12 8080
+CMD="$M $F HTTP/1.1\n$T"
+echo "\n\n\tRequest\n$CMD\n\tResponse"
+printf "$CMD" | nc $HOST $PORT
 
 F="/non-exist-file.html"
 CMD="OPTIONS $F HTTP/1.1\n$T"
-echo "OPTIONS $F\n"
-printf "$CMD" | nc 192.168.1.12 8080
+echo "\n\n\tRequest\n$CMD\n\tResponse"
+printf "$CMD" | nc $HOST $PORT
 
-echo "TRACE ---------------------------------------------\n"
+M=TRACE
+echo "$M ---------------------------------------------\n"
+
 CMD="TRACE /some-uri HTTP/1.1\n$T"
-printf "$CMD" | nc 192.168.1.12 8080
+echo "\n\n\tRequest\n$CMD\n\tResponse"
+printf "$CMD" | nc $HOST $PORT
 
-M="HEAD"
+M=HEAD
+echo
 echo "$M ---------------------------------------------\n"
 CMD="$M /some-uri HTTP/1.1\n$T"
-printf "$CMD" | nc 192.168.1.12 8080
+echo "\n\n\tRequest\n$CMD\n\tResponse"
+printf "$CMD" | nc $HOST $PORT
 echo ""
 
-CMD="HEAD /index.html HTTP/1.1\n$T"
-printf "$CMD" | nc 192.168.1.12 8080
+CMD="$M /index.html HTTP/1.1\n$T"
+echo "\n\n\tRequest\n$CMD\tResponse"
+printf "$CMD" | nc $HOST $PORT
 echo ""
