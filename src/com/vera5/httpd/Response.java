@@ -65,7 +65,9 @@ public class Response {
 				putLog(request);
 				return true;
 			}
-			// web config may be here
+			if (request.args.equals("config")) {
+				// web config may be here
+			}
 		}
 		return false;
 	}
@@ -104,7 +106,7 @@ public class Response {
 
 	public void ls(Request request) {
 		File dir = new File(this.cfg.root+request.uri);
-		String s = "<html><head><title>"+request.uri+"</title></head><body><p>Content of "+request.uri+"</p><table>";
+		String s = "<html><head><title>"+request.uri+"</title><style>td { font-family: monospace; padding-left:5px;}</style></head><body><p>Content of "+request.uri+"</p><table>";
 		if (dir.isDirectory()) {
 			long bytes = 0;
 			File[] files = dir.listFiles();

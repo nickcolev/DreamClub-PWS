@@ -1,5 +1,6 @@
 package com.vera5.httpd;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
@@ -7,6 +8,7 @@ import android.util.Log;
 public class Config {
 
   static final String TAG = "PWS.Config";
+  private static Context context;
   public static String root;
   public static String index;
   public static CharSequence defaultIndex;
@@ -14,6 +16,10 @@ public class Config {
   public static String footer;
   public static boolean dir_list;
   public static boolean wifi_lock;
+
+	public Config(ServerService parent) {
+		this.context = parent.context;
+	}
 
 	public void configure(SharedPreferences p) {
 		try {

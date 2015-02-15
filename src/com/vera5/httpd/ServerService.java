@@ -34,6 +34,7 @@ import java.net.SocketTimeoutException;
 public class ServerService extends Service {
 
 	private static final String TAG = "PWS.Service";
+	public static Context context;
 	private static String version;
     private int NOTIFICATION_ID = 4711;
     private NotificationManager mNM;
@@ -59,13 +60,16 @@ public class ServerService extends Service {
 		notification = new Notification(R.drawable.icon24, "Starting", System.currentTimeMillis());
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
-		cfg = new Config();
+		this.context = getApplicationContext();
+		cfg = new Config(this);
 		configure();
+		if (cfg.wifi_lock) WifiLock(true);
     }
 
 	@Override
 	public void onDestroy() {
 		mNM.cancel(NOTIFICATION_ID);
+		WifiLock(false);
 		super.onDestroy();
 	}
 
@@ -90,7 +94,6 @@ public class ServerService extends Service {
 		final String ip = getIP();
 		final int port = getPort();
 		log.setHandler(this.handler);
-		if (cfg.wifi_lock) WifiLock(true);
 		log.s("Start at "+ip+":"+port+", Root "+this.cfg.root);
 		Runnable r = new Runnable() {
 			public void run() {
@@ -117,7 +120,6 @@ public class ServerService extends Service {
 					}
 				} catch (Exception e) {
 					log.s("Shutdown");
-					WifiLock(false);
 					closeSocket(client);
 					serviceThread = null;
 					stopSelf();
@@ -228,11 +230,15 @@ public class ServerService extends Service {
 	public void WifiLock(boolean on) {
 		final WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
 		final WifiLock wifiLock = wm.createWifiLock("PWS");
-		if (on) {
+Lib.dbg("WIFI", "Wifi is "+(wm.isWifiEnabled() ? "" : "NOT ")+"enabled");
+		if (on && wm.isWifiEnabled()) {
 			wifiLock.acquire();
+			Lib.dbg("WIFI", "Lock acquire");
 		} else {
-			if (wifiLock.isHeld())
+			if (wifiLock.isHeld()) {
+				Lib.dbg("WIFI", "Lock release");
 				wifiLock.release();
+			}
 		}
 	}
 
