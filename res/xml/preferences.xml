@@ -23,6 +23,10 @@
 			android:defaultValue="false"
 			android:title="@string/dir_list" />
 		<CheckBoxPreference
+			android:key="wake_lock"
+			android:defaultValue="false"
+			android:title="@string/wake_lock" />
+		<CheckBoxPreference
 			android:key="wifi_lock"
 			android:defaultValue="false"
 			android:title="@string/wifi_lock" />

@@ -8,6 +8,7 @@
     <string name="index">Directory Index</string>
     <string name="footer">Footer</string>
     <string name="dir_list">Directory Listing</string>
+    <string name="wake_lock">Wake Lock</string>
     <string name="wifi_lock">WiFi Lock</string>
     <string name="defaultIndex"><![CDATA[
     <html><head><title>PWS</title></head><body>

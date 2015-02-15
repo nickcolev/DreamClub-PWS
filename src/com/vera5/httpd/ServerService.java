@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -33,23 +34,28 @@ import java.net.SocketTimeoutException;
 
 public class ServerService extends Service {
 
-	private static final String TAG = "PWS.Service";
-	public static Context context;
-	private static String version;
-    private int NOTIFICATION_ID = 4711;
-    private NotificationManager mNM;
-    private Notification notification;
-	private boolean isRunning = false;
-    private Thread serviceThread = null;
-	private ServerSocket serverSocket;
-	private Intent intent;
-	private SharedPreferences prefs;
-	public Config cfg;
-	public Handler handler;
-	public static byte[] footer;
-	public static Logger log;
-	private static final int sockBufSize = 4096;
-
+  private static final String TAG = "PWS.Service";
+  private static final int NOTIFICATION_ID = 4711;
+  private static final int sockBufSize = 4096;
+  private static String version;
+  private NotificationManager mNM;
+  private Notification notification;
+  private boolean isRunning = false;
+  private Thread serviceThread = null;
+  private ServerSocket serverSocket;
+  private Intent intent;
+  private SharedPreferences prefs;
+  public static Context context;
+  public Config cfg;
+  public Handler handler;
+  public static byte[] footer;
+  public static Logger log;
+  //
+  private WifiManager wifiMan;
+  private WifiLock wifiLock;
+  private PowerManager pwrMan;
+  private PowerManager.WakeLock wakeLock;
+ 
 
     @Override
     public void onCreate() {
@@ -63,13 +69,11 @@ public class ServerService extends Service {
 		this.context = getApplicationContext();
 		cfg = new Config(this);
 		configure();
-		if (cfg.wifi_lock) WifiLock(true);
     }
 
 	@Override
 	public void onDestroy() {
 		mNM.cancel(NOTIFICATION_ID);
-		WifiLock(false);
 		super.onDestroy();
 	}
 
@@ -78,6 +82,10 @@ public class ServerService extends Service {
 		cfg.version = version();
 		cfg.defaultIndex = getResources().getText(R.string.defaultIndex);
 		getFooter();
+		this.wifiMan = (WifiManager) getSystemService(WIFI_SERVICE);
+		this.wifiLock = this.wifiMan.createWifiLock("PWS");
+		this.pwrMan = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		wakeLock = this.pwrMan.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PWS");
 	}
 
 	public void ReStart() {
@@ -95,6 +103,7 @@ public class ServerService extends Service {
 		final int port = getPort();
 		log.setHandler(this.handler);
 		log.s("Start at "+ip+":"+port+", Root "+this.cfg.root);
+		if (this.cfg.wifi_lock) WifiLock(true);
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
@@ -120,6 +129,7 @@ public class ServerService extends Service {
 					}
 				} catch (Exception e) {
 					log.s("Shutdown");
+					WifiLock(false);
 					closeSocket(client);
 					serviceThread = null;
 					stopSelf();
@@ -226,18 +236,25 @@ public class ServerService extends Service {
 			return "?";
 		}
 	}
-	
-	public void WifiLock(boolean on) {
-		final WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-		final WifiLock wifiLock = wm.createWifiLock("PWS");
-Lib.dbg("WIFI", "Wifi is "+(wm.isWifiEnabled() ? "" : "NOT ")+"enabled");
-		if (on && wm.isWifiEnabled()) {
-			wifiLock.acquire();
-			Lib.dbg("WIFI", "Lock acquire");
+
+	public void WakeLock(boolean on) {
+		if (on) {
+			this.wakeLock.acquire();
+Lib.dbg("WAKE", "acquired");
 		} else {
-			if (wifiLock.isHeld()) {
-				Lib.dbg("WIFI", "Lock release");
-				wifiLock.release();
+			this.wakeLock.release();
+Lib.dbg("WAKE", "released");
+		}
+	}
+
+	public void WifiLock(boolean on) {
+		if (on && this.wifiMan.isWifiEnabled()) {
+			this.wifiLock.acquire();
+Lib.dbg("WIFI", "acquired");
+		} else {
+			if (this.wifiLock.isHeld()) {
+				this.wifiLock.release();
+Lib.dbg("WIFI", "released");
 			}
 		}
 	}

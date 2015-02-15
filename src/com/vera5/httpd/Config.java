@@ -15,6 +15,7 @@ public class Config {
   public static String version;
   public static String footer;
   public static boolean dir_list;
+  public static boolean wake_lock;
   public static boolean wifi_lock;
 
 	public Config(ServerService parent) {
