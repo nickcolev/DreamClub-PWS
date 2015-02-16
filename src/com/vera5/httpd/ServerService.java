@@ -89,7 +89,6 @@ public class ServerService extends Service {
 	}
 
 	public void ReStart() {
-		Intent intent = new Intent(getApplicationContext(), ServerService.class);
 		closeSocket(null);
 		stopService(intent);
 		startService(intent);
@@ -102,20 +101,21 @@ public class ServerService extends Service {
 		final String ip = getIP();
 		final int port = getPort();
 		log.setHandler(this.handler);
+		try {
+			InetAddress localhost = InetAddress.getByName(ip);;
+			serverSocket = new ServerSocket(port, 0, localhost);
+		} catch (IOException e) {
+			updateNotifiction(e.getMessage());
+			log.e(e.getMessage());
+			log.v(e.getMessage());
+			stopSelf();
+			return Service.START_NOT_STICKY;
+		}
 		log.s("Start at "+ip+":"+port+", Root "+this.cfg.root);
 		if (this.cfg.wifi_lock) WifiLock(true);
 		Runnable r = new Runnable() {
 			public void run() {
 				Socket client = null;
-				try {
-					InetAddress localhost = InetAddress.getByName(ip);;
-					serverSocket = new ServerSocket(port, 0, localhost);
-				} catch (IOException e) {
-					updateNotifiction(e.getMessage());
-					log.e(e.getMessage());
-					stopSelf();
-					return;
-				}
 				String s = ip + ":" + port;
 				updateNotifiction(s);
 				log.v("Waiting for connections on " + s);
@@ -165,7 +165,7 @@ public class ServerService extends Service {
 
 	public void closeSocket(Socket client) {
 		try {
-			serverSocket.close();
+			if (serverSocket != null) serverSocket.close();
 			if (client != null) client.close();
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
@@ -240,21 +240,17 @@ public class ServerService extends Service {
 	public void WakeLock(boolean on) {
 		if (on) {
 			this.wakeLock.acquire();
-Lib.dbg("WAKE", "acquired");
 		} else {
 			this.wakeLock.release();
-Lib.dbg("WAKE", "released");
 		}
 	}
 
 	public void WifiLock(boolean on) {
 		if (on && this.wifiMan.isWifiEnabled()) {
 			this.wifiLock.acquire();
-Lib.dbg("WIFI", "acquired");
 		} else {
 			if (this.wifiLock.isHeld()) {
 				this.wifiLock.release();
-Lib.dbg("WIFI", "released");
 			}
 		}
 	}

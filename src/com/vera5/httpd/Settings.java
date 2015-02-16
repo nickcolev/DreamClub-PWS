@@ -100,9 +100,8 @@ public class Settings extends PreferenceActivity {
 			pref.setSummary(sp.getString(key, ""));
 			if (mBoundService != null) {
 				// Not necessary to restart but for port change
-				if (key.equals("port")) {
+				if (key.equals("port"))
 					mBoundService.ReStart();
-				}
 				if (key.equals("root")) {
 					String path = Lib.sanify(pref.getText());
 					if (exists(path))
@@ -110,12 +109,10 @@ public class Settings extends PreferenceActivity {
 					else
 						Tooltip(pref.getText()+" not found");
 				}
-				if (key.equals("index")) {
+				if (key.equals("index"))
 					mBoundService.cfg.index = Lib.sanify(pref.getText());
-				}
-				if (key.equals("footer")) {
+				if (key.equals("footer"))
 					mBoundService.getFooter();
-				}
 			}
 		} catch (Exception e) {
 			Log.e("httpd.setSummary()", e.getMessage());
