@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.CheckBoxPreference;
 import android.util.Log;
 import java.io.InputStream;
 import java.io.IOException;
@@ -68,7 +69,8 @@ public class Config {
 	private String setValue(String html, Map.Entry<String,?> entry) {
 		String v = "";
 		if (entry.getValue() instanceof java.lang.Boolean) {
-			v = "checked";
+Log.d("***", entry.getKey()+" "+entry.getValue());
+			v = entry.getValue().toString() == "true" ? "checked" : "";
 		} else if (entry.getValue() instanceof java.lang.String) {
 			v = "value=\"" + entry.getValue() + "\"";
 		}
