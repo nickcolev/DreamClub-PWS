@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html><head><title>PWS</title>
+</head>
+<body>
+
+<h1>PWS Setup</h1>
+
+<form onsubmit="return false">
+<input type="hidden" name="config" value="on"/>
+<p>Port<br/><input name="port"/></p>
+<p>Document Root<br/><input name="root"/></p>
+<p>Directory Index<br/><input name="index"/></p>
+<p>Footer<br/><input name="footer"/></p>
+<p><input type="checkbox" name="dir_list"/> Directory Listing</p>
+<p><input type="checkbox" name="wake_lock"/> Wake Lock</p>
+<p><input type="checkbox" name="wifi_lock"/> WiFi Lock</p>
+<p><input type="submit" value=" OK "/></p>
+</form>
+
+</body></html>

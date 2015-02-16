@@ -66,7 +66,8 @@ public class Response {
 				return true;
 			}
 			if (request.args.equals("config")) {
-				// web config may be here
+				// web config
+				return plainResponse("200", request.cfg.setupPage());
 			}
 		}
 		return false;
