@@ -33,6 +33,7 @@ class ServerHandler extends Thread {
 			return;
 		}
 
+		ServerService.log.request(request);		// FIXME Best place?!
 		switch(request.method) {
 			case 1:		// GET
 			case 2:		// HEAD

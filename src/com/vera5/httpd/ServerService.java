@@ -59,14 +59,14 @@ public class ServerService extends Service {
 
     @Override
     public void onCreate() {
-		log = new Logger(getFilesDir().getPath());
+		this.context = getApplicationContext();
+		log = new Logger(this);
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notification = new Notification(R.drawable.icon24, "Starting", System.currentTimeMillis());
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
-		this.context = getApplicationContext();
 		cfg = new Config(this);
 		configure();
     }
@@ -94,13 +94,8 @@ public class ServerService extends Service {
 		startService(intent);
 	}
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		this.intent = intent;
-		final int currentId = startId;
-		final String ip = getIP();
-		final int port = getPort();
-		log.setHandler(this.handler);
+	private boolean setServerSocket(String ip, int port) {
+		boolean ok = true;
 		try {
 			InetAddress localhost = InetAddress.getByName(ip);;
 			serverSocket = new ServerSocket(port, 0, localhost);
@@ -109,12 +104,23 @@ public class ServerService extends Service {
 			log.e(e.getMessage());
 			log.v(e.getMessage());
 			stopSelf();
-			return Service.START_NOT_STICKY;
+			ok = false;
 		}
+		return ok;
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		this.intent = intent;
+		final int currentId = startId;
+		final String ip = getIP();
+		final int port = getPort();
+		log.setHandler(this.handler);
 		log.s("Start at "+ip+":"+port+", Root "+this.cfg.root);
-		if (this.cfg.wifi_lock) WifiLock(true);
 		Runnable r = new Runnable() {
 			public void run() {
+				if (!setServerSocket(ip, port)) return;
+				if (cfg.wifi_lock) WifiLock(true);
 				Socket client = null;
 				String s = ip + ":" + port;
 				updateNotifiction(s);
@@ -122,7 +128,8 @@ public class ServerService extends Service {
 				try {
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
-						s = "request  from " + client.getInetAddress().toString();
+						log.setClient(client);
+						s = "request  from " + log.clientIP(client);
 						log.v(s);
 						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();

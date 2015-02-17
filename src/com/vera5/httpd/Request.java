@@ -22,6 +22,7 @@ public class Request {
   public int ContentLength = 0;
   public String AcceptEncoding;
   public String IfNoneMatch;
+  public String Host;
   public byte[] data;			// PUT/POST
   public String log;			// For Logger
   public String err;			// Last error
@@ -49,7 +50,7 @@ public class Request {
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
 			while ((s = in.readLine()) != null) {
-//Lib.dbg("REQ", s);
+///Lib.dbg("REQ", s);
 				if (s.length() == 0) break;
 				this.aHeader.add(s);
 				a = s.split(" ");
@@ -70,6 +71,8 @@ public class Request {
 					this.ContentLength = Integer.parseInt(a[1]);
 				} else if (a[0].equals("If-None-Match:")) {
 					this.IfNoneMatch = a[1];
+				} else if (a[0].equals("Host:")) {
+					this.Host = a[1];
 				}
 				// Other headers parsing here
 				i++;

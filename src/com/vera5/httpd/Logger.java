@@ -1,5 +1,6 @@
 package com.vera5.httpd;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,14 +18,16 @@ import java.util.Date;
 
 public class Logger {
 
-	static final String TAG = "PWS.Logger";
-	private Handler handler = null;
-	private String path;
-	private boolean enable = true;	// Logging enabled by default
+  static final String TAG = "PWS.Logger";
+  private final Context context;
+  private Handler handler;
+  private Socket client;
+  private String path;
+  private boolean enable = true;	// Logging enabled by default
 
-	public Logger(String path) {
-		// FIXME Can we get the path?!
-		this.path = path;
+	public Logger(ServerService parent) {
+		this.context = parent.context;
+		this.path = this.context.getFilesDir().getPath();
 	}
 
 	public void clean() {
@@ -36,6 +39,10 @@ public class Logger {
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
 		}
+	}
+
+	public void request(Request request) {
+		i(clientIP(request.client)+" "+request.getMethod()+" "+request.uri);
 	}
 
 	private void put(String tag, String s) {
@@ -56,8 +63,10 @@ public class Logger {
 	}
 
 	// Helpers
+	public String clientIP(Socket client) { return client.getInetAddress().toString().substring(1); }
 	public void enable() { enable = true; }
 	public void disable() { enable = false; }
+	public void setClient(Socket client) { this.client = client; }
 	public void setHandler(Handler handler) { this.handler = handler; }
 	public void d(String s) { put("D", s); }
 	public void e(String s) { put("E", s); }
