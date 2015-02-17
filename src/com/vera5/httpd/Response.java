@@ -57,20 +57,41 @@ public class Response {
 			hOut("405 Not Allowed");
 	}
 
-	private boolean pws(Request request) {
-		// ?something
-		if (request.uri.equals("/") && request.args != null) {
-			// log, loge, logi, logs
-			if (request.args.startsWith("log") && request.args.length() < 5) {
-				putLog(request);
-				return true;
-			}
-			if (request.args.equals("config")) {
-				// web config
-				return plainResponse("200", request.cfg.setupPage());
-			}
+	public boolean fileResponse(PlainFile doc) {
+		// Caching
+		boolean isHTML = doc.type.equals("text/html");
+		String ETag = doc.ETag;		// FIXME if CGI?!
+		if (isHTML && ServerService.footer != null) ETag = doc.ETag(ServerService.footer.length);
+		if (request.IfNoneMatch != null)
+			if (request.IfNoneMatch.equals(ETag))
+				return NotModified(doc.type);
+		int len = 0;
+		if (this.request.method == 1) {
+			doc.get();
+			len = doc.content.length;
 		}
-		return false;
+		String header = header("200 OK", doc.type, len)
+			+ "\nETag: " + ETag
+			+ "\nModified: " + doc.time
+			+ (doc.status == 2 ? "\nContent-Encoding: gzip" : "")
+			+ "\n\n";
+		boolean r = true;
+		try {
+			out.write(header.getBytes());
+			out.flush();
+			if(request.method == 1)		// GET
+				out.write(doc.content, 0, doc.content.length);
+			out.flush();
+			out.close();
+			Lib.logI(this.request.log + this.request.uri);
+		} catch (Exception e) {
+			String err = e.getMessage();
+			Lib.logV(err);
+			Lib.logE(err);
+			this.err = err;
+			r = false;
+		}
+		return r;
 	}
 
 	public void get(Request request) {
@@ -123,6 +144,13 @@ public class Response {
 			plainResponse("200", s);
 		} else
 			plainResponse("403", "Forbidden");
+	}
+
+	public boolean notExists(PlainFile doc) {
+		this.err = this.request.log + this.request.uri + "--not found";
+		Lib.logE(this.err);
+		Lib.logV(this.err);
+		return plainResponse("404", this.request.uri+" not found");
 	}
 
 	public void options(Request request) {
@@ -208,42 +236,20 @@ public class Response {
 		return isLog;
 	}
 
-	public boolean fileResponse(PlainFile doc) {
-		// Caching
-		boolean isHTML = doc.type.equals("text/html");
-		String ETag = doc.ETag;		// FIXME if CGI?!
-		if (isHTML && ServerService.footer != null) ETag = doc.ETag(ServerService.footer.length);
-		if (request.IfNoneMatch != null)
-			if (request.IfNoneMatch.equals(ETag))
-				return NotModified(doc.type);
-		int len = 0;
-		if (this.request.method == 1) {
-			doc.get();
-			len = doc.content.length;
+	private boolean pws(Request request) {
+		// ?something
+		if (request.uri.equals("/") && request.args != null) {
+			// log, loge, logi, logs
+			if (request.args.startsWith("log") && request.args.length() < 5) {
+				putLog(request);
+				return true;
+			}
+			if (request.args.equals("config")) {
+				// web config
+				return plainResponse("200", request.cfg.setupPage());
+			}
 		}
-//Lib.dbg("***CP82***", this.request.getMethod()+" "+this.request.uri+" "+doc.type+" len="+len);
-		String header = header("200 OK", doc.type, len)
-			+ "\nETag: " + ETag
-			+ "\nModified: " + doc.time
-			+ (doc.status == 2 ? "\nContent-Encoding: gzip" : "")
-			+ "\n\n";
-		boolean r = true;
-		try {
-			out.write(header.getBytes());
-			out.flush();
-			if(request.method == 1)		// GET
-				out.write(doc.content, 0, doc.content.length);
-			out.flush();
-			out.close();
-			Lib.logI(this.request.log + this.request.uri);
-		} catch (Exception e) {
-			String err = e.getMessage();
-			Lib.logV(err);
-			Lib.logE(err);
-			this.err = err;
-			r = false;
-		}
-		return r;
+		return false;
 	}
 
 	public boolean plainResponse(String code, String msg) {
@@ -301,13 +307,6 @@ public class Response {
 
 	private String header(String code, String[] header) {	// Overloaded
 		return baseHeader(code) + Lib.a2h(header) + "\n\n";
-	}
-
-	public boolean notExists(PlainFile doc) {
-		this.err = this.request.log + this.request.uri + "--not found";
-		Lib.logE(this.err);
-		Lib.logV(this.err);
-		return plainResponse("404", this.request.uri+" not found");
 	}
 
 	// Aliases & Helpers

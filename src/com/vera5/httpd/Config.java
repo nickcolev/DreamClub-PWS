@@ -69,13 +69,12 @@ public class Config {
 	private String setValue(String html, Map.Entry<String,?> entry) {
 		String v = "";
 		if (entry.getValue() instanceof java.lang.Boolean) {
-Log.d("***", entry.getKey()+" "+entry.getValue());
 			v = entry.getValue().toString() == "true" ? "checked" : "";
 		} else if (entry.getValue() instanceof java.lang.String) {
 			v = "value=\"" + entry.getValue() + "\"";
 		}
 		String p = "\""+entry.getKey()+"\"";
-		String r = "\""+entry.getKey()+"\" " + v;
+		String r = p + " " + v;
 		return html.replaceFirst(p, r);
 	}
 
