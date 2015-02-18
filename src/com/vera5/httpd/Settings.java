@@ -82,6 +82,8 @@ public class Settings extends PreferenceActivity {
 					mBoundService.cfg.wifi_lock = sp.getBoolean(key, false);
 					mBoundService.WifiLock(mBoundService.cfg.wifi_lock);
 				}
+				if (key.equals("cors"))
+					mBoundService.cfg.CORS = sp.getBoolean(key, false);
 			}
 		} catch (Exception e) {
 		}

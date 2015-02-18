@@ -10,6 +10,7 @@
     <string name="dir_list">Directory Listing</string>
     <string name="wake_lock">Wake Lock</string>
     <string name="wifi_lock">WiFi Lock</string>
+    <string name="cors">CORS</string>
     <string name="defaultIndex"><![CDATA[
     <html><head><title>PWS</title></head><body>
     <h1>It works!</h1><p>The web server software is running, but no content has been added yet.</p>

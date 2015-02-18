@@ -250,7 +250,8 @@ public class ServerService extends Service {
 		if (on) {
 			this.wakeLock.acquire();
 		} else {
-			this.wakeLock.release();
+			if (this.wakeLock.isHeld())
+				this.wakeLock.release();
 		}
 	}
 

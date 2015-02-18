@@ -289,9 +289,13 @@ public class Response {
 	}
 
 	private String baseHeader(String code) {
+		// cross-domain requests (CORS)
+		String cors = this.cfg.CORS ?
+			"\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: " + this.request.getMethods()
+			: "";
 		return "HTTP/1.1 " + code
 			+ "\nServer: PWS/" + this.cfg.version
-			+ "\nAccess-Control-Allow-Origin: *"	// FIXME restrict cross-domain requests
+			+ cors
 			+ "\nAccess-Control-Allow-Methods: " + this.request.getMethods()
 			+ "\nConnection: close";			
 	}

@@ -30,4 +30,8 @@
 			android:key="wifi_lock"
 			android:defaultValue="false"
 			android:title="@string/wifi_lock" />
+		<CheckBoxPreference
+			android:key="cors"
+			android:defaultValue="false"
+			android:title="@string/cors" />
 </PreferenceScreen>

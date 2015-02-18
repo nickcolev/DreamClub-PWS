@@ -23,6 +23,7 @@ public class Config {
   public static boolean dir_list;
   public static boolean wake_lock;
   public static boolean wifi_lock;
+  public static boolean CORS;
 
 	public Config(ServerService parent) {
 		this.context = parent.context;
@@ -37,6 +38,7 @@ public class Config {
 			this.dir_list = p.getBoolean("dir_list", false);
 			this.wake_lock = p.getBoolean("wake_lock", false);
 			this.wifi_lock = p.getBoolean("wifi_lock", false);
+			this.CORS = p.getBoolean("cors", false);
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
