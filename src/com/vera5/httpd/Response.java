@@ -296,7 +296,6 @@ public class Response {
 		return "HTTP/1.1 " + code
 			+ "\nServer: PWS/" + this.cfg.version
 			+ cors
-			+ "\nAccess-Control-Allow-Methods: " + this.request.getMethods()
 			+ "\nConnection: close";			
 	}
 
