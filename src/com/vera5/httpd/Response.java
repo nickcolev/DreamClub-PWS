@@ -33,7 +33,6 @@ public class Response {
 		if (request.ContentType == null)
 			request.ContentType = "application/octet-stream";
 		String output = CGI.exec(request);
-//Lib.dbg("CGI", request.uri+" "+output);
 		String err = "Internal Server Error";
 		if (output == null)
 			plainResponse("500", err);
@@ -60,11 +59,13 @@ public class Response {
 	public boolean fileResponse(PlainFile doc) {
 		// Caching
 		boolean isHTML = doc.type.equals("text/html");
-		String ETag = doc.ETag;		// FIXME if CGI?!
-		if (isHTML && ServerService.footer != null) ETag = doc.ETag(ServerService.footer.length);
+		String ETag = doc.ETag;
+		if (isHTML && ServerService.footer != null)
+			ETag = doc.ETag(ServerService.footer.length);
 		if (request.IfNoneMatch != null)
-			if (request.IfNoneMatch.equals(ETag))
-				return NotModified(doc.type);
+			if (!doc.isCGI)
+				if (request.IfNoneMatch.equals(ETag))
+					return NotModified(doc.type);
 		int len = 0;
 		if (this.request.method == 1) {
 			doc.get();
@@ -179,15 +180,13 @@ public class Response {
 			if (output == null)
 				plainResponse("501", "Internal Server Error");
 			else
-				reply("HTTP/1.1 200 OK\r\n"+output);
+				reply("HTTP/1.1 200 OK\n"+output);
 		} else
 			plainResponse("404", request.uri+" not found");
 	}
 
 	public boolean put(Request request) {
 		boolean ok = false;
-		String msg = "PUT "+request.uri+", len="+request.ContentLength;
-		Lib.logI(msg);
 		try {
 			FileOutputStream fd = new FileOutputStream(this.cfg.root+request.uri, false);
 			fd.write(request.data);
@@ -215,18 +214,16 @@ public class Response {
 			case '?':
 				String slog = ServerService.log.get(Character.toUpperCase(c));
 				int len = slog.length();
-				if (request.AcceptEncoding != null) {	// FIXME duplicated code
-					if (request.AcceptEncoding.contains("gzip")) {
-						byte[] zlog = Lib.gzip(slog.getBytes());
-						String[] aHeader = {
-							"Content-Type: text/plain",
-							"Content-Length: " + zlog.length,
-							"Content-Encoding: gzip"
-						};
-						String header = header("200", aHeader);
-						byte[] buf = Lib.join(header, zlog);
-						reply(buf);
-					}
+				if (request.gzipAccepted()) {
+					byte[] zlog = Lib.gzip(slog.getBytes());
+					String[] aHeader = {
+						"Content-Type: text/plain",
+						"Content-Length: " + zlog.length,
+						"Content-Encoding: gzip"
+					};
+					String header = header("200", aHeader);
+					byte[] buf = Lib.join(header, zlog);
+					reply(buf);
 				} else
 					plainResponse("200 OK", slog);
 				break;

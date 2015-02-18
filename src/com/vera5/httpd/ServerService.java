@@ -120,6 +120,7 @@ public class ServerService extends Service {
 		Runnable r = new Runnable() {
 			public void run() {
 				if (!setServerSocket(ip, port)) return;
+				if (cfg.wake_lock) WakeLock(true);
 				if (cfg.wifi_lock) WifiLock(true);
 				Socket client = null;
 				String s = ip + ":" + port;
@@ -137,6 +138,7 @@ public class ServerService extends Service {
 				} catch (Exception e) {
 					log.s("Shutdown");
 					WifiLock(false);
+					WakeLock(false);
 					closeSocket(client);
 					serviceThread = null;
 					stopSelf();

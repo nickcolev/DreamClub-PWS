@@ -9,7 +9,6 @@ class ServerHandler extends Thread {
 
   public Socket toClient;
   public Config cfg;
-  public PlainFile cache;	// FIXME DELME
   public Request request;
   private Handler handler;
   private String err;
@@ -27,13 +26,14 @@ class ServerHandler extends Thread {
 		request = new Request(this);
 		request.get(toClient);
 		Response response = new Response(this);
-		if (request.uri == null) {		// FIXME Investigate why/when this happens
+		if (request.uri == null) {		// Net/IO error
 			Lib.logE("(null) requested");
 			response.plainResponse("400", "Bad request");
 			return;
 		}
 
 		ServerService.log.request(request);		// FIXME Best place?!
+
 		switch(request.method) {
 			case 1:		// GET
 			case 2:		// HEAD
@@ -65,8 +65,7 @@ class ServerHandler extends Thread {
 				response.plainResponse("501", this.err);
 				Lib.logE(this.err);
 		}
-		//if (request.uri.endsWith(".ttf") | request.uri.equals("/nick.css") | request.uri.endsWith(".html"))
-			Lib.dbg("PERF", request.uri+" served in "+Lib.rtime(begin)+"ms");
+		Lib.dbg("PERF", request.uri+" served in "+Lib.rtime(begin)+"ms");
 	}
 
 }

@@ -40,7 +40,6 @@ public class Settings extends PreferenceActivity {
 			else if (p instanceof CheckBoxPreference)
 				setBoolean(prefs, entry.getKey());
 		}
-		//hide("footer"); FIXME Some hidden preferences
 		listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 			public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
 				Preference p = findPreference(key);
@@ -67,12 +66,6 @@ public class Settings extends PreferenceActivity {
 		super.onPause();
 		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
 		unbindService(mConnection);
-	}
-
-	private void hide(String key) {
-		EditTextPreference pref = (EditTextPreference) findPreference(key);
-		PreferenceScreen ps = getPreferenceScreen();
-		ps.removePreference(pref);
 	}
 
 	private void setBoolean(SharedPreferences sp, String key) {

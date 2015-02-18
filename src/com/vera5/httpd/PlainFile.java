@@ -65,7 +65,7 @@ public class PlainFile {
 						content.write(ServerService.footer, 0, ServerService.footer.length);
 				this.status = 1;
 				// gzip (if client supports it)
-				if (gzipAccept()) {
+				if (this.request.gzipAccepted()) {
 					byte[] cmp = Lib.gzip(content.toByteArray());
 					content.reset();
 					content.write(cmp, 0, cmp.length);
@@ -81,11 +81,6 @@ public class PlainFile {
 			}
 			Lib.dbg("GET", "Got "+this.f.length()+" bytes of "+this.request.uri+" in "+Lib.rtime(begin)+"ms");
 		}
-	}
-
-	private boolean gzipAccept() {
-		if (this.request.AcceptEncoding == null) return false;
-		return this.request.AcceptEncoding.contains("gzip");
 	}
 
 	private ByteArrayOutputStream getFileBytes(File f) throws IOException {
@@ -105,7 +100,7 @@ public class PlainFile {
 		for (int i=0; i<len; i++)
 			if (this.content[i] == 13 || this.content[i] == 10) break;
 			else s += (char)this.content[i];
-		return s.startsWith("#!/");	// FIXME Enchance the logic
+		return s.startsWith("#!/");
 	}
 
 	public String ETag (int salt) {

@@ -87,14 +87,14 @@ public class Logger {
 	public String get(char c) {
 						// We save timestamp in the log (to save space).
 						// For display, format it properly.
-		String ts, a[], line, log = fname(), m = c + "/", result = "";
+		String ts, a[], line, log = fname(),
+			m = c + "/", result = "", none = "Nothing to display";
 		File f = new File(log);
-		if (f.length() == 0) return "Nothing to display";	// FIXME Duplication
+		if (f.length() == 0) return none;
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(f), 8192);
 			while ((line = in.readLine()) != null) {
 				a = line.split("\t");
-				// \n in the log? (avoid exception)
 				if (a[1] == null) {
 					result += "\t" + line + "\n";
 					continue;
@@ -109,8 +109,7 @@ public class Logger {
 			Log.e(TAG, e.getMessage());
 			result = e.getMessage();
 		}
-		if (result.length() == 0) result = "Nothing to display";
-		return result;
+		return (result.length() == 0 ? none : result);
 	}
 
 	private String formatTime(String timestamp) {

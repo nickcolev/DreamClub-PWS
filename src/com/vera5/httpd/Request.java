@@ -34,7 +34,6 @@ public class Request {
   private ArrayList<String> aHeader = new ArrayList<String>();
   public Config cfg;
   public final Socket client;
-  public PlainFile cache;
 
 
 	public Request(ServerHandler parent) {
@@ -117,6 +116,10 @@ public class Request {
 		for (int i=1; i<this.aMethod.length; i++)
 			s += (i==1 ? "" : ",") + this.aMethod[i];
 		return s;
+	}
+	public boolean gzipAccepted() {
+		if (this.AcceptEncoding == null) return false;
+		return this.AcceptEncoding.contains("gzip");
 	}
 	public String header(String key) {
 		String[] a = new String[4];
