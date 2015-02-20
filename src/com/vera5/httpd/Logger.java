@@ -47,6 +47,7 @@ public class Logger {
 
 	private void put(String tag, String s) {
 		if (!enable) return;
+		// FIXME Optimization -- write at separate thread. How about sqlite?
 		String now = "" + new Date().getTime();		// write timestamp to save space (GMT)
 		String log = fname();
 		File f = new File(log);

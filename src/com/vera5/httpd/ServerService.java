@@ -109,6 +109,17 @@ public class ServerService extends Service {
 		return ok;
 	}
 
+	private void tuneClient(Socket s) {
+		try {
+			s.setTrafficClass(8);
+			s.setTcpNoDelay(true);
+			s.setKeepAlive(true);
+		} catch (SocketException e) {
+			Lib.logE(e.getMessage());
+			Lib.logV(e.getMessage());
+		}
+	}
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		this.intent = intent;
@@ -129,6 +140,7 @@ public class ServerService extends Service {
 				try {
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
+tuneClient(client);
 						log.setClient(client);
 						s = "request  from " + log.clientIP(client);
 						log.v(s);
