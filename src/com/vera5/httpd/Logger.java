@@ -46,20 +46,10 @@ public class Logger {
 	}
 
 	private void put(String tag, String s) {
-		if (!enable) return;
-		// FIXME Optimization -- write at separate thread. How about sqlite?
-		String now = "" + new Date().getTime();		// write timestamp to save space (GMT)
-		String log = fname();
-		File f = new File(log);
-		try {
-			if (!f.exists()) f.createNewFile();
-			BufferedWriter b = new BufferedWriter(new FileWriter(log, true), 8192);
-			b.append(now + "\t" + tag + (s.startsWith("/") ? "" : "/") +
-				s.replaceAll("\n", "\\\\n") + "\n");
-			b.flush();
-			b.close();
-		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+		if (enable) {
+			// Actual logging in a separate thread
+			LoggerThread lt = new LoggerThread(tag, s);
+			lt.run();
 		}
 	}
 
@@ -124,4 +114,27 @@ public class Logger {
 		return sdf;
 	}
 
+
+	class LoggerThread extends Thread {
+	  private String tag, msg;
+		public LoggerThread(String tag, String msg) {
+			this.tag = tag;
+			this.msg = msg;
+		}
+		public void run() {
+			String now = "" + new Date().getTime();		// write timestamp to save space (GMT)
+			String log = fname();
+			File f = new File(log);
+			try {
+				if (!f.exists()) f.createNewFile();
+				BufferedWriter b = new BufferedWriter(new FileWriter(log, true), 8192);
+				b.append(now + "\t" + tag + (msg.startsWith("/") ? "" : "/") +
+					msg.replaceAll("\n", "\\\\n") + "\n");
+				b.flush();
+				b.close();
+			} catch (IOException e) {
+				Log.e(TAG, e.getMessage());
+			}
+		}
+	}
 }
