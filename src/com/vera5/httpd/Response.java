@@ -199,20 +199,12 @@ public class Response {
 		return ok;
 	}
 
-	public boolean putLog(Request request) {
-		boolean isLog = true;
-		char c = request.args.length() == 3 ? '?' : request.args.charAt(3);
-		switch(c) {
-			case 'c':
-				ServerService.log.clean();
-				plainResponse("200 OK", "log reset!");
-				break;
-			case 'd':
-			case 'e':
-			case 'i':
-			case 's':
-			case '?':
-				String slog = ServerService.log.get(Character.toUpperCase(c));
+	private boolean pws(Request request) {
+		// ?something
+		if (request.uri.equals("/") && request.args != null) {
+			// ?log[=key[:{*|c|d|e|i|t}]]
+			if (request.args.startsWith("log")) {
+				String slog = ServerService.log.get(request.args.substring(3));
 				int len = slog.length();
 				if (request.gzipAccepted()) {
 					byte[] zlog = Lib.gzip(slog.getBytes());
@@ -223,26 +215,12 @@ public class Response {
 					};
 					String header = header("200", aHeader);
 					byte[] buf = Lib.join(header, zlog);
-					reply(buf);
+					return reply(buf);
 				} else
-					plainResponse("200 OK", slog);
-				break;
-			default:
-				isLog = false;
-		}
-		return isLog;
-	}
-
-	private boolean pws(Request request) {
-		// ?something
-		if (request.uri.equals("/") && request.args != null) {
-			// log, loge, logi, logs
-			if (request.args.startsWith("log") && request.args.length() < 5) {
-				putLog(request);
-				return true;
+					return plainResponse("200", slog);
 			}
 			if (request.args.equals("config")) {
-				// web config
+				// web config -- config[=on&wifi=1...
 				return plainResponse("200", request.cfg.setupPage());
 			}
 		}

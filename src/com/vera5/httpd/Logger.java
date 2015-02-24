@@ -5,16 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class Logger {
 
@@ -22,23 +13,10 @@ public class Logger {
   private final Context context;
   private Handler handler;
   private Socket client;
-  private String path;
   private boolean enable = true;	// Logging enabled by default
 
 	public Logger(ServerService parent) {
 		this.context = parent.context;
-		this.path = this.context.getFilesDir().getPath();
-	}
-
-	public void clean() {
-		String log = fname();
-		File f = new File(log);
-		try {
-			f.delete();
-			f.createNewFile();
-		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
-		}
 	}
 
 	public void request(Request request) {
@@ -48,7 +26,7 @@ public class Logger {
 	private void put(String tag, String s) {
 		if (enable) {
 			// Actual logging in a separate thread
-			LoggerThread lt = new LoggerThread(tag, s);
+			LoggerThread lt = new LoggerThread(this.context, tag, s);
 			lt.run();
 		}
 	}
@@ -63,7 +41,6 @@ public class Logger {
 	public void e(String s) { put("E", s); }
 	public void i(String s) { put("I", s); }
 	public void s(String s) { put("S", s); }
-	private String fname() { return this.path + "/log.txt"; }
 
 	public void v(String s) {	// To a TextView
 		if (this.handler != null) {
@@ -75,64 +52,47 @@ public class Logger {
 		}
 	}
 
-	public String get(char c) {
-						// We save timestamp in the log (to save space).
-						// For display, format it properly.
-		String ts, a[], line, log = fname(),
-			m = c + "/", result = "", none = "Nothing to display";
-		File f = new File(log);
-		if (f.length() == 0) return none;
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(f), 8192);
-			while ((line = in.readLine()) != null) {
-				a = line.split("\t");
-				if (a[1] == null) {
-					result += "\t" + line + "\n";
-					continue;
-				}
-				if (c != '?')	// Filter
-					if (!a[1].startsWith(m)) continue;
-				ts = a[0] == null ? "" : formatTime(a[0]);
-				result += ts + "\t" + a[1] + "\n";
-			}
-			in.close();
-		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
-			result = e.getMessage();
+	public String get(String key) {
+		Database db = new Database(this.context);
+		if (key.startsWith("=")) key = key.substring(1);
+		String[] a = key.split(":");
+		String tag = null, where = null;
+		switch (a.length) {
+			case 1:
+				where = a[0];
+				break;
+			case 2:
+				where = a[0];
+				tag = a[1].substring(0,1);
+				if (tag.startsWith("*")) tag = null;
+				break;
 		}
-		return (result.length() == 0 ? none : result);
-	}
-
-	private String formatTime(String timestamp) {
-		String sdf;
-		try {
-			sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(Long.valueOf(timestamp)));
-		} catch (Exception e) {
-			sdf = "";
-			Log.e(TAG, e.getMessage());
+		switch (where.length()) {
+			case 0:
+				where = null;
+				break;
+			case 1:				// like, log=e
+				tag = where;
+				where = null;
+				break;
 		}
-		return sdf;
+		return db.getLog(tag, where);
 	}
 
 
 	class LoggerThread extends Thread {
 	  private String tag, msg;
-		public LoggerThread(String tag, String msg) {
+	  private final Context context;
+		public LoggerThread(Context context, String tag, String msg) {
+			this.context = context;
 			this.tag = tag;
 			this.msg = msg;
 		}
 		public void run() {
-			String now = "" + new Date().getTime();		// write timestamp to save space (GMT)
-			String log = fname();
-			File f = new File(log);
+			Database db = new Database(this.context);
 			try {
-				if (!f.exists()) f.createNewFile();
-				BufferedWriter b = new BufferedWriter(new FileWriter(log, true), 8192);
-				b.append(now + "\t" + tag + (msg.startsWith("/") ? "" : "/") +
-					msg.replaceAll("\n", "\\\\n") + "\n");
-				b.flush();
-				b.close();
-			} catch (IOException e) {
+				db.putLog(tag, msg);
+			} catch (Exception e) {
 				Log.e(TAG, e.getMessage());
 			}
 		}
