@@ -48,7 +48,7 @@ public class Database extends SQLiteOpenHelper {
 				String when = ""+curs.getString(0);
 				String who = curs.getString(1);
 				String what = curs.getString(2);
-				output += when + "\t" + who + "\t" + what + "\n";
+				output += when + "\t" + who + "/" + what + "\n";
 			} while (curs.moveToNext());
 			if (output.length() == 0) output = none;
 		} catch (SQLiteException e) {
