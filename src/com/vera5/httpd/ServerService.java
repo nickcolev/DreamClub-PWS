@@ -64,7 +64,7 @@ public class ServerService extends Service {
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		notification = new Notification(R.drawable.icon24, "Starting", System.currentTimeMillis());
+		notification = new Notification(R.drawable.ic_launcher, "Starting", System.currentTimeMillis());
 		updateNotifiction("");
 		startForeground(NOTIFICATION_ID, notification);
 		cfg = new Config(this);
