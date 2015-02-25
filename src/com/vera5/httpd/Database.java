@@ -27,8 +27,17 @@ public class Database extends SQLiteOpenHelper {
 				where = " AND _who='"+tag.toUpperCase()+"'";
 		if (key != null) {
 			String[] a = key.split(" ");
-			for (int i=0; i<a.length; i++)
-				where += " AND _what LIKE '%"+a[i]+"%'";
+			String s, not;
+			for (int i=0; i<a.length; i++) {
+				if (a[i].startsWith("-")) {
+					not = " NOT";
+					s = a[i].substring(1);
+				} else {
+					not = "";
+					s = a[i];
+				}
+				where += " AND _what" + not + " LIKE '%"+s+"%'";
+			}
 		}
 		return where.replaceFirst("AND", "WHERE");
 	}
