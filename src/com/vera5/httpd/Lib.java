@@ -51,10 +51,9 @@ class Lib {
 			gos.close();
 			gzip = os.toByteArray();
 			os.close();
-			dbg("GZIP", ""+in.length+" bytes gzipped to "+gzip.length+" bytes in "+(System.currentTimeMillis()-begin)+"ms");
 		} catch (IOException e) {
 			gzip = null;
-			Log.e("GZIP", e.getMessage());
+			errlog("GZIP", e.getMessage());
 		}
 		return gzip;
 	}
@@ -78,7 +77,6 @@ class Lib {
 	}
 
 	public static String md5(String s) {
-		// http://www.androidsnippets.com/create-a-md5-hash-and-dump-as-a-hex-string
 		try {
 			// Create MD5 Hash
 			MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
@@ -115,6 +113,10 @@ class Lib {
 	}
 
 	// Aliases
+	public static void errlog(String tag, String msg) {
+		Log.e(tag, msg);
+		logE(msg);
+	}
 	public static void logE(String s) { ServerService.log.e(s); }
 	public static void logI(String s) { ServerService.log.i(s); }
 	public static void logS(String s) { ServerService.log.s(s); }

@@ -71,7 +71,7 @@ public class StartActivity extends Activity {
 				try {
 					startService(intent);
 				} catch (Exception e) {
-					Log.e(TAG, e.getMessage());
+					Lib.errlog(TAG, e.getMessage());
 				}
 			}
 	    }
@@ -101,7 +101,7 @@ public class StartActivity extends Activity {
 				try {
 					startActivity(new Intent(".Settings"));
 				} catch (Exception e) {
-					Log.e(TAG, e.getMessage());
+					Lib.errlog(TAG, e.getMessage());
 				}
 				return true;
 			case R.id.exit:

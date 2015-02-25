@@ -49,7 +49,6 @@ public class Request {
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
 			while ((s = in.readLine()) != null) {
-///Lib.dbg("REQ", s);
 				if (s.length() == 0) break;
 				this.aHeader.add(s);
 				a = s.split(" ");
@@ -83,7 +82,7 @@ public class Request {
 			this.log = client.getInetAddress().toString() + " " + method + " ";
 		} catch (Exception e) {
 			this.err = e.getMessage();
-			Lib.dbg(TAG, this.err);
+			Lib.errlog(TAG, this.err);
 		}
 	}
 
@@ -102,10 +101,9 @@ public class Request {
 			in.readFully(this.data);
 		} catch (IOException ie) {
 			this.data = null;
-			Log.e("***PUERR***", ie.getMessage());
-			Lib.dbg(TAG, ie.getMessage());
+			Lib.errlog(TAG, ie.getMessage());
 		} catch (Exception e) {
-			Log.e("***PUER2***", e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 		}
 	}
 

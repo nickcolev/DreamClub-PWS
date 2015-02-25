@@ -25,7 +25,7 @@ public class Response {
 		try {
 			out = new DataOutputStream(client.getOutputStream());
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 		}
 	}
 
@@ -257,7 +257,7 @@ public class Response {
 			out.close();
 			ok = true;
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 		}
 		return ok;
 	}
@@ -272,7 +272,7 @@ public class Response {
 			"\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: " + this.request.getMethods()
 			: "";
 		return "HTTP/1.1 " + code
-			+ "\nServer: PWS/" + this.cfg.version
+			+ "\nServer: PWS/" + this.cfg.version + " @Android "+android.os.Build.VERSION.RELEASE
 			+ cors
 			+ "\nConnection: close";			
 	}

@@ -27,7 +27,6 @@ class ServerHandler extends Thread {
 		request.get(toClient);
 		Response response = new Response(this);
 		if (request.uri == null) {		// Net/IO error
-			Lib.logE("(null) requested");
 			response.plainResponse("400", "Bad request");
 			return;
 		}
@@ -65,7 +64,6 @@ class ServerHandler extends Thread {
 				response.plainResponse("501", this.err);
 				Lib.logE(this.err);
 		}
-		Lib.dbg("PERF", request.uri+" served in "+Lib.rtime(begin)+"ms");
 	}
 
 }

@@ -110,7 +110,7 @@ public class Settings extends PreferenceActivity {
 					mBoundService.getFooter();
 			}
 		} catch (Exception e) {
-			Log.e("httpd.setSummary()", e.getMessage());
+			Lib.errlog("httpd.setSummary()", e.getMessage());
 		}	
 	}
 

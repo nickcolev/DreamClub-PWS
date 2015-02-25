@@ -93,7 +93,7 @@ public class Logger {
 			try {
 				db.putLog(tag, msg);
 			} catch (Exception e) {
-				Log.e(TAG, e.getMessage());
+				Lib.errlog(TAG, e.getMessage());
 			}
 		}
 	}

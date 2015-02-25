@@ -64,7 +64,7 @@ public class CGI {
 		try {
 			in = new FileInputStream(f);
 		} catch (FileNotFoundException e) {
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 			return false;
 		}
 		int cnt = 35;
@@ -72,7 +72,7 @@ public class CGI {
 		try {
 			cnt = in.read(buf, 0, cnt);
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 			return false;
 		}
 		String s = new String(buf);

@@ -40,7 +40,7 @@ public class Config {
 			this.wifi_lock = p.getBoolean("wifi_lock", false);
 			this.CORS = p.getBoolean("cors", false);
 		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 		}
 	}
 
@@ -59,7 +59,7 @@ public class Config {
 			len = in.read(buffer);
 			html = new String(buffer);
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 		}
 		Map<String,?> keys = this.preferences.getAll();
 		for(Map.Entry<String,?> entry : keys.entrySet()) {

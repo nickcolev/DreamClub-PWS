@@ -62,10 +62,10 @@ public class Database extends SQLiteOpenHelper {
 			if (output.length() == 0) output = none;
 		} catch (SQLiteException e) {
 			output = e.getMessage();
-			Log.e(TAG, output);
+			Lib.errlog(TAG, output);
 		} catch (CursorIndexOutOfBoundsException be) {
 			output = be.getMessage();
-			Log.e(TAG, output);
+			Lib.errlog(TAG, output);
 		} finally {
 			curs.close();
 			db.close();
@@ -81,7 +81,7 @@ public class Database extends SQLiteOpenHelper {
 			db.close();
 			ok = true;
 		} catch (SQLiteException e) {
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 		}
 		return ok;
 	}

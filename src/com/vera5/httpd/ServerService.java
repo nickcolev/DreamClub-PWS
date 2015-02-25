@@ -128,6 +128,7 @@ public class ServerService extends Service {
 		final int port = getPort();
 		log.setHandler(this.handler);
 		log.s("Start at "+ip+":"+port+", Root "+this.cfg.root);
+		log.v("Personal Web Server v."+this.cfg.version);
 		Runnable r = new Runnable() {
 			public void run() {
 				if (!setServerSocket(ip, port)) return;
@@ -140,7 +141,7 @@ public class ServerService extends Service {
 				try {
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
-tuneClient(client);
+						tuneClient(client);
 						log.setClient(client);
 						s = "request  from " + log.clientIP(client);
 						log.v(s);
@@ -189,7 +190,7 @@ tuneClient(client);
 			if (serverSocket != null) serverSocket.close();
 			if (client != null) client.close();
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 		}
 	}
 
@@ -225,7 +226,7 @@ tuneClient(client);
 			isRunning = false;
 		} catch (IOException e) {
 			log.e(e.getMessage());
-			Log.e(TAG, e.getMessage());
+			Lib.errlog(TAG, e.getMessage());
 		}
         return true;	// allow rebind
 	}
@@ -253,7 +254,7 @@ tuneClient(client);
 			PackageInfo packageInfo = packageManager.getPackageInfo(getPackageName(),0);
 			return packageInfo.versionName;
 		} catch (PackageManager.NameNotFoundException e) {
-			Log.e(TAG, "Error while fetching app version", e);
+			Lib.errlog(TAG, "Get app version failed with "+e.getMessage());
 			return "?";
 		}
 	}

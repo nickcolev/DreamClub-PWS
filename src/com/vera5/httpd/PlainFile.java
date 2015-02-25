@@ -79,7 +79,6 @@ public class PlainFile {
 				this.err = e.getMessage();
 				Lib.logE(TAG+": "+this.request.uri+" "+e.getMessage());
 			}
-			Lib.dbg("GET", "Got "+this.f.length()+" bytes of "+this.request.uri+" in "+Lib.rtime(begin)+"ms");
 		}
 	}
 
