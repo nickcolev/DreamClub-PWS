@@ -18,10 +18,15 @@
  <li><a href="#todo">To do</a></li>
  <li><a href="#ico">Icon</a></li>
  <li><a href="#bug">Bugs</a></li>
+ <li><a href="#rel">Release</a></li>
  <li><a href="#les">Lessons</a></li>
 </ul>
 
 <h3 class="ul" id="ov">Overview</h3>
+<table><tr>
+ <td><object data="pws152.svg" type="image/svg+xml"></object></td>
+ <td class="note" style="vertical-align:middle;padding-left:5em;">CGI<br/>Database<br/>Lib<br/>Logger<br/>PlainFile</td>
+</tr></table>
 <ul>
  <li><tt>StartActivity</tt><br/>Starts and bind to the service. If service not already started &mdash; start it.</li>
  <li><tt>ServerService</tt><br/>Handle the binding requests, notifications, and <tt>onStartCommand</tt>.</li>
@@ -54,7 +59,6 @@
 
 <h3 class="ul" id="todo">To do</h3>
 <ul>
- <li>Art work &mdash; new icons</li>
  <li>Implement start on boot of the service</li>
  <li>When WiFi goes off &mdash; restart at localhost. When goes on &mdash; restart at the IP.</li>
 </ul>
@@ -84,6 +88,11 @@
 </ul>
 
 <p class="note">While testing, saw access from 59.31.246.215 (South Korea), 60.173.26.206 (China) &mdash; see <a href="http://www.ipligence.com/geolocation">IP geolocation</a>.</p>
+
+<h3 id="rel">Release build</h3>
+<pre class="cp">ant release							<fn>Internally calls 'jarsigner' (prompt for password). Creates 'bin/pws-release.apk'</fn>
+jarsigner -verify -verbose -certs bin/pws-release-unaligned.apk	<fn>Verify the apk is signed</fn>
+<span class="hlp" title="part of ASDK 'build-tools'">zipalign</span> -v 4 bin/pws-release-unaligned.apk bin/pws.apk		<fn>Final apk for distribution</fn></pre>
 
 <h3 id="les">Lessons learned</h3>
 <div class="m3em">
