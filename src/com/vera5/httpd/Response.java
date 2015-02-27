@@ -15,17 +15,20 @@ public class Response {
   private final Socket client;
   private final Request request;
   private static final String TAG = "PWS.Response";
-  private String err;
   private DataOutputStream out;
+  public String err = "";
+  public long started;
 
 	public Response(ServerHandler parent) {
 		this.cfg = parent.cfg;
 		this.client = parent.toClient;
 		this.request = parent.request;
+		this.started = System.currentTimeMillis();
 		try {
 			out = new DataOutputStream(client.getOutputStream());
 		} catch (IOException e) {
-			Lib.errlog(TAG, e.getMessage());
+			this.err = e.getMessage();
+			Lib.errlog(TAG, this.err);
 		}
 	}
 
@@ -33,14 +36,15 @@ public class Response {
 		if (request.ContentType == null)
 			request.ContentType = "application/octet-stream";
 		String output = CGI.exec(request);
-		String err = "Internal Server Error";
+		this.err = "Internal Server Error";
 		if (output == null)
-			plainResponse("500", err);
+			plainResponse("500", this.err);
 		else {
-			if (output.startsWith("Content-Type:"))
+			if (output.startsWith("Content-Type:")) {
 				reply((baseHeader("200")+output).getBytes());
-			else
-				plainResponse("500", err);
+				this.err = "";
+			} else
+				plainResponse("500", this.err);
 		}
 	}
 
@@ -84,12 +88,10 @@ public class Response {
 				out.write(doc.content, 0, doc.content.length);
 			out.flush();
 			out.close();
-			Lib.logI(this.request.log + this.request.uri);
 		} catch (Exception e) {
-			String err = e.getMessage();
-			Lib.logV(err);
-			Lib.logE(err);
-			this.err = err;
+			this.err = e.getMessage();
+			Lib.logV(this.err);
+			Lib.logE(this.err);
 			r = false;
 		}
 		return r;
@@ -148,10 +150,9 @@ public class Response {
 	}
 
 	public boolean notExists(PlainFile doc) {
-		this.err = this.request.log + this.request.uri + "--not found";
-		Lib.logE(this.err);
-		Lib.logV(this.err);
-		return plainResponse("404", this.request.uri+" not found");
+		this.err = " not found";
+		Lib.logV(this.request.uri+this.err);
+		return plainResponse("404", this.request.uri+this.err);
 	}
 
 	public void options(Request request) {
@@ -177,9 +178,10 @@ public class Response {
 		PlainFile doc = new PlainFile(request);
 		if (doc.f.exists()) {
 			String output = CGI.exec(request);
-			if (output == null)
-				plainResponse("501", "Internal Server Error");
-			else
+			if (output == null) {
+				this.err = "Internal Server Error";
+				plainResponse("501", this.err);
+			} else
 				reply("HTTP/1.1 200 OK\n"+output);
 		} else
 			plainResponse("404", request.uri+" not found");
@@ -193,7 +195,6 @@ public class Response {
 			fd.close();
 			ok = true;
 		} catch (IOException e) {
-			Lib.logE(e.getMessage());
 			this.err = e.getMessage();
 		}
 		return ok;
@@ -257,7 +258,8 @@ public class Response {
 			out.close();
 			ok = true;
 		} catch (IOException e) {
-			Lib.errlog(TAG, e.getMessage());
+			this.err = e.getMessage();
+			Lib.errlog(TAG, this.err);
 		}
 		return ok;
 	}

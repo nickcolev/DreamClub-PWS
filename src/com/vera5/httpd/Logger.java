@@ -13,26 +13,29 @@ public class Logger {
   private final Context context;
   private Handler handler;
   private Socket client;
+  private ServerHandler thread;
+  private Request request;
+  private Response response;
   private boolean enable = true;	// Logging enabled by default
 
 	public Logger(ServerService parent) {
 		this.context = parent.context;
 	}
 
-	public void request(Request request) {
-		i(clientIP(request.client)+" "+request.getMethod()+" "+request.uri);
+	public void request(ServerHandler thread) {
+		this.thread = thread;
+		i(Lib.clientIP(thread.request.client)+" "+thread.request.getMethod()+" "+thread.request.uri);
 	}
 
 	private void put(String tag, String s) {
 		if (enable) {
 			// Actual logging in a separate thread
-			LoggerThread lt = new LoggerThread(this.context, tag, s);
+			LoggerThread lt = new LoggerThread(this.context, this.thread, tag, s);
 			lt.run();
 		}
 	}
 
 	// Helpers
-	public String clientIP(Socket client) { return client.getInetAddress().toString().substring(1); }
 	public void enable() { enable = true; }
 	public void disable() { enable = false; }
 	public void setClient(Socket client) { this.client = client; }
@@ -83,15 +86,27 @@ public class Logger {
 	class LoggerThread extends Thread {
 	  private String tag, msg;
 	  private final Context context;
-		public LoggerThread(Context context, String tag, String msg) {
+	  private final ServerHandler thread;
+		public LoggerThread(Context context, ServerHandler thread, String tag, String msg) {
 			this.context = context;
+			this.thread = thread;
 			this.tag = tag;
 			this.msg = msg;
 		}
 		public void run() {
 			Database db = new Database(this.context);
+			String who = "";
+			long ms = 0;
+			if (this.thread != null) {
+				who = this.thread.request.remote_addr;
+				ms = Lib.rtime(this.thread.request.started);
+				if (this.thread.response.err.length() > 0) {
+					tag = "E";
+					msg += this.thread.response.err;
+				}
+			}
 			try {
-				db.putLog(tag, msg);
+				db.putLog(tag, who, msg, ms);
 			} catch (Exception e) {
 				Lib.errlog(TAG, e.getMessage());
 			}

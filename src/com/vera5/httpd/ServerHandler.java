@@ -10,6 +10,7 @@ class ServerHandler extends Thread {
   public Socket toClient;
   public Config cfg;
   public Request request;
+  public Response response;
   private Handler handler;
   private String err;
 
@@ -21,17 +22,13 @@ class ServerHandler extends Thread {
 
 	public void run() {
 
-		long begin = System.currentTimeMillis();
-
 		request = new Request(this);
 		request.get(toClient);
-		Response response = new Response(this);
+		response = new Response(this);
 		if (request.uri == null) {		// Net/IO error
 			response.plainResponse("400", "Bad request");
 			return;
 		}
-
-		ServerService.log.request(request);		// FIXME Best place?!
 
 		switch(request.method) {
 			case 1:		// GET
@@ -48,9 +45,8 @@ class ServerHandler extends Thread {
 				if (response.put(request)) {
 					response.hOut("201");
 				} else {
-					Lib.logV("PUT failed with "+this.err);
-					Lib.logE("PUT failed with "+this.err);
-					response.plainResponse("500", this.err);
+					Lib.logV("PUT failed with "+response.err);
+					response.plainResponse("500", response.err);
 				}
 				break;
 			case 6:		// POST
@@ -64,6 +60,9 @@ class ServerHandler extends Thread {
 				response.plainResponse("501", this.err);
 				Lib.logE(this.err);
 		}
+
+		ServerService.log.request(this);
+
 	}
 
 }

@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.NoSuchMethodError;
+import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -21,6 +22,10 @@ class Lib {
 
 	public static String addIndex(String path, String index) {
 		return path+(path.endsWith("/") ? "" : "/")+index.substring(1);	// Config puts leadin '/' to the default index
+	}
+
+	public static String clientIP(Socket client) {
+		return client.getInetAddress().toString().substring(1);
 	}
 
 	public static void dbg(String tag, String msg) {

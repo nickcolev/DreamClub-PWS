@@ -144,7 +144,7 @@ public class ServerService extends Service {
 						client = serverSocket.accept();
 						tuneClient(client);
 						log.setClient(client);
-						s = "request  from " + log.clientIP(client);
+						s = "request  from " + Lib.clientIP(client);
 						log.v(s);
 						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();

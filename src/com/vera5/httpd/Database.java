@@ -24,7 +24,7 @@ public class Database extends SQLiteOpenHelper {
 		String where = "";
 		if (tag != null)
 			if (!tag.startsWith("*"))
-				where = " AND _who='"+tag.toUpperCase()+"'";
+				where = " AND _a='"+tag.toUpperCase()+"'";
 		if (key != null) {
 			String[] a = key.split(" ");
 			String s, not;
@@ -43,10 +43,11 @@ public class Database extends SQLiteOpenHelper {
 	}
 
 	public String getLog(String tag, String key) {
-		String sql = "SELECT _when,_who,_what FROM log" + setWhere(tag, key);
+		String sql = "SELECT _when,_a,_what FROM log" + setWhere(tag, key);
 		String none = "Nothing to display", output = "";
 		Cursor curs = null;
 		SQLiteDatabase db = null;
+		String when, a, what;
 		try {
 			db = getReadableDatabase();
 			curs = db.rawQuery(sql, null);
@@ -54,10 +55,10 @@ public class Database extends SQLiteOpenHelper {
 			if (curs.getCount() == 0) return none;
 			curs.moveToFirst();
 			do {
-				String when = ""+curs.getString(0);
-				String who = curs.getString(1);
-				String what = curs.getString(2);
-				output += when + "\t" + who + "/" + what + "\n";
+				when = ""+curs.getString(0);
+				a = curs.getString(1);
+				what = curs.getString(2);
+				output += when + "\t" + a + "/" + what + "\n";
 			} while (curs.moveToNext());
 			if (output.length() == 0) output = none;
 		} catch (SQLiteException e) {
@@ -73,11 +74,12 @@ public class Database extends SQLiteOpenHelper {
 		return output;
 	}
 
-	public boolean putLog(String tag, String msg) {
+	public boolean putLog(String tag, String who, String msg, long ms) {
 		boolean ok = false;
+		String sql = "INSERT INTO log (_a,_what,_ms) VALUES ('"+tag+"','"+msg+"',"+ms+")";
 		try {
 			SQLiteDatabase db = getWritableDatabase();
-			db.execSQL("INSERT INTO log (_who,_what) VALUES ('"+tag+"','"+msg+"')");
+			db.execSQL(sql);
 			db.close();
 			ok = true;
 		} catch (SQLiteException e) {
@@ -88,8 +90,11 @@ public class Database extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("CREATE TABLE IF NOT EXISTS log (_when DATETIME DEFAULT CURRENT_TIMESTAMP, _who VARCHAR(80), _what VARCHAR(512))");
-		db.execSQL("CREATE TABLE IF NOT EXISTS cookie (url VARCHAR(80),name VARCHAR(80),value VARCHAR(80),expire DATETIME)");
+		db.execSQL("CREATE TABLE log (_when DATETIME DEFAULT CURRENT_TIMESTAMP, _a CHAR(1) NOT NULL, _who VARCHAR(40), _what VARCHAR(512), _ms INT)");
+		db.execSQL("CREATE INDEX log_a ON log (_a)");
+		db.execSQL("CREATE INDEX log_who ON log (_who)");
+		db.execSQL("CREATE TABLE cookie (url VARCHAR(80),name VARCHAR(80),value VARCHAR(80),expire DATETIME)");
+		db.execSQL("CREATE INDEX cookie_url ON cookie (url)");
 	}
 
 	@Override

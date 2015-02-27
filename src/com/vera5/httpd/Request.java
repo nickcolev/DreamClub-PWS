@@ -23,9 +23,10 @@ public class Request {
   public String AcceptEncoding;
   public String IfNoneMatch;
   public String Host;
+  public String remote_addr = "";
   public byte[] data;			// PUT/POST
-  public String log;			// For Logger
-  public String err;			// Last error
+  public String err = "";		// Last error
+  public long started;
   // Methods
   public int method = 0;
   private static final String[] aMethod = {"",
@@ -39,10 +40,11 @@ public class Request {
 	public Request(ServerHandler parent) {
 		this.cfg = parent.cfg;
 		this.client = parent.toClient;
+		this.remote_addr = Lib.clientIP(this.client);
 	}
 
 	public void get(Socket client) {
-		long begin = System.currentTimeMillis();
+		this.started = System.currentTimeMillis();
 		String s, a[], method = null;
 		try {
 			int i = 0, p;
@@ -79,7 +81,6 @@ public class Request {
 			if(this.ContentLength > 0)	// PUT/POST data?
 				getdata(in);
 			setMethod(method);
-			this.log = client.getInetAddress().toString() + " " + method + " ";
 		} catch (Exception e) {
 			this.err = e.getMessage();
 			Lib.errlog(TAG, this.err);
