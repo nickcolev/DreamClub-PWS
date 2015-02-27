@@ -69,6 +69,7 @@ public class ServerService extends Service {
 		startForeground(NOTIFICATION_ID, notification);
 		cfg = new Config(this);
 		configure();
+		if (!mkRoot()) Tooltip("Failed to create document root "+cfg.root);
     }
 
 	@Override
@@ -128,7 +129,7 @@ public class ServerService extends Service {
 		final int port = getPort();
 		log.setHandler(this.handler);
 		log.s("Start at "+ip+":"+port+", Root "+this.cfg.root);
-		log.v("Personal Web Server v."+this.cfg.version);
+		log.v("Personal Web Server "+this.cfg.version);
 		Runnable r = new Runnable() {
 			public void run() {
 				if (!setServerSocket(ip, port)) return;
@@ -247,6 +248,14 @@ public class ServerService extends Service {
     public boolean isRunning() {
     	return isRunning;
     }
+
+	private boolean mkRoot() {
+		File f = new File(this.cfg.root);
+		if (f.exists())
+			return true;
+		else
+			return f.mkdir();
+	}
 
 	private String version() {
 		try {
