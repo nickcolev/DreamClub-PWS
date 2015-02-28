@@ -28,7 +28,7 @@ public class Request {
   public String err = "";		// Last error
   public long started;
   // Methods
-  public int method = 0;
+  public short method = 0;
   private static final String[] aMethod = {"",
 	"GET","HEAD","OPTIONS","TRACE","PUT","POST","DELETE"
   };
@@ -46,8 +46,8 @@ public class Request {
 	public void get(Socket client) {
 		this.started = System.currentTimeMillis();
 		String s, a[], method = null;
+		int i = 0, p;
 		try {
-			int i = 0, p;
 			DataInputStream in = new DataInputStream(client.getInputStream());
 			// The header
 			while ((s = in.readLine()) != null) {
@@ -88,7 +88,7 @@ public class Request {
 	}
 
 	private void setMethod(String method) {
-		for (int i=1; i<this.aMethod.length; i++)
+		for (short i=1; i<this.aMethod.length; i++)
 			if (this.aMethod[i].equals(method)) {
 				this.method = i;
 				break;
