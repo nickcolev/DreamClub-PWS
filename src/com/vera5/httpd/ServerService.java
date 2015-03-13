@@ -140,6 +140,10 @@ public class ServerService extends Service {
 				String s = ip + ":" + port;
 				updateNotifiction(s);
 				log.v("Waiting for connections on " + s);
+				// FIXME
+				// 1. Can we move some logic out of the run()?! like serverSocket creation, etc.
+				// 2. Check log.setClient(). Can it be moved out of the while cycle?
+				// 3. Minimize log(s) in the cycle (can't we put it in the thread?)
 				try {
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
