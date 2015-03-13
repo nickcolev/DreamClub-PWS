@@ -10,6 +10,7 @@
     <string name="dir_list">Directory Listing</string>
     <string name="wake_lock">Wake Lock</string>
     <string name="wifi_lock">WiFi Lock</string>
+    <string name="auto_start">Start on Boot</string>
     <string name="cors">CORS</string>
     <string name="defaultIndex"><![CDATA[
     <html><head><title>PWS</title></head><body>

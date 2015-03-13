@@ -31,6 +31,10 @@
 			android:defaultValue="false"
 			android:title="@string/wifi_lock" />
 		<CheckBoxPreference
+			android:key="auto_start"
+			android:defaultValue="false"
+			android:title="@string/auto_start" />
+		<CheckBoxPreference
 			android:key="cors"
 			android:defaultValue="false"
 			android:title="@string/cors" />

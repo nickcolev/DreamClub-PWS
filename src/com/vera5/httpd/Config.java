@@ -23,6 +23,7 @@ public class Config {
   public static boolean dir_list;
   public static boolean wake_lock;
   public static boolean wifi_lock;
+  public static boolean auto_start;
   public static boolean CORS;
 
 	public Config(ServerService parent) {
@@ -38,6 +39,7 @@ public class Config {
 			this.dir_list = p.getBoolean("dir_list", false);
 			this.wake_lock = p.getBoolean("wake_lock", false);
 			this.wifi_lock = p.getBoolean("wifi_lock", false);
+			this.auto_start = p.getBoolean("auto_start", true);	// FIXME Configurable or hard-coded?!
 			this.CORS = p.getBoolean("cors", false);
 		} catch (Exception e) {
 			Lib.errlog(TAG, e.getMessage());
