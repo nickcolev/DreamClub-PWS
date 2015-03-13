@@ -98,7 +98,7 @@ public class ServerService extends Service {
 	private boolean setServerSocket(String ip, int port) {
 		boolean ok = true;
 		try {
-			InetAddress localhost = InetAddress.getByName(ip);;
+			InetAddress localhost = InetAddress.getByName(ip);
 			serverSocket = new ServerSocket(port, 0, localhost);
 		} catch (IOException e) {
 			updateNotifiction(e.getMessage());
@@ -132,7 +132,8 @@ public class ServerService extends Service {
 		log.v("Personal Web Server "+this.cfg.version);
 		Runnable r = new Runnable() {
 			public void run() {
-				if (!setServerSocket(ip, port)) return;
+				if (serverSocket == null)
+					if (!setServerSocket(ip, port)) return;
 				if (cfg.wake_lock) WakeLock(true);
 				if (cfg.wifi_lock) WifiLock(true);
 				Socket client = null;
@@ -188,8 +189,14 @@ public class ServerService extends Service {
 
 	public void closeSocket(Socket client) {
 		try {
-			if (serverSocket != null) serverSocket.close();
-			if (client != null) client.close();
+			if (serverSocket != null) {
+				serverSocket.close();
+				serverSocket = null;
+			}
+			if (client != null) {
+				client.close();
+				client = null;
+			}
 		} catch (IOException e) {
 			Lib.errlog(TAG, e.getMessage());
 		}
