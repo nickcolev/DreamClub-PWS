@@ -43,6 +43,8 @@ public class ServerService extends Service {
   private boolean isRunning = false;
   private Thread serviceThread = null;
   private ServerSocket serverSocket;
+  private int lastClient;		// Hash
+  private long lastTimestamp;
   private Intent intent;
   private SharedPreferences prefs;
   public static Context context;
@@ -142,15 +144,14 @@ public class ServerService extends Service {
 				log.v("Waiting for connections on " + s);
 				// FIXME
 				// 1. Can we move some logic out of the run()?! like serverSocket creation, etc.
-				// 2. Check log.setClient(). Can it be moved out of the while cycle?
 				// 3. Minimize log(s) in the cycle (can't we put it in the thread?)
 				try {
 					while (!Thread.currentThread().isInterrupted()) {
 						client = serverSocket.accept();
 						tuneClient(client);
 						log.setClient(client);
-						s = "request  from " + Lib.clientIP(client);
-						log.v(s);
+						if (!sameClient(client))
+							log.v("request  from " + Lib.clientIP(client));
 						ServerHandler h = new ServerHandler(client, handler, cfg);
 						new Thread(h).start();
 					}
@@ -168,6 +169,22 @@ public class ServerService extends Service {
 		serviceThread = new Thread(r);
 		serviceThread.start();
 		return Service.START_STICKY;
+	}
+
+	protected boolean sameClient(Socket s) {
+		int currClient = s.getInetAddress().hashCode();
+		long ms = System.currentTimeMillis();
+		if (lastClient == 0) {
+			lastClient = currClient;
+			lastTimestamp = ms;
+			return false;
+		}
+		// Criteria: same IP & request within 2500 ms (FIXME Good enough?!)
+		boolean same = currClient == lastClient & ((ms - lastTimestamp) < 2500);
+//Log.d("***CMP***", (same ? "" : "NOT ")+"same client");
+		lastClient = currClient;
+		lastTimestamp = ms;
+		return same;
 	}
 
 	public void getFooter() {
