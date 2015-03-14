@@ -30,7 +30,7 @@ public class Logger {
 	private void put(String tag, String s) {
 		if (enable) {
 			// Actual logging in a separate thread
-			LoggerThread lt = new LoggerThread(this.context, this.thread, tag, s);
+			DbThread lt = new DbThread(this.context, this.thread, tag, s);
 			lt.run();
 		}
 	}
@@ -46,12 +46,10 @@ public class Logger {
 	public void s(String s) { put("S", s); }
 
 	public void v(String s) {	// To a TextView
-		if (this.handler != null) {
-			Message msg = new Message();
-			Bundle b = new Bundle();
-			b.putString("msg", s);
-			msg.setData(b);
-			handler.sendMessage(msg);
+		if (handler != null) {
+			ViewThread v = new ViewThread(handler, s);
+			v.setPriority(Thread.MIN_PRIORITY);
+			v.run();
 		}
 	}
 
@@ -83,11 +81,11 @@ public class Logger {
 	}
 
 
-	class LoggerThread extends Thread {
+	class DbThread extends Thread {
 	  private String tag, msg;
 	  private final Context context;
 	  private final ServerHandler thread;
-		public LoggerThread(Context context, ServerHandler thread, String tag, String msg) {
+		public DbThread(Context context, ServerHandler thread, String tag, String msg) {
 			this.context = context;
 			this.thread = thread;
 			this.tag = tag;
@@ -110,6 +108,23 @@ public class Logger {
 			} catch (Exception e) {
 				Lib.errlog(TAG, e.getMessage());
 			}
+		}
+	}
+
+
+	class ViewThread extends Thread {
+	  private final Handler handler;
+	  private final String s;
+		public ViewThread(Handler handler, String s) {
+			this.handler = handler;
+			this.s = s;
+		}
+		public void run() {
+			Message msg = new Message();
+			Bundle b = new Bundle();
+			b.putString("msg", s);
+			msg.setData(b);
+			handler.sendMessage(msg);
 		}
 	}
 }
