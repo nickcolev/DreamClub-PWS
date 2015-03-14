@@ -114,6 +114,7 @@ public class ServerService extends Service {
 
 	private void tuneClient(Socket s) {
 		try {
+			s.setSendBufferSize(4096);
 			s.setTrafficClass(8);
 			s.setTcpNoDelay(true);
 			s.setKeepAlive(true);
