@@ -1,9 +1,0 @@
-#!/bin/sh
-# PWS release build script
-cd ~/intranet/prj/APWS
-ant clean
-ant release
-jarsigner -verify -verbose -certs bin/pws-release-unaligned.apk
-/mnt/sda4/asdk/build-tools/21.1.2/zipalign -v 4 bin/pws-release-unaligned.apk bin/pws.apk
-echo
-echo "Please check bin/pws.apk and upload"
