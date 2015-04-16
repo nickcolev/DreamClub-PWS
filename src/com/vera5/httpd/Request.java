@@ -81,6 +81,9 @@ public class Request {
 			if(this.ContentLength > 0)	// PUT/POST data?
 				getdata(in);
 			setMethod(method);
+		} catch (IOException ie) {
+			this.err = ie.getMessage();
+			Lib.errlog(TAG, this.err);
 		} catch (Exception e) {
 			this.err = e.getMessage();
 			Lib.errlog(TAG, this.err);
