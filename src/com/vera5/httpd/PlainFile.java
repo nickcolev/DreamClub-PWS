@@ -56,22 +56,26 @@ public class PlainFile {
 		if (this.f.exists()) {
 			long begin = System.currentTimeMillis();
 			try {
-				FileInputStream in = new FileInputStream(this.f);
-				ByteArrayOutputStream content = getFileBytes(this.f);
+				byte[] content = getFileBytes(this.f);
 				// Add the footer
 				if (ServerService.footer != null)
-					if (this.type.equals("text/html"))
+					if (this.type.equals("text/html")) {
 						// Better to insert it before </body>
-						content.write(ServerService.footer, 0, ServerService.footer.length);
+						// binarySearch()?
+						//int p = indexOfEndBody(content.toByteArray());
+Log.d("***PF***", this.f.getName()+" size: "+content.length);
+						content = join(content, ServerService.footer);
+Log.d("***PF***", "new size: "+content.length);
+						// Can we move the '</body>' to the end afterwards?!
+					}
 				this.status = 1;
 				// gzip (if client supports it)
 				if (this.request.gzipAccepted()) {
-					byte[] cmp = Lib.gzip(content.toByteArray());
-					content.reset();
-					content.write(cmp, 0, cmp.length);
+					content = Lib.gzip(content);
+Log.d("***PF***", "gzip size: "+content.length);
 					this.status = 2;
 				}
-				this.content = content.toByteArray();
+				this.content = content;
 				if (!this.isCGI) this.isCGI = isCGI();
 			} catch (IOException e) {
 				this.length = 0;
@@ -82,15 +86,40 @@ public class PlainFile {
 		}
 	}
 
-	private ByteArrayOutputStream getFileBytes(File f) throws IOException {
-		long begin = System.currentTimeMillis();
-		ByteArrayOutputStream ret = new ByteArrayOutputStream();
+	private byte[] join(byte[] b1, byte[] b2) {
+		byte[] b = new byte[b1.length+b2.length];
+		for (int i=0; i<b1.length; i++) b[i] = b1[i];
+		for (int j=0; j<b2.length; j++) b[j+b1.length] = b2[j];
+		return b;
+	}
+
+	private byte[] getFileBytes(File f) throws IOException {
 		FileInputStream in = new FileInputStream(f);
-		byte[] buf = new byte[4096];
-		int cnt = 0;
-		while ((cnt = in.read(buf, 0, 4096)) != -1)
-			ret.write(buf, 0, cnt);
-		return ret;
+		int l = (int)f.length();
+		byte[] b = new byte[l];
+		in.read(b, 0, l);
+		in.close();
+		return b;
+	}
+
+	private int indexOfEndBody(byte[] b) {
+		int i;
+		try {
+			// FIXME As the '</body>' is at the end, better scan backwards
+			for (i=0; i<b.length; i++)
+				if (b[i] == '<' && b[i+1]=='/'	// Start of closing HTML tag
+					&& lcase(b[i+2])=='b'
+					&& lcase(b[i+3])=='o'
+					&& lcase(b[i+4])=='d'
+					&& lcase(b[i+5])=='y')
+Log.d("***PFIO***", "i="+i+" "+new String(b, i, 7));
+					return i;
+		} catch (Exception e) {}
+		return b.length;
+	}
+
+	private char lcase(byte b) {
+		return Character.toLowerCase((char)b);
 	}
 
 	private boolean isCGI() {
@@ -103,7 +132,6 @@ public class PlainFile {
 	}
 
 	public String ETag (int salt) {
-		// usually MD5, but RFC2616 doesn't say it -- we just use file size and last modified
 		return Lib.md5("" + (this.f.length() + this.f.lastModified() + salt));
 	}
 
