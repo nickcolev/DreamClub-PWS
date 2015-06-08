@@ -63,16 +63,12 @@ public class PlainFile {
 						// Better to insert it before </body>
 						// binarySearch()?
 						//int p = indexOfEndBody(content.toByteArray());
-Log.d("***PF***", this.f.getName()+" size: "+content.length);
-						content = join(content, ServerService.footer);
-Log.d("***PF***", "new size: "+content.length);
-						// Can we move the '</body>' to the end afterwards?!
+						content = addFooter(content);
 					}
 				this.status = 1;
 				// gzip (if client supports it)
 				if (this.request.gzipAccepted()) {
 					content = Lib.gzip(content);
-Log.d("***PF***", "gzip size: "+content.length);
 					this.status = 2;
 				}
 				this.content = content;
@@ -86,10 +82,18 @@ Log.d("***PF***", "gzip size: "+content.length);
 		}
 	}
 
-	private byte[] join(byte[] b1, byte[] b2) {
-		byte[] b = new byte[b1.length+b2.length];
-		for (int i=0; i<b1.length; i++) b[i] = b1[i];
-		for (int j=0; j<b2.length; j++) b[j+b1.length] = b2[j];
+	private byte[] addFooter(byte[] content) {
+		long begin = System.currentTimeMillis();
+		int p = indexOfEndBody(content);
+		byte[] b = new byte[content.length+ServerService.footer.length];
+		// Copy contents (up to '</body...')
+		// arraycopy(Obj src,int srcPos,Obj dst,int dstPos,int len)
+		System.arraycopy(content,0,b,0,p);
+		// Copy the footer
+		System.arraycopy(ServerService.footer,0,b,p,ServerService.footer.length);
+		// Add skipped '</body...'
+		System.arraycopy(content,p,b,p+ServerService.footer.length,content.length-p);
+Log.d("***PF***", "run "+Lib.rtime(begin)+"ms");
 		return b;
 	}
 
@@ -111,9 +115,10 @@ Log.d("***PF***", "gzip size: "+content.length);
 					&& lcase(b[i+2])=='b'
 					&& lcase(b[i+3])=='o'
 					&& lcase(b[i+4])=='d'
-					&& lcase(b[i+5])=='y')
-Log.d("***PFIO***", "i="+i+" "+new String(b, i, 7));
+					&& lcase(b[i+5])=='y') {
+//Log.d("***PFIO***", "i="+i+" "+new String(b, i, 7));
 					return i;
+				}
 		} catch (Exception e) {}
 		return b.length;
 	}
