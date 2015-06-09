@@ -255,7 +255,7 @@ public class Response {
 		try {
 			out.write(data, 0, data.length);
 			out.flush();
-			if (request.method > 1) out.close();
+			if (!request.KeepAlive) out.close();
 			ok = true;
 		} catch (IOException e) {
 			this.err = e.getMessage();

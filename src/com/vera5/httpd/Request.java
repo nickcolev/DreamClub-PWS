@@ -22,6 +22,8 @@ public class Request {
   public int ContentLength = 0;
   public String AcceptEncoding;
   public String IfNoneMatch;
+  public boolean KeepAlive = false;
+  public String UserAgent = "";
   public String Host;
   public String remote_addr = "";
   public byte[] data;			// PUT/POST
@@ -73,6 +75,11 @@ public class Request {
 					this.IfNoneMatch = a[1];
 				} else if (a[0].equals("Host:")) {
 					this.Host = a[1];
+				} else if (a[0].equals("Connection:")) {
+					if (a[1].equals("Keep-Alive"))
+						this.KeepAlive = true;
+				} else if (a[0].equals("User-Agent:")) {
+					this.UserAgent = a[1];
 				}
 				// Other headers parsing here
 				i++;
