@@ -46,6 +46,7 @@ public class Response {
 			} else
 				plainResponse("500", this.err);
 		}
+		try { out.close(); } catch (IOException e) {}
 	}
 
 	public void delete(Request request) {
