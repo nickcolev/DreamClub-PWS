@@ -1,0 +1,8 @@
+25-Oct-15	Open '/~bitcoin'. Click on 'BlockExplorer.html'
+			Expected: 'BlockExplorer.html' opened
+			Actual: 'page not found error'
+			Why: It sees there is no leading '/', adds it, and try to open '/BlockExplorer.html'
+
+21-Oct-15	Open '/mindmap.svg'
+			Expected: '/mindmap.svg' opened
+			Actual: Hm... on 25-Oct-15 opened. Bad copy of the file?
