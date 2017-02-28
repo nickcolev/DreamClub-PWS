@@ -40,14 +40,15 @@ public class CGI {
 				output += row + "\n";
 			}
 			in.close();
+			return output;
 		} catch (IOException e) {
-			output = null;
-			e.printStackTrace();
+			output = e.getMessage();
+			//e.printStackTrace();
 		} catch (InterruptedException ie) {
-			output = null;
-			ie.printStackTrace();
+			output = ie.getMessage();
+			//ie.printStackTrace();
 		}
-		if (err != 0) output = null;
+		if (err != 0) output = "err: "+err;
 		return output;
 	}
 
